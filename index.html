@@ -109,6 +109,12 @@ textarea{resize:vertical;min-height:90px;}
 .notif-btn{width:100%;padding:12px 16px;border:2px solid var(--gray-light);border-radius:10px;background:var(--white);color:var(--gray);font-weight:600;font-size:0.9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-align:left;}
 .notif-btn.active{border-color:var(--navy);background:var(--navy);color:white;}
 @media(min-width:640px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+.upload-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;background:var(--blue);color:white;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;justify-content:center;}
+.upload-btn:hover{background:var(--blue-dark);}
+.upload-btn:disabled{opacity:0.55;cursor:not-allowed;}
+.upload-progress{display:none;background:var(--blue-bg);border-radius:10px;padding:12px;font-size:0.85rem;color:var(--blue-dark);font-weight:600;text-align:center;}
+.upload-progress.show{display:block;}
+.doc-link{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--green-bg);border-radius:10px;color:var(--green-dark);font-weight:600;font-size:0.88rem;text-decoration:none;margin-top:8px;}
 @media print{nav,.no-print{display:none!important}body{background:white}.page{display:flex!important;padding:0}.case-card,.doc-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;margin-bottom:8px}}
 </style>
 </head>
@@ -699,7 +705,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzf1q6skrwymTbLGKkuFHCDFJpM2psu77P_juvxbPqgCSqM10WjXKe-O_JoERYOGxC9/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXZHfdZl5cNO-5ZvZtYibcO4fCupZ7Jlt_LnnwhdKN8cFvoglwcJe4Eh08JufcMmcf/exec";
 var DELETE_PWD = "Dilia123";
 
 var TEACHERS_DATA = {
@@ -4313,12 +4319,12 @@ function selDocTab(tab){
 
 function loadPermisos(){
   apiCall({action:"listPermisos"}).then(function(data){
-    permisos=Array.isArray(data)?data.map(function(p){return{id:String(p.id||""),teacher:String(p.teacher||""),fecha:String(p.fecha||""),duracion:String(p.duracion||""),horas:String(p.horas||""),motivo:String(p.motivo||""),date:String(p.date||"")};}):[]; renderPermisos();
+    permisos=Array.isArray(data)?data.map(function(p){return{id:String(p.id||""),teacher:String(p.teacher||""),fecha:String(p.fecha||""),duracion:String(p.duracion||""),horas:String(p.horas||""),motivo:String(p.motivo||""),adjunto:String(p.adjunto||""),date:String(p.date||"")};}):[]; renderPermisos();
   }).catch(function(){toast("Error cargando permisos","red");});
 }
 function loadQuejas(){
   apiCall({action:"listQuejas"}).then(function(data){
-    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],date:String(q.date||"")};}):[]; renderQuejas();
+    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],adjunto:String(q.adjunto||""),date:String(q.date||"")};}):[]; renderQuejas();
   }).catch(function(){toast("Error cargando quejas","red");});
 }
 
@@ -4872,6 +4878,135 @@ function saveEstudiante() {
     toast('Error al guardar', 'red');
   }).finally(function() {
     btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+  });
+}
+// ============================================================
+// SUBIDA DE ARCHIVOS A GOOGLE DRIVE
+// ============================================================
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64 = e.target.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function uploadCasoFile(casoId) {
+  var input = document.getElementById('caso-file-input');
+  var progress = document.getElementById('caso-upload-progress');
+  if (!input.files.length) return;
+  var file = input.files[0];
+
+  if (file.size > 5 * 1024 * 1024) {
+    toast('El archivo no puede superar 5MB', 'red');
+    return;
+  }
+
+  progress.textContent = 'Subiendo ' + file.name + '...';
+  progress.classList.add('show');
+
+  fileToBase64(file).then(function(base64) {
+    return fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'uploadFile',
+        fileData: base64,
+        fileName: file.name,
+        folderType: 'casos',
+        recordId: casoId
+      }).toString()
+    });
+  }).then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      // Update local case record
+      var idx = cases.findIndex(function(c) { return c.id === casoId; });
+      if (idx >= 0) cases[idx].acta = data.url;
+      progress.textContent = '✅ Archivo subido correctamente';
+      setTimeout(function() {
+        progress.classList.remove('show');
+        openModal(idx);
+      }, 1500);
+      toast('Archivo subido', 'ok');
+    } else {
+      progress.textContent = '❌ Error al subir';
+      toast('Error al subir el archivo', 'red');
+    }
+  }).catch(function() {
+    progress.textContent = '❌ Error de conexion';
+    toast('Error de conexion', 'red');
+  });
+}
+
+function uploadDocFile(recordId, folderType, progressId) {
+  var inputId = (folderType === 'permisos' ? 'perm' : 'queja') + '-file-';
+  // Find which input triggered this
+  var inputs = document.querySelectorAll('input[type=file]');
+  var file = null;
+  for (var i = 0; i < inputs.length; i++) {
+    if (inputs[i].files.length && inputs[i].onchange) {
+      file = inputs[i].files[0];
+      break;
+    }
+  }
+  // Get file from event
+  var allInputs = document.querySelectorAll('input[type=file]');
+  for (var j = 0; j < allInputs.length; j++) {
+    if (allInputs[j].files.length > 0) {
+      file = allInputs[j].files[0];
+    }
+  }
+
+  if (!file) return;
+  var progress = document.getElementById(progressId);
+  if (!progress) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    toast('El archivo no puede superar 5MB', 'red');
+    return;
+  }
+
+  progress.textContent = 'Subiendo ' + file.name + '...';
+  progress.classList.add('show');
+
+  fileToBase64(file).then(function(base64) {
+    return fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'uploadFile',
+        fileData: base64,
+        fileName: file.name,
+        folderType: folderType,
+        recordId: recordId
+      }).toString()
+    });
+  }).then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      // Update local record
+      if (folderType === 'permisos') {
+        var p = permisos.find(function(p) { return p.id === recordId; });
+        if (p) p.adjunto = data.url;
+        renderPermisos();
+      } else {
+        var q = quejas.find(function(q) { return q.id === recordId; });
+        if (q) q.adjunto = data.url;
+        renderQuejas();
+      }
+      toast('Archivo subido', 'ok');
+    } else {
+      toast('Error al subir el archivo', 'red');
+    }
+    progress.classList.remove('show');
+  }).catch(function() {
+    progress.classList.remove('show');
+    toast('Error de conexion', 'red');
   });
 }
 </script>
