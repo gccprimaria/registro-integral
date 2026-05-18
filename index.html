@@ -127,6 +127,7 @@ textarea{resize:vertical;min-height:90px;}
     <button class="nav-tab" onclick="showPage('director')">🏫 Director</button>
     <button class="nav-tab" onclick="showPage('docentes')">👩‍🏫 Docentes</button>
     <button class="nav-tab" onclick="showPage('stats')">📈 Stats</button>
+    <button class="nav-tab" onclick="showPage('estudiantes')">👤 Estudiantes</button>
     <button class="nav-tab no-print" onclick="showPage('config')">⚙️</button>
   </div>
 </nav>
@@ -610,6 +611,74 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 
+<!-- ESTUDIANTES -->
+<div class="page" id="page-estudiantes">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Estudiantes</div>
+
+  <!-- Filtros -->
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <input type="text" id="est-search" placeholder="Buscar estudiante..." oninput="renderEstudiantes()">
+    <div class="fg3">
+      <select id="est-jornada" onchange="renderEstudiantes()">
+        <option value="">Jornada</option>
+        <option value="Manana">Manana</option>
+        <option value="Tarde">Tarde</option>
+      </select>
+      <select id="est-grado" onchange="renderEstudiantes()">
+        <option value="">Grado</option>
+        <optgroup label="Manana"><option>1A</option><option>1B</option><option>2A</option><option>2B</option><option>3A</option><option>3B</option><option>4A</option><option>4B</option><option>5A</option><option>5B</option></optgroup>
+        <optgroup label="Tarde"><option>1C</option><option>1D</option><option>2C</option><option>2D</option><option>3C</option><option>3D</option><option>4C</option><option>4D</option><option>5C</option><option>5D</option></optgroup>
+      </select>
+      <select id="est-contacto" onchange="renderEstudiantes()">
+        <option value="">Todos</option>
+        <option value="con">Con contacto</option>
+        <option value="sin">Sin contacto</option>
+      </select>
+    </div>
+    <div id="est-count" style="font-size:0.82rem;color:var(--gray)"></div>
+  </div>
+
+  <div id="est-list" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+<!-- MODAL EDITAR ESTUDIANTE -->
+<div class="modal-overlay" id="est-modal-overlay" onclick="closeEstModal(event)">
+  <div class="modal">
+    <button class="back-btn" onclick="closeEstModalDirect()" style="margin-bottom:16px">← Volver</button>
+    <div class="serif" id="est-modal-nombre" style="font-size:1.2rem;color:var(--navy);font-weight:700;margin-bottom:4px"></div>
+    <div id="est-modal-grado" style="font-size:0.85rem;color:var(--gray);margin-bottom:20px"></div>
+
+    <!-- Historial disciplinario -->
+    <div id="est-modal-historial" style="margin-bottom:20px"></div>
+
+    <!-- Datos de contacto -->
+    <div class="form-section">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Datos del acudiente</div>
+      <div class="field">
+        <label class="lbl">Nombre del acudiente</label>
+        <input type="text" id="est-edit-acudiente" placeholder="Nombre completo del acudiente">
+      </div>
+      <div class="field">
+        <label class="lbl">Telefono</label>
+        <input type="tel" id="est-edit-telefono" placeholder="Ej: 3001234567">
+      </div>
+      <div class="field">
+        <label class="lbl">Correo electronico</label>
+        <input type="email" id="est-edit-correo" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="field">
+        <label class="lbl">Direccion</label>
+        <input type="text" id="est-edit-direccion" placeholder="Direccion de residencia">
+      </div>
+      <div class="field">
+        <label class="lbl">Documento del estudiante</label>
+        <input type="text" id="est-edit-documento" placeholder="Numero de documento">
+      </div>
+      <button class="btn btn-primary" id="est-save-btn" onclick="saveEstudiante()" style="width:100%;padding:14px">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIG -->
 <div class="page" id="page-config">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Configuracion</div>
@@ -630,7 +699,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwadXjPzPZ_yZ8NF1OiAvjluEke5NTNPV8eQjPw0vKUyWusBCtQZXBrkHvFeOi-xd2x/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzf1q6skrwymTbLGKkuFHCDFJpM2psu77P_juvxbPqgCSqM10WjXKe-O_JoERYOGxC9/exec";
 var DELETE_PWD = "Dilia123";
 
 var TEACHERS_DATA = {
@@ -661,6 +730,361 @@ var TEACHERS_DATA = {
   "Steve Bayona":{"asignatura":"Musica","direccion":null},
   "Leidy Molano":{"asignatura":"Artistica","direccion":null}
 };
+
+var BASE_STUDENTS = [
+  {"nombre":"BAQUERO FORERO BIBIAN GABRIELLE","grado":"1A","jornada":"Manana","acudiente":"BAQUERO MACIAS IRVING YAMID","telefono":"3004479717","correo":"irvingbaquero@gmail.com","direccion":"CL 23 7 04","documento":"1123451358"},
+  {"nombre":"AGUDELO PANQUEVA ANNIE VICTORIA","grado":"1B","jornada":"Manana","acudiente":"PANQUEVA ESPEJO LUZ ANGELA","telefono":"3144553786","correo":"angelluz715@gmail.com","direccion":"KM 3 VIA YOPAL AGUAZUL","documento":"1222134861"},
+  {"nombre":"CARRENO JIMENEZ JUAN THIAGO","grado":"2A","jornada":"Manana","acudiente":"JIMENEZ MEDINA JELY ANDREA","telefono":"3175018316","correo":"contratacionj4@gmail.com","direccion":"CL 9 23 23","documento":"1118577268"},
+  {"nombre":"ARANGUREN PLAZAS JERONIMO","grado":"2B","jornada":"Manana","acudiente":"PLAZAS ROJAS LAURA","telefono":"3144388046","correo":"lalla.flp@gmail.com","direccion":"CL 18 15 45","documento":"1057986986"},
+  {"nombre":"CALDERON BOBADILLA ARIADNA ISABELLA","grado":"3A","jornada":"Manana","acudiente":"CALDERON SANCHEZ DARWIN ARBEY","telefono":"3143152176","correo":"darwin.sanchez01@hotmail.com","direccion":"CR 37 37 89","documento":"1031425981"},
+  {"nombre":"ACOSTA VARGAS ZOE MARIANA","grado":"3B","jornada":"Manana","acudiente":"VARGAS GOMEZ ERIKA MARIA","telefono":"3213653321","correo":"erikavargasts@gmail.com","direccion":"CL 43 8 12","documento":"1029408120"},
+  {"nombre":"BELTRAN NEIRA ISABELLA","grado":"4A","jornada":"Manana","acudiente":"NEIRA RIVAS ZEINY XIOMARA","telefono":"3142468019","correo":"ingzeinyneira@hotmail.com","direccion":"CL 45 11 127","documento":"1222126694"},
+  {"nombre":"AVELLA ROMERO LAUREN ISABELLA","grado":"4B","jornada":"Manana","acudiente":"AVELLA MONTANA HENRY FERNANDO","telefono":"3124647130","correo":"ferchoavella@hotmail.com","direccion":"CR 1  64 16","documento":"1222129820"},
+  {"nombre":"AMAYA GUTIERREZ ILAN DAVID","grado":"5A","jornada":"Manana","acudiente":"GUTIERREZ ALDANA NEIDY MILDRETH","telefono":"3204521845","correo":"nemigu369@gmail.com","direccion":"MZ G CASA 5","documento":"1222121762"},
+  {"nombre":"ARANGUREN PLAZAS LUCIANA","grado":"5B","jornada":"Manana","acudiente":"PLAZAS ROJAS LAURA","telefono":"3144388046","correo":"lalla.flp@gmail.com","direccion":"CL 18 15 45","documento":"1057985804"},
+  {"nombre":"BECERRA VARGAS OBED","grado":"1A","jornada":"Manana","acudiente":"VARGAS RIVERA LINDA LORENA","telefono":"3123144457","correo":"lindavargasrivera@gmail.com","direccion":"CR 26 16 08","documento":"1118578948"},
+  {"nombre":"AREVALO CACERES IAN SIMON","grado":"1B","jornada":"Manana","acudiente":"CACEREZ ANGEL ZULY KIMBERLEY","telefono":"3182611723","correo":"caserezzuly@gmail.com","direccion":"CL 19 13 26","documento":"1222135693"},
+  {"nombre":"CARTAGENA ABRIL HELLEN SAMARA","grado":"2A","jornada":"Manana","acudiente":"CARTAGENA MORENO JAIR","telefono":"3125652697","correo":"cartamore25@hotmail.com","direccion":"CL 30 28 46","documento":"1222133555"},
+  {"nombre":"ARRIAGA MARTINEZ SAMUEL ANTONIO","grado":"2B","jornada":"Manana","acudiente":"ARRIAGA COLINA IRVING ANTONIO","telefono":"3204680517","correo":"irving7925@gmail.com","direccion":"CL 29 32 39","documento":"1222132429"},
+  {"nombre":"CHAPARRO AYALA HELLEN STEFHANY","grado":"3A","jornada":"Manana","acudiente":"AYALA RODRIGUEZ YEIMY TATIANA","telefono":"3102204266","correo":"ingtatianaayala@gmail.com","direccion":"CL 46 9 27","documento":"1222130953"},
+  {"nombre":"ADAME PIRACON EMANUEL ALEXANDER","grado":"3B","jornada":"Manana","acudiente":"ADAME MUNOZ JESUS ALEXANDER","telefono":"3132956132","correo":"adamealexander1@gmail.com","direccion":"CL 16 21 98","documento":"1222129159"},
+  {"nombre":"CARDENAS SERRANO ANGEL ESTEBAN","grado":"4A","jornada":"Manana","acudiente":"SERRANO CABRERA ANA CAROLINA","telefono":"3115302090","correo":"carolinaserrano96@gmail.com","direccion":"CL 40 TV 23 37 TO 12 APTO 302","documento":"1222127123"},
+  {"nombre":"BARRETO HUMO MILAN JERONIMO","grado":"4B","jornada":"Manana","acudiente":"HUMO SILVA MARIA ISABEL","telefono":"3112076915","correo":"mariaisabelhumo@gmail.com","direccion":"CR 35 28 20","documento":"1222126408"},
+  {"nombre":"ARAQUE GUTIERRES MARTIN FELIPE","grado":"5A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"ARCHILA PINZON MARTIN EDUARDO","grado":"5B","jornada":"Manana","acudiente":"PINZON PATARROYO MAYRA ALEJANDRA","telefono":"3202384893","correo":"mayrapinzon.gc@gmail.com","direccion":"CL 55 34 27","documento":"1222123358"},
+  {"nombre":"CORREA TOVAR MATIAS","grado":"1A","jornada":"Manana","acudiente":"TOVAR MARINO ALITH ARLENNY","telefono":"3118238991","correo":"arlennyta@gmail.com","direccion":"CL26 15 76","documento":"1222134915"},
+  {"nombre":"BERNAL CASTANEDA SILVIA SOFIA","grado":"1B","jornada":"Manana","acudiente":"CASTANEDA RINCON JAQUELINE","telefono":"3105734234","correo":"jaquelinecastaneda2014@gmail.com","direccion":"CL 34  20 30","documento":"1118579268"},
+  {"nombre":"CIFUENTES ARCHILA MARIA ANTHONELLA","grado":"2A","jornada":"Manana","acudiente":"ARCHILA BERNAL GINESSA STEFFANY","telefono":"3235056299","correo":"ginessaarchila_0123@outlook.es","direccion":"CR 11 30 03","documento":"1222131075"},
+  {"nombre":"AVILA LOPEZ EMILY JULIANA","grado":"2B","jornada":"Manana","acudiente":"LOPEZ BUENAVENTURA EILEN AZURY","telefono":"3104807594","correo":"len_0629@hotmail.com","direccion":"CR 9 45 26","documento":"1222132787"},
+  {"nombre":"ESPINOSA SOCHA GOHAN EMANUEL","grado":"3A","jornada":"Manana","acudiente":"SOCHA RINCON LIZETH PAOLA","telefono":"3108802036","correo":"pa_olitamm@hotmail.com","direccion":"LOTE19 MZ XIRUMA II","documento":"1222129997"},
+  {"nombre":"ARDILA MANOSALVA JERONIMO","grado":"3B","jornada":"Manana","acudiente":"ARDILA RINCON NELSON FELIPE","telefono":"3213001603","correo":"nelsonfelipeardila@gmail.com","direccion":"CR 37 3783","documento":"1014894779"},
+  {"nombre":"CAVARTE HERRERA NOA ISABELLA","grado":"4A","jornada":"Manana","acudiente":"HERRERA RIVAS MARTHA LILIANA","telefono":"3144415605","correo":"maliheri@hotmail.com","direccion":"CL 37 23 87","documento":"1222128417"},
+  {"nombre":"CARDENAS VARGAS DIEGO ALEJANDRO","grado":"4B","jornada":"Manana","acudiente":"VARGAS TAY HEIDI LORENA","telefono":"3102346921","correo":"asesoriaslorena@gmail.com","direccion":"CL 34 27 20","documento":"1222128229"},
+  {"nombre":"ARRIAGA MARTINEZ GABRIEL ANTONIO","grado":"5A","jornada":"Manana","acudiente":"ARRIAGA COLINA IRVING ANTONIO","telefono":"3204680517","correo":"irving7925@gmail.com","direccion":"CL 29 32 39","documento":"1222124071"},
+  {"nombre":"AYALA MORENO PAULA ALEJANDRA","grado":"5B","jornada":"Manana","acudiente":"MORENO DAVILA ERIKA JOHANA","telefono":"3115539352","correo":"ekamd10@gmail.com","direccion":"CR 44 35 33","documento":"1222121978"},
+  {"nombre":"DUARTE TIBATA JOSUE DANIEL","grado":"1A","jornada":"Manana","acudiente":"DUARTE AVENDANO FABIAN ESTEBAN","telefono":"3125411767","correo":"duartetibata@gmail.com","direccion":"CR 37 37 89","documento":"1222134503"},
+  {"nombre":"CACERES RUIZ EMILIANA","grado":"1B","jornada":"Manana","acudiente":"RUIZ ADAN SANDRA MILENA","telefono":"3102185168","correo":"milenaruiz-30@hotmail.com","direccion":"CR 20 5 19","documento":"1222134925"},
+  {"nombre":"GALEANO NAVARRO MARIA JOSE","grado":"2A","jornada":"Manana","acudiente":"GALEANO DIAZ CARLOS DAVID","telefono":"3112367940","correo":"daviddi91@hotmail.com","direccion":"CORREGIMIENTO MORICHAL","documento":"1145428796"},
+  {"nombre":"BELTRAN GUARIN MARIA DE LOS ANGELES","grado":"2B","jornada":"Manana","acudiente":"MORALES GARZON DUMAR LIBARDO","telefono":"3202332386","correo":"dumarmoralesg@gmail.com","direccion":"TV 23 37 87 TO 9 APTO 403","documento":"1222132156"},
+  {"nombre":"FERREIRA DOMINGUEZ SAMUEL ESTEBAN","grado":"3A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"ASCENCIO CHAPARRO JOSEPH SEBASTIAN","grado":"3B","jornada":"Manana","acudiente":"CHAPARRO LAGOS CAROL YESENIA","telefono":"3202599682","correo":"carolyeseniachaparro@hotmail.com","direccion":"CR 5 56 47","documento":"1055315829"},
+  {"nombre":"ESPITIA SOLANO MARIA VICTORIA","grado":"4A","jornada":"Manana","acudiente":"SOLANO ROJAS FLORE EDALID","telefono":"3138594967","correo":"floresolanorojas@gmail.com","direccion":"CL 46 11 17","documento":"1222130050"},
+  {"nombre":"CORREA HUERTAS KAROL SOFIA","grado":"4B","jornada":"Manana","acudiente":"CORREA JAIMES ALONSO","telefono":"3124802934","correo":"mave0921@hotmail.com","direccion":"CL 41 9 09","documento":"1222126678"},
+  {"nombre":"AVELLA GONZALEZ MARIANA","grado":"5A","jornada":"Manana","acudiente":"GONZALEZ RINCON JERLY JOHANA","telefono":"3214667020","correo":"gonzalezrinconjohana@gmail.com","direccion":"CR 8 25 62","documento":"1222124526"},
+  {"nombre":"BECERRA POVEDA JOSUE","grado":"5B","jornada":"Manana","acudiente":"BECERRA PUERTO WILMAN RENE","telefono":"3134560019","correo":"wilmanpuerto@gmail.com","direccion":"CR 37 37 89","documento":"1222123319"},
+  {"nombre":"FONSECA BARRERA DANIEL ALEJANDRO","grado":"1A","jornada":"Manana","acudiente":"FONSECA CASTRO JOSE DANIEL","telefono":"3123392422","correo":"jodafoca@hotmail.com","direccion":"VRD EL MORRO","documento":"1118578064"},
+  {"nombre":"CALLEJAS JIMENEZ MARIA PAULA","grado":"1B","jornada":"Manana","acudiente":"MANUEL ELKIN CALLEJAS HERRERA","telefono":"3163701520","correo":"laurajimenez9406@gmail.com","direccion":"CR 37 33 02","documento":"1222135791"},
+  {"nombre":"GALVIS MANCERA ARTURO ADRIANO","grado":"2A","jornada":"Manana","acudiente":"MANCERA RODRIGUEZ MAYERLY KATHERIN","telefono":"3202203635","correo":"ingmayerlymancerar@gmail.com","direccion":"CR 14 32 22","documento":"1222131531"},
+  {"nombre":"CARRENO GONZALEZ HELENA","grado":"2B","jornada":"Manana","acudiente":"CARRENO GUZMAN LUIZ GIRALDO","telefono":"3124676597","correo":"luiskarreno@hotmail.com","direccion":"CR 16 22 41","documento":"1222134227"},
+  {"nombre":"GARCIA VALIENTE SAMUEL JAVIER","grado":"3A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"BASTIDAS PENA MARTIN","grado":"3B","jornada":"Manana","acudiente":"BASTIDAS GUERRERO ANDRES FERNANDO","telefono":"3212409561","correo":"andresbastidas9@gmail.com","direccion":"CL 18 26 36","documento":"1118577045"},
+  {"nombre":"FERNANDEZ CRUZ EMMANUEL","grado":"4A","jornada":"Manana","acudiente":"CRUZ LIZCANO ADRIANA CAROLINA","telefono":"3112057181","correo":"adrianacarolinacruz@gmail.com","direccion":"CL 25 12 24","documento":"1222124955"},
+  {"nombre":"CUADRA GARZON ERICK SANTIAGO","grado":"4B","jornada":"Manana","acudiente":"CUADRA TONCON RONALD DARIO","telefono":"3223296180","correo":"rodacuto@gmail.com","direccion":"CR13 26 44","documento":"1222129174"},
+  {"nombre":"CAMARGO NINO EMANUEL JULIAN","grado":"5A","jornada":"Manana","acudiente":"NINO MIRIAN OLIVA","telefono":"3125486435","correo":"miriamnino0577@gmail.com","direccion":"CR 17 30 30","documento":"1222123463"},
+  {"nombre":"CABRERA TORRES THOMAS ALEJANDRO","grado":"5B","jornada":"Manana","acudiente":"TORRES HERNANDEZ EDNA MARCELA","telefono":"3213322635","correo":"edmatohe17@gmail.com","direccion":"CL 33 28 47","documento":"1222123811"},
+  {"nombre":"GONZALEZ MENDEZ JHOSELYN","grado":"1A","jornada":"Manana","acudiente":"MENDEZ ALVARADO YUSNEILA","telefono":"3115247077","correo":"yumeva23@gmail.com","direccion":"CORREGIMIENTO MORICHAL","documento":"1222135167"},
+  {"nombre":"CALLEJAS PEDRAZA JUAN MANUEL","grado":"1B","jornada":"Manana","acudiente":"PEDRAZA HINCAPIE LISBETH","telefono":"3003533744","correo":"lisbethph_25@hotmail.com","direccion":"CL 26 29 14","documento":"1222134582"},
+  {"nombre":"GONZALEZ TOVAR LUCIA","grado":"2A","jornada":"Manana","acudiente":"GONZALEZ TOVAR GABRIELLA LUZETH","telefono":"3195700441","correo":"gabriellagontovar@icloud.com","direccion":"CL 36 27 33","documento":"1222130665"},
+  {"nombre":"CERVERA URBANO ALANA SYLVANA","grado":"2B","jornada":"Manana","acudiente":"URBANO MONTANEZ GABRIELA ALEJANDRA","telefono":"3124635358","correo":"gabrielamontañez19@gmail.com","direccion":"CR 21 20 14","documento":"1222133616"},
+  {"nombre":"GOMEZ GROSSO ELIAN JERONIMO","grado":"3A","jornada":"Manana","acudiente":"GOMEZ GASCA JOHANN EUGENIO","telefono":"3118361686","correo":"elmono2710@hotmail.com","direccion":"CL 40 12 16","documento":"1222130587"},
+  {"nombre":"BENAVIDES TORO PAULA MARIANA","grado":"3B","jornada":"Manana","acudiente":"BENAVIDES LOZANO JUVENAL","telefono":"3103364783","correo":"juvenal1975@gmail.com","direccion":"CR 16 36 35","documento":"1121967294"},
+  {"nombre":"GARCIA ECHENIQUE SAMUEL DAVID","grado":"4A","jornada":"Manana","acudiente":"GARCIA MORENO ANDRES LEONARDO","telefono":"3176956329","correo":"andresl92_garcia@hotmail.com","direccion":"CL 31 29 93","documento":"1222128383"},
+  {"nombre":"CUEVAS SANCHEZ AARON STEVE","grado":"4B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"CARDENAS MORA CHRISTOPHER DE LEON","grado":"5A","jornada":"Manana","acudiente":"CARDENAS TORRES JORGE LUIS","telefono":"3203486424","correo":"piero696@gmail.com","direccion":"CL 14 18 36","documento":"1222124473"},
+  {"nombre":"CASTELLANOS LEAL THIAGO ALEJANDRO","grado":"5B","jornada":"Manana","acudiente":"CASTELLANOS CASTILLO FERNANDO","telefono":"3159268724","correo":"fe2919@hotmail.com","direccion":"CR 8 15 53","documento":"1222123670"},
+  {"nombre":"HERNANDEZ ZEAS LIA SALOME","grado":"1A","jornada":"Manana","acudiente":"ZEAS MONTANEZ MABEL DAYANA","telefono":"3142973755","correo":"valerimabel@gmail.com","direccion":"CL 31 30 69","documento":"1222134306"},
+  {"nombre":"FERNANDEZ CRUZ IVANNA","grado":"1B","jornada":"Manana","acudiente":"CRUZ LIZCANO ADRIANA CAROLINA","telefono":"3112057181","correo":"adrianacarolinacruz@gmail.com","direccion":"CL 25 12 24","documento":"1118578276"},
+  {"nombre":"MARIN RODRIGUEZ ANTONELLA","grado":"2A","jornada":"Manana","acudiente":"RODRIGUEZ BARRERA FLOR EDITH","telefono":"3124785873","correo":"roflor8324@gmail.com","direccion":"CR 44 38 39","documento":"1222131432"},
+  {"nombre":"CORDOBA HERNANDEZ MONTSERRAT","grado":"2B","jornada":"Manana","acudiente":"HERNANDEZ PARRADO FRANCY LORENA","telefono":"3143084649","correo":"hdezfrancy@gmail.com","direccion":"CL 27 35 63","documento":"1222133109"},
+  {"nombre":"GUIO DELGADILLO EMILY SOFIA","grado":"3A","jornada":"Manana","acudiente":"GUIO CHICACAUSA CRISTIAN ALEJANDRO","telefono":"3138532841","correo":"cagch-22@gmail.com","direccion":"CL 44 11 41","documento":"1222131317"},
+  {"nombre":"CARRILLO PUENTES ASHLEY SAMANTHA","grado":"3B","jornada":"Manana","acudiente":"PUENTES CHANCI MILDRED NATALIA","telefono":"3185160062","correo":"pmildrednatalia950@gmail.com","direccion":"VEREDA LA VEGA","documento":"1118576516"},
+  {"nombre":"HERNANDEZ CARDENAS JUAN JOSE","grado":"4A","jornada":"Manana","acudiente":"CARDENAS RODRIGUEZ LEIDY MARITZA","telefono":"3102383544","correo":"leidy_17_cardenas@hotmail.com","direccion":"VEREDA LA VEGA","documento":"1222128635"},
+  {"nombre":"DUARTE ORREGO AVRIL VICTORIA","grado":"4B","jornada":"Manana","acudiente":"DUARTE PEREZ DIEGO ANDRES","telefono":"3176487346","correo":"diegoduarte91@outlook.com","direccion":"CR 23 28 110","documento":"1222128629"},
+  {"nombre":"DIAZ MARTINEZ JOEL","grado":"5A","jornada":"Manana","acudiente":"MARTINEZ PEREZ THIANY KATERINE","telefono":"3177317410","correo":"thianymartinezperez@gmail.com","direccion":"CR 8 15 53","documento":"11141525589"},
+  {"nombre":"CORREDOR PEREZ MILA","grado":"5B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"JIMENEZ VANEGAS MARIA ELIZABETH","grado":"1A","jornada":"Manana","acudiente":"VANEGAS LOPEZ LEIDY YESENIA","telefono":"3144722338","correo":"leidy062008@gmail.com","direccion":"CL 28 17 69","documento":"1118205440"},
+  {"nombre":"FONSECA GOMEZ JUAN ESTEBAN","grado":"1B","jornada":"Manana","acudiente":"FONSECA JUAN CARLOS","telefono":"3134207581","correo":"blue_shadow@hotmail.com","direccion":"CR 13 27 58","documento":"1222136378"},
+  {"nombre":"MONTAGUT RODRIGUEZ MANUELA","grado":"2A","jornada":"Manana","acudiente":"MONTAGUT FERNANDEZ MANUEL ALEJANDRO","telefono":"3134216636","correo":"manuelmontagutf1@gmail.com","direccion":"CL 36 16 40","documento":"1118577320"},
+  {"nombre":"DIAZ MARTINEZ CALEB","grado":"2B","jornada":"Manana","acudiente":"MARTINEZ PEREZ THIANY KATERINE","telefono":"3177317410","correo":"thianymartinezperez@gmail.com","direccion":"CR 8 15 53","documento":"11141527319"},
+  {"nombre":"HERNANDEZ GUAUQUE JUAN SEBASTIAN","grado":"3A","jornada":"Manana","acudiente":"HERNANDEZ MEDINA JERSSON ARMANDO","telefono":"3133509341","correo":"jerssonhernandez@hotmail.com","direccion":"CL 9 20 59","documento":"1222129797"},
+  {"nombre":"CORREA PARRA SAFIA VALENTINA","grado":"3B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"INFANTE RODRIGUEZ JUAN ESTEBAN","grado":"4A","jornada":"Manana","acudiente":"RODRIGUEZ FORERO INGRID TATIANA","telefono":"3144403952","correo":"tatianacontable@gmail.com","direccion":"CL 64 36 20","documento":"1222126152"},
+  {"nombre":"GIL GONZALEZ PAULA ANDREA","grado":"4B","jornada":"Manana","acudiente":"GIL MARTINEZ PAUL ANDRES","telefono":"3213008305","correo":"paulgilmartinez522@gmail.com","direccion":"CR 28 51 01","documento":"1222125925"},
+  {"nombre":"FORERO AVILA DIEGO LUIS","grado":"5A","jornada":"Manana","acudiente":"AVILA MARINO MARIA CAROLINA","telefono":"3126860146","correo":"carolinavila08@hotmail.com","direccion":"CR 8 15 53","documento":"1222123093"},
+  {"nombre":"DUARTE TIBATA EMMANUEL ESTEBAN","grado":"5B","jornada":"Manana","acudiente":"DUARTE AVENDANO FABIAN ESTEBAN","telefono":"3125411767","correo":"duartetibata@gmail.com","direccion":"CR 30 25 65","documento":"1222126285"},
+  {"nombre":"LAZARO CAMACHO MATHIAS","grado":"1A","jornada":"Manana","acudiente":"CAMACHO MARTINEZ ANGELICA MARIA","telefono":"3204643939","correo":"angelicacamacho@gmail.com","direccion":"CR 11 31 58","documento":"1118577968"},
+  {"nombre":"GARCIA ALFONSO DARA ABIGAIL","grado":"1B","jornada":"Manana","acudiente":"ALFONSO BECERRA RUTH MAGALY","telefono":"3123016087","correo":"ruthalfonsobecerra@gmail.com","direccion":"CL 38 28 47","documento":"1222221887"},
+  {"nombre":"PASTRANA CEDENO MIA SALOME","grado":"2A","jornada":"Manana","acudiente":"PASTRANA ALVAREZ SOLMAN YAIR","telefono":"3229453744","correo":"solmanyair2828@gmail.com","direccion":"CL 17 10 50","documento":"1222133773"},
+  {"nombre":"DIAZ PRIETO THIAGO ALEXANDER","grado":"2B","jornada":"Manana","acudiente":"PRIETO RICO LIZETH XIMENA","telefono":"3204598887","correo":"lizethprieto24@gmail.com","direccion":"CR 22 16 40","documento":"1222133753"},
+  {"nombre":"HIGUERA CASTANO EMMANUEL","grado":"3A","jornada":"Manana","acudiente":"HIGUERA MARTINEZ JUAN SEBASTIAN","telefono":"3123645792","correo":"higuera2017032028@unitropico.edu.co","direccion":"CL 24 22 26","documento":"1222129066"},
+  {"nombre":"DIAZ MARTINEZ ANDRES SANTIAGO","grado":"3B","jornada":"Manana","acudiente":"MARTINEZ OLIVEROS DIANA MARITZA","telefono":"3138057583","correo":"maritza9182@hotmail.com","direccion":"CL 40 TV 23 71","documento":"1222130110"},
+  {"nombre":"MARTINEZ MONTES JOHAN SEBASTIAN","grado":"4A","jornada":"Manana","acudiente":"MARTINEZ RIANO FABIO","telefono":"3103343609","correo":"fabio11913@hotmail.com","direccion":"CL 17 32 16","documento":"1222127248"},
+  {"nombre":"GUARNIZO GONZALEZ ANA LUCIA","grado":"4B","jornada":"Manana","acudiente":"GONZALEZ MARTINEZ AURA DANIELA","telefono":"3175511338","correo":"auradaniela1712@gmail.com","direccion":"CL 28 28 03","documento":"1104552332"},
+  {"nombre":"GUTIERREZ GONZALEZ VIOLETA","grado":"5A","jornada":"Manana","acudiente":"GUTIERREZ MELENDEZ DANIEL RICARDO","telefono":"3142974996","correo":"eso.daniel.gutierrez@gmail.com","direccion":"CR 13 26 08","documento":"1222125510"},
+  {"nombre":"FLOREZ RODRIGUEZ MILAN ADRIAN","grado":"5B","jornada":"Manana","acudiente":"FLOREZ MESA JOVANY ALEXANDER","telefono":"3108739165","correo":"nanyalx24@gmail.com","direccion":"CR 16 22 65","documento":"1222123660"},
+  {"nombre":"MORENO VARGAS MIGUEL ANGEL","grado":"1A","jornada":"Manana","acudiente":"VARGAS GONZALEZ MAGDA LORENA","telefono":"3106157721","correo":"lorejaco2011@hotmail.com","direccion":"Cl 33 28 47","documento":"1028729081"},
+  {"nombre":"MERCADO MANTILLA MATHIAS ALEJANDRO","grado":"1B","jornada":"Manana","acudiente":"MANTILLA LOZANO CATERINE","telefono":"3115059636","correo":"mantillacaterine@gmail.com","direccion":"CL 30 TV 7C 20","documento":"1118577948"},
+  {"nombre":"PEREZ PENA JULIAN JERONIMO","grado":"2A","jornada":"Manana","acudiente":"PEREZ CAMARGO EDGAR HERNANDO","telefono":"3124499063","correo":"aredgar713@hotmail.com","direccion":"CL 35 28 25","documento":"1222134370"},
+  {"nombre":"GALVIS MANCERA JUANA GABRIELA","grado":"2B","jornada":"Manana","acudiente":"MANCERA RODRIGUEZ MAYERLY KATHERIN","telefono":"3202203635","correo":"ingmayerlymancerar@gmail.com","direccion":"CR 14 32 22","documento":"1222131532"},
+  {"nombre":"LARA LAVERDE ZAIRA LUCIANA","grado":"3A","jornada":"Manana","acudiente":"LARA ALARCON LUIS BENIGNO","telefono":"3138834556","correo":"laraluistop@hotmail.com","direccion":"VEREDA LA VEGA","documento":"1222129450"},
+  {"nombre":"DIAZ MARTINEZ FELICIA","grado":"3B","jornada":"Manana","acudiente":"MARTINEZ PEREZ THIANY KATERINE","telefono":"3177317410","correo":"thianymartinezperez@gmail.com","direccion":"CR 8 15 53","documento":"1141526616"},
+  {"nombre":"MEDINA PEDROZA MARTIN","grado":"4A","jornada":"Manana","acudiente":"PEDROZA PUENTES DIANA MARCELA","telefono":"3103345723","correo":"dianampp2021@gmail.com","direccion":"CR 9 23 05","documento":"1222127187"},
+  {"nombre":"LARROTA TRASLAVINA EMMANUEL","grado":"4B","jornada":"Manana","acudiente":"TRASLAVINA VARGAS EDDY JOHANA","telefono":"3138176679","correo":"eddyto7@hotmail.com","direccion":"KM 7 VIA PALOMAS","documento":"1222126398"},
+  {"nombre":"GUZMAN RAIGOSA SARA LUCIANA","grado":"5A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"FORERO CASTRO GABRIELA","grado":"5B","jornada":"Manana","acudiente":"CASTRO BARRAGAN SANDRA ESPERANZA","telefono":"3133979118","correo":"castrosandra33@gmail.com","direccion":"CL 14 26 06","documento":"1222126216"},
+  {"nombre":"NINO URBANO ANA MARIA","grado":"1A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"MURCIA BARBON JUANITA","grado":"1B","jornada":"Manana","acudiente":"MURCIA CONTRERAS IVAN CAMILO","telefono":"3125442055","correo":"kamilog12@gmail.com","direccion":"CL 23 26 15","documento":"1222135262"},
+  {"nombre":"PINEDA PALOMINO AELEEN SOFIA","grado":"2A","jornada":"Manana","acudiente":"PALOMINO ESTEPA DIANA SIRLEY","telefono":"3142364218","correo":"palomino.estepa@hotmail.com","direccion":"CL 34 33 64","documento":"1222132105"},
+  {"nombre":"GARCIA NUNEZ ANGEL DAVID","grado":"2B","jornada":"Manana","acudiente":"NUNEZ MENDEZ ANGELICA MARIA","telefono":"3204452970","correo":"angie_bella29@hotmail.com","direccion":"CR 28 14 33","documento":"1145428820"},
+  {"nombre":"MESA RIVERA JOSE DANIEL","grado":"3A","jornada":"Manana","acudiente":"RIVERA ACOSTA LEIDY NATALIA","telefono":"3228787375","correo":"lei.dy.92@hotmail.com","direccion":"CR 20 21 58","documento":"1122938556"},
+  {"nombre":"MESA RIVERA SAMUEL GABRIEL","grado":"3B","jornada":"Manana","acudiente":"RIVERA ACOSTA LEIDY NATALIA","telefono":"3228787375","correo":"lei.dy.92@hotmail.com","direccion":"CR 20 21 58","documento":"1122938557"},
+  {"nombre":"NARANJO VIANCHA DANNA ISABELLA","grado":"4A","jornada":"Manana","acudiente":"NARANJO MONTANEZ JAIRO ALBERTO","telefono":"3187160243","correo":"alber88naranjo@gmail.com","direccion":"CR 16 37 12","documento":"1222128126"},
+  {"nombre":"LOPEZ SANDOVAL YACOB JERONIMO","grado":"4B","jornada":"Manana","acudiente":"SANDOVAL LANDINEZ JEIMY CAROLINA","telefono":"3115217477","correo":"carito.sandoval10@hotmail.com","direccion":"CR 8 15 53","documento":"1054289907"},
+  {"nombre":"GUZMAN TORRES MARIANA","grado":"5A","jornada":"Manana","acudiente":"GUZMAN PARALES EDIR SANTIAGO","telefono":"3133432311","correo":"edirguzpar29@gmail.com","direccion":"CL 40 TV 38","documento":"1116553960"},
+  {"nombre":"GOMEZ LOZA SAMUEL ESTEBAN","grado":"5B","jornada":"Manana","acudiente":"LOZA ELAICA DAYS DAYANA","telefono":"3156245602","correo":"daysloza.18@gmail.com","direccion":"TV 9 13 52","documento":"1117325863"},
+  {"nombre":"PAEZ GUTIERREZ VIOLETA","grado":"1A","jornada":"Manana","acudiente":"PAEZ GARCIA JOSE JOAQUIN","telefono":"3123449614","correo":"jose112130@gmail.com","direccion":"CL 41 48 52","documento":"1118578899"},
+  {"nombre":"PEREZ GUERRERO JOSE EMILIANO","grado":"1B","jornada":"Manana","acudiente":"GUERRERO MONTANEZ DIANA GRISELA","telefono":"3214143112","correo":"dianaguerrerom.21@gmail.com","direccion":"CL 42 1 127","documento":"1222134445"},
+  {"nombre":"PULIDO VELANDIA EMILIANO ANDRES","grado":"2A","jornada":"Manana","acudiente":"VELANDIA BAUTISTA GINETH LIZETH","telefono":"3204087602","correo":"gilivelandia@gmail.com","direccion":"CL 24 31 56","documento":"1222133683"},
+  {"nombre":"LOPEZ RODRIGUEZ EYDAN MATHIAS","grado":"2B","jornada":"Manana","acudiente":"RODRIGUEZ MARTINEZ JEIMMY MAGALY","telefono":"3102910865","correo":"magadeoz33@hotmail.com","direccion":"CL 40 40 120","documento":"1052846311"},
+  {"nombre":"PEDRAZA DIAZ DANNA SAMARA","grado":"3A","jornada":"Manana","acudiente":"PEDRAZA CHACON FREDY ALEXANDER","telefono":"3208538238","correo":"fredypedraza91@gmail.com","direccion":"CR 23 19 35","documento":"1222130721"},
+  {"nombre":"MONTES BUELVA LIAN DAVID","grado":"3B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"ORDONEZ SANDOVAL JUAN ANDRES","grado":"4A","jornada":"Manana","acudiente":"SANDOVAL DIAZ INGRID JOHANNA","telefono":"3212055226","correo":"injohanasandoval@gmail.com","direccion":"MZ 27 CASA 26","documento":"1222119656"},
+  {"nombre":"MONTAGUT RODRIGUEZ MARIANA","grado":"4B","jornada":"Manana","acudiente":"MONTAGUT FERNANDEZ MANUEL ALEJANDRO","telefono":"3134216636","correo":"manuelmontagutf1@gmail.com","direccion":"CL 36 16 14","documento":"1118572936"},
+  {"nombre":"MANRIQUE AGUILAR VICTORIA","grado":"5A","jornada":"Manana","acudiente":"AGUILAR GONZALEZ LINA PAOLA","telefono":"3103213932","correo":"linapaola0411@hotmail.com","direccion":"CL 27 14 28","documento":"1222123939"},
+  {"nombre":"GUIO PENA DULCE MARIA","grado":"5B","jornada":"Manana","acudiente":"GUIO JHON FREDY","telefono":"3138088577","correo":"fredyguio95@hotmail.com","direccion":"CR 27 33 32","documento":"1222121185"},
+  {"nombre":"PAIVA PINZON MARIA CAMILA","grado":"1A","jornada":"Manana","acudiente":"PINZON ASTROZA JENNY MIREYA","telefono":"3204155216","correo":"je.vi@hotmail.com","direccion":"CL 30 16 73","documento":"1222135215"},
+  {"nombre":"RESTREPO SIERRA LAURA CELESTE","grado":"1B","jornada":"Manana","acudiente":"RESTREPO BENJUMEA OSCAR EDUARDO","telefono":"3133780281","correo":"oscar.restrepobj@gmail.com","direccion":"CL 21 20 70","documento":"1118579110"},
+  {"nombre":"QUESADA HERNANDEZ NOAH EMMANUEL","grado":"2A","jornada":"Manana","acudiente":"HERNANDEZ LOPEZ VANNESSA","telefono":"3227492351","correo":"vannessa.h.lpz.29@gmail.com","direccion":"CR 23 28 110","documento":"1222133958"},
+  {"nombre":"NAVARRO URBANO ANTONELLA","grado":"2B","jornada":"Manana","acudiente":"URBANO ROJAS DERLY YANETH","telefono":"3203917935","correo":"yayoorossur@hotmail.com","direccion":"CL 27 9 51","documento":"1222131812"},
+  {"nombre":"PERDOMO RUIZ ERICK JULIAN","grado":"3A","jornada":"Manana","acudiente":"PERDOMO VARGAS DAVID","telefono":"3107601284","correo":"davidperdomo0609@hotmail.com","direccion":"CL 27 12 82","documento":"1118575592"},
+  {"nombre":"PARRA BRICENO ISABELLA","grado":"3B","jornada":"Manana","acudiente":"PARRA BLANDON LUIS FERNEY","telefono":"3214340678","correo":"luisfparrab@icloud.com","direccion":"CR 24 12 21","documento":"1029407946"},
+  {"nombre":"ORTEGA SANCHEZ MARIANA CELESTE","grado":"4A","jornada":"Manana","acudiente":"SANCHEZ MEDINA DIANA PATRICIA","telefono":"3128308875","correo":"dinita4324@hotmail.com","direccion":"CR 23 22 18","documento":"1222125684"},
+  {"nombre":"MORENO BARRETO MARIA LUCIANA","grado":"4B","jornada":"Manana","acudiente":"BARRETO HERNANDEZ LADY ZORANY","telefono":"3143213048","correo":"leidy1350@gmail.com","direccion":"CR 15 17 63","documento":"1145428082"},
+  {"nombre":"MONJE LOZANO LUNA DEL MAR","grado":"5A","jornada":"Manana","acudiente":"LOZANO VALLEJO MARIBEL","telefono":"3103485959","correo":"elizitha_lozano@hotmail.com","direccion":"CL 28 32 04","documento":"1222122231"},
+  {"nombre":"JIMENEZ TRASLAVINA IAN SANTIAGO","grado":"5B","jornada":"Manana","acudiente":"TRASLAVINA VARGAS DIANA SORELLY","telefono":"3112445111","correo":"iansantiagojt@gmail.com","direccion":"CR 7 60 36","documento":"1222119411"},
+  {"nombre":"PINTO ORTIZ VICTORIA","grado":"1A","jornada":"Manana","acudiente":"PINTO RODRIGUEZ MAURICIO RICARDO","telefono":"3214036278","correo":"pintos74@hotmail.com","direccion":"CR 25 37 42","documento":"1222134637"},
+  {"nombre":"RICO SERRANO THOMAS ALEJANDRO","grado":"1B","jornada":"Manana","acudiente":"SERRANO SANDOVAL VIVIANA MARCELA","telefono":"3142787476","correo":"vivianamarcelaserranosandoval@gmail.com","direccion":"CL 27 33 03","documento":"1222136072"},
+  {"nombre":"ROCHA PLAZAS FREDERICK ALEXANDER","grado":"2A","jornada":"Manana","acudiente":"ROCHA JIMENEZ JHON FREDY","telefono":"3203402948","correo":"rocha39@hotmail.com","direccion":"CL 60 01 14","documento":"1222133451"},
+  {"nombre":"PALACIO BETANCOURT ANDRES CAMILO","grado":"2B","jornada":"Manana","acudiente":"BETANCOURT CALVACHE JENNIFER MARCELA","telefono":"3155066970","correo":"jennimar.87@gmail.com","direccion":"CR 15 39 45","documento":"1061823615"},
+  {"nombre":"QUESADA HERNANDEZ EMILIA","grado":"3A","jornada":"Manana","acudiente":"HERNANDEZ LOPEZ VANNESSA","telefono":"3227492351","correo":"vannessa.h.lpz.29@gmail.com","direccion":"CR 23 28 110","documento":"1118575203"},
+  {"nombre":"PEREZ SANCHEZ STHIAN SAMUEL","grado":"3B","jornada":"Manana","acudiente":"SANCHEZ MARTINEZ LILIANA MARCELA","telefono":"3208861877","correo":"lilisanchez661@gmail.com","direccion":"CL 51 11 94","documento":"1222130962"},
+  {"nombre":"OSPINO MELLIZO MATHIAS ALFONSO","grado":"4A","jornada":"Manana","acudiente":"MELLIZO CANO LILIBETH","telefono":"3002208734","correo":"lmellizo@hotmail.com","direccion":"CR 40 37 44","documento":"1044004381"},
+  {"nombre":"MORENO CORTES SEBASTIAN","grado":"4B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"PEREZ LEGUIZAMON VALERY GABRIELA","grado":"5A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"MENDOZA BARRERA SOFIA","grado":"5B","jornada":"Manana","acudiente":"MENDOZA HERNANDEZ MEDARDO","telefono":"3143578279","correo":"medardomen@hotmail.com","direccion":"CL 16 36 35","documento":"1222126291"},
+  {"nombre":"PIRAGAUTA PEREZ MARIA CAMILA","grado":"1A","jornada":"Manana","acudiente":"PIRAGAUTA ACEVEDO CAMILO EDUARDO","telefono":"3143577937","correo":"camilopira32@gmail.com","direccion":"CR 20 16 34","documento":"1222134365"},
+  {"nombre":"RINCON URREGO SHARON ELIETTE","grado":"1B","jornada":"Manana","acudiente":"RINCON ROJAS ANYER JOSUE","telefono":"3124417553","correo":"anyerrincon@gmail.com","direccion":"CL 5 18 61","documento":"1222134367"},
+  {"nombre":"RODRIGUEZ CORDOBA ANA VICTORIA","grado":"2A","jornada":"Manana","acudiente":"CORDOBA CARDENAS DEYSY PAOLA","telefono":"3108085824","correo":"cordobadeissy30@gmail.com","direccion":"CR 9 29 25","documento":"1118576887"},
+  {"nombre":"RODRIGUEZ AYALA MARIA ANTONELLA","grado":"2B","jornada":"Manana","acudiente":"RODRIGUEZ PASTRANA FINLAY","telefono":"3108688945","correo":"finropa@hotmail.com","direccion":"CL 38 24 09","documento":"1222133976"},
+  {"nombre":"RAMIREZ CHAPARRO IVANNA","grado":"3A","jornada":"Manana","acudiente":"CHAPARRO PARRA PAULIN YESENIA","telefono":"3103076109","correo":"yesseniachaparro@gmail.com","direccion":"CR 16 26 27","documento":"1118576438"},
+  {"nombre":"PIRATEQUE ARAQUE MARTIN GERONIMO","grado":"3B","jornada":"Manana","acudiente":"ARAQUE LOZANO JASBEIDY ANDREA","telefono":"3127542836","correo":"andreajal87@gmail.com","direccion":"CR 21 23 43","documento":"1118577042"},
+  {"nombre":"PAEZ CANIZALEZ ANDRES ESTEBAN","grado":"4A","jornada":"Manana","acudiente":"PAEZ CUELLAR GUILLERMO ANDRES","telefono":"3114688051","correo":"gpaez0911@gmail.com","direccion":"K 8 15 53","documento":"1222128144"},
+  {"nombre":"NINO MASIAS MARIA LUCIANA","grado":"4B","jornada":"Manana","acudiente":"MACIAS GUTIERREZ LYDA MILENA","telefono":"3132387410","correo":"lyda.milena.masias@gmail.com","direccion":"CL 9 21 44","documento":"1118573136"},
+  {"nombre":"PINZON RODRIGUEZ LUISA FERNANDA","grado":"5A","jornada":"Manana","acudiente":"RODRIGUEZ PATINO EMILCE YANNETH","telefono":"3123508896","correo":"eyanethro@hotmail.com","direccion":"DG 49 5 04","documento":"1222122692"},
+  {"nombre":"MUNOZ ALFONSO MIGUEL ANGEL","grado":"5B","jornada":"Manana","acudiente":"MUNOZ TRIANA VICTOR ALFONSO","telefono":"3217562643","correo":"victor6902@gmail.com","direccion":"CR 18 20 10","documento":"1222122411"},
+  {"nombre":"RAMIREZ OTALORA JUAN SEBASTIAN","grado":"1A","jornada":"Manana","acudiente":"RAMIREZ FONSECA RAMIRO","telefono":"3133277864","correo":"randramirez@hotmail.com","direccion":"CL 19 23 25","documento":"1118578738"},
+  {"nombre":"SALAMANCA SALCEDO EMMANUEL","grado":"1B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"ROJAS VALLEJO MARIA CAMILA","grado":"2A","jornada":"Manana","acudiente":"VALLEJO PEDRAZA CLAUDIA MARGARITA","telefono":"3114907761","correo":"clamargareth27@gmail.com","direccion":"CL 33 44 21","documento":"1222133558"},
+  {"nombre":"SIERRA ACEVEDO MARTIN DAVID","grado":"2B","jornada":"Manana","acudiente":"MARIA CECILIA ACEVEDO HOLGUIN","telefono":"3504100407","correo":"maago204@hotmail.com","direccion":"CL 24 14 94","documento":"1222131860"},
+  {"nombre":"RAMOS ARMESTO ANGEL DAVID","grado":"3A","jornada":"Manana","acudiente":"ARMESTO NORIEGA DANNESSA PAOLA","telefono":"3125552275","correo":"dannessa3@hotmail.com","direccion":"CR 8 15 53 TO 1 APTO 401","documento":"1118576814"},
+  {"nombre":"ROJAS GALINDO AARON JERONIMO","grado":"3B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"PEREZ MARTINEZ MIA VALENTINA","grado":"4A","jornada":"Manana","acudiente":"MARTINEZ ZAPATA NAYDU JULIANA","telefono":"3213654853","correo":"julianamartinezzapata29@gmail.com","direccion":"CL 27 35 45","documento":"1222127213"},
+  {"nombre":"OLAYA RINCON THALIANA","grado":"4B","jornada":"Manana","acudiente":"RINCON QUINTERO NATALY","telefono":"3228836094","correo":"natarincon25@gmail.com","direccion":"CL 33 6 91","documento":"1222127348"},
+  {"nombre":"PIRAGAUTA PEREZ DANNA ISABELLA","grado":"5A","jornada":"Manana","acudiente":"PIRAGAUTA ACEVEDO CAMILO EDUARDO","telefono":"3143577937","correo":"camilopira32@gmail.com","direccion":"CR 20 16 34","documento":"1028726010"},
+  {"nombre":"ORTIZ ROLDAN MARIA ALEJANDRA","grado":"5B","jornada":"Manana","acudiente":"ROLDAN ORJUELA RUBY ESPERANZA","telefono":"3114595779","correo":"ruby.roldano@gmail.com","direccion":"CR 32 20 76","documento":"1230341749"},
+  {"nombre":"RODRIGUEZ MENDOZA ANA PAULA","grado":"1A","jornada":"Manana","acudiente":"MENDOZA PINO RANDA YANINE","telefono":"3134116354","correo":"randa.mendoza@hotmail.com","direccion":"CR 44 38 63","documento":"1118579093"},
+  {"nombre":"VALLEJO RUIZ SARA LUCIA","grado":"1B","jornada":"Manana","acudiente":"VALLEJO MORA CARLOS ANTONIO","telefono":"3138856987 - 3112086795","correo":"mora424@gmail.com","direccion":"CR 32 20 43","documento":"1222135446"},
+  {"nombre":"SALDANA MENDEZ LUNA GABRIELA","grado":"2A","jornada":"Manana","acudiente":"MENDEZ ARANGUREN WHITNEY PAOLA","telefono":"3115719994","correo":"whitneymendez1@gmail.com","direccion":"CR 6 46 46","documento":"1222132527"},
+  {"nombre":"TOBAR PATINO SAMUEL DAVID","grado":"2B","jornada":"Manana","acudiente":"PATINO MONTANA DANIELA","telefono":"3123849752","correo":"danhiela.24@hotmail.com","direccion":"CR 35 28 21","documento":"1222133798"},
+  {"nombre":"RODRIGUEZ SANCHEZ JUAN DIEGO","grado":"3A","jornada":"Manana","acudiente":"SANCHEZ MARQUEZ ROCIO","telefono":"3142662931","correo":"sanchezmarquezrocio@gmail.com","direccion":"CL 36 13 85","documento":"1222129585"},
+  {"nombre":"ROMERO CANIZALEZ MARIAM LUCIANA","grado":"3B","jornada":"Manana","acudiente":"CANIZALEZ CRUZ MARTHA CECILIA","telefono":"3102895042","correo":"mcanizalez278@gmail.com","direccion":"CL 28 2 35","documento":"1222129972"},
+  {"nombre":"RAMIREZ CABRERA VALERY SOFIA","grado":"4A","jornada":"Manana","acudiente":"RAMIREZ HERNANDEZ NESTOR ENRIQUE","telefono":"3138259212","correo":"ramirezher@hotmail.com","direccion":"CR 37 37 89","documento":"1222127919"},
+  {"nombre":"PARRA RUEDA SAMANTHA NICOLE","grado":"4B","jornada":"Manana","acudiente":"PARRA GAMEZ RICARDO JAVIER","telefono":"3138794409","correo":"parraalphabm@gmail.com","direccion":"CR 26 20 20","documento":"1222127110"},
+  {"nombre":"REAL BEJARANO VICTORIA","grado":"5A","jornada":"Manana","acudiente":"BEJARANO PAEZ MYRIAM YAMIRA","telefono":"3212413500","correo":"yamirap@hotmail.com","direccion":"CR 7 24 16","documento":"1222118753"},
+  {"nombre":"OSORIO ABRIL MARTINA","grado":"5B","jornada":"Manana","acudiente":"ABRIL JAIME DENNIS KARINA","telefono":"3102965482","correo":"karinaabril.10@gmail.com","direccion":"CR 23 23 110","documento":"1011242222"},
+  {"nombre":"SALCEDO CARRILLO SALED ALEJANDRO","grado":"1A","jornada":"Manana","acudiente":"SALCEDO MORENO DAINGER","telefono":"3155122247","correo":"daignersalcedo@gmail.com","direccion":"CL 34 1 68","documento":"1222134804"},
+  {"nombre":"VASQUEZ VALDES ARANZA","grado":"1B","jornada":"Manana","acudiente":"VASQUEZ MORALES ANGEL ALONSO","telefono":"3212305405","correo":"vasquezmorales@hotmail.com","direccion":"CL 23 7 107","documento":"1106639641"},
+  {"nombre":"SUAREZ GALVIS JOSHUA EMMANUEL","grado":"2A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"UNDA MARTINEZ MARIANGEL","grado":"2B","jornada":"Manana","acudiente":"UNDA JUAN MAURICIO","telefono":"3214145291","correo":"manitas-12@hotmail.com","direccion":"CL 42 8 20","documento":"1222132987"},
+  {"nombre":"SEPULVEDA VANEGAS EDRICK ANDRES","grado":"3A","jornada":"Manana","acudiente":"SEPULVEDA VEGA ALVARO ANDRES","telefono":"3137213156","correo":"alvaroandres204@hotmail.com","direccion":"CR 37 37 89","documento":"1118577031"},
+  {"nombre":"TORRES BUITRAGO DEIVID MATHIAS","grado":"3B","jornada":"Manana","acudiente":"TORRES GODOY JHEFERSON ANDRES","telefono":"3212056017","correo":"jheferson.1608@gmail.com","direccion":"CL 45 6 77","documento":"1118576078"},
+  {"nombre":"RESTREPO CARRENO SAMUEL FELIPE","grado":"4A","jornada":"Manana","acudiente":"RESTREPO BENJUMEA DIEGO ALEXANDER","telefono":"3203265747","correo":"arb.diego@gmail.com","direccion":"CL 21 20 70","documento":"1222125703"},
+  {"nombre":"PATINO MERCHAN JUAN SEBASTIAN","grado":"4B","jornada":"Manana","acudiente":"MERCHAN ROJAS ERIKA LUCIA","telefono":"3232011252","correo":"emerchanrojas@gmail.com","direccion":"CL 41 12 05","documento":"1222126765"},
+  {"nombre":"RUIZ CORREDOR SAMUEL JERONIMO","grado":"5A","jornada":"Manana","acudiente":"CORREDOR BUITRAGO GICELA","telefono":"3115127522","correo":"gicela800@hotmail.com","direccion":"CL 63 3 22","documento":"1050620509"},
+  {"nombre":"OSORIO NOSSA MARIA JOSE","grado":"5B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"SILVA PATINO CHRISTOPHER SANTIAGO","grado":"1A","jornada":"Manana","acudiente":"SILVA PLAZAS ROBERTO","telefono":"3132905489","correo":"jib532@hotmail.com","direccion":"CR 15 35 25","documento":"1118579172"},
+  {"nombre":"ZARATE PEREZ LUCIA","grado":"1B","jornada":"Manana","acudiente":"PEREZ MORENO SANDRA XIMENA","telefono":"3134210044","correo":"sxpm2019@gmail.com","direccion":"CL 31 14 123","documento":"1222134797"},
+  {"nombre":"VARGAS NEME ANTONELLA","grado":"2A","jornada":"Manana","acudiente":"NEME BOZO KINBERLY NIHISBLEYDIS","telefono":"3223391561","correo":"kinberly1018@outlook.com","direccion":"CL 22 30 47","documento":"1222133165"},
+  {"nombre":"VARGAS RAMIREZ LILIAN CAMILA","grado":"2B","jornada":"Manana","acudiente":"VARGAS BECERRA CARLOS ANDRES","telefono":"3204787270","correo":"carlosvargas960@hotmail.com","direccion":"CL 15 14 33","documento":"5697190"},
+  {"nombre":"VARGAS TORO JERONIMO","grado":"3B","jornada":"Manana","acudiente":"VARGAS HURTADO HANS ALEXANDER","telefono":"3118005286","correo":"inghansvargas@outlook.com","direccion":"CL 26 15 14","documento":"1118576096"},
+  {"nombre":"RODRIGUEZ JIMENEZ VICTORIA","grado":"4A","jornada":"Manana","acudiente":"JIMENEZ CAMARGO MONICA DANIELA","telefono":"3182639861","correo":"danielajc9@gmail.com","direccion":"CR 23 28 110","documento":"1057986031"},
+  {"nombre":"PERALTA FLOREZ SAMUEL ALEJANDRO","grado":"4B","jornada":"Manana","acudiente":"PERALTA MARTINEZ DOLFUS ALBERTO","telefono":"3138297943","correo":"alberto.peralta@ferreaguas.com","direccion":"CL 15 21 126","documento":"1222126756"},
+  {"nombre":"SANCHEZ NINO TOMAS EDUARDO","grado":"5A","jornada":"Manana","acudiente":"SANCHEZ ARIAS HECTOR JULIAN","telefono":"3115380891","correo":"directorhjringenieriasas@gmail.com","direccion":"VEREDA LA VEGA","documento":"1222122523"},
+  {"nombre":"PAEZ GUTIERREZ ALEJANDRO","grado":"5B","jornada":"Manana","acudiente":"PAEZ GARCIA JOSE JOAQUIN","telefono":"3123449614","correo":"jose112130@gmail.com","direccion":"CL 41 48 52","documento":"1222124937"},
+  {"nombre":"VILLALOBOS CUBIDES EMMANUEL ANDRES","grado":"2A","jornada":"Manana","acudiente":"CUBIDES ZULUAGA JENNIFER LIZETH","telefono":"3005185067","correo":"jecu3756@gmail.com","direccion":"CR 16 36 46","documento":"1123817780"},
+  {"nombre":"BECERRA VARGAS ANA VICTORIA","grado":"2B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"VEGA NIETO ANA VICTORIA","grado":"3B","jornada":"Manana","acudiente":"NIETO VALENCIA AMPARO","telefono":"3142957138","correo":"amparonu6@gmail.com","direccion":"CR 27 17 35","documento":"1222129916"},
+  {"nombre":"RODRIGUEZ SOLER SAMUEL SANTIAGO","grado":"4A","jornada":"Manana","acudiente":"RODRIGUEZ LOPEZ RAFAEL ANTONIO","telefono":"3144759801","correo":"rarabogados@hotmail.com","direccion":"CL 33 28 47","documento":"1222128793"},
+  {"nombre":"ROBLES AVILA ISAAC","grado":"4B","jornada":"Manana","acudiente":"ROBLES ALBARRACIN WILSON MANUEL","telefono":"3152394451","correo":"wilsonrobles8@hotmail.com","direccion":"CR 19 34 37","documento":"1222127250"},
+  {"nombre":"SIERRA SAENZ JULIETH VALENTINA","grado":"5A","jornada":"Manana","acudiente":"SAENZ NEGRO JULY MARIBEL","telefono":"3142993470","correo":"julysth@hotmail.com","direccion":"CL 58 2 106","documento":"1222118657"},
+  {"nombre":"PEREZ PORRAS GUIAN DAVID","grado":"5B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"ZARATE ARAUJO SALLY MAITE","grado":"2A","jornada":"Manana","acudiente":"ARAUJO VELASQUEZ YEIDY CRISTINA","telefono":"3133703071","correo":"criizvelasquez22@gmail.com","direccion":"CR 46 34 04 MZ F LOTE 1","documento":"1123449775"},
+  {"nombre":"MARINO GRISMALDO SAMUEL DAVID","grado":"2B","jornada":"Manana","acudiente":"GRISMALDO ALFONSO LEIDY YANNETH","telefono":"3204927084","correo":"leidyygrismaldo30@gmail.com","direccion":"CL 32 6 38","documento":"1222129550"},
+  {"nombre":"ZANGUNA OROZCO SAMUEL ANDRES","grado":"3B","jornada":"Manana","acudiente":"ZANGUNA MEDINA JHON ALEXANDER","telefono":"3102387309","correo":"alexzangu1053@hotmail.com","direccion":"CR 24 37 67","documento":"1222131076"},
+  {"nombre":"SALGADO GARZON DANIEL ANDRES","grado":"4A","jornada":"Manana","acudiente":"SALGADO NINO DIEGO ANDRES","telefono":"3102827155","correo":"diego910616@hotmail.com","direccion":"CL 7 43 45","documento":"1222128332"},
+  {"nombre":"SANCHEZ FIGUEROA SIMON DANIEL","grado":"4B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"STAVE SARMIENTO ZARA CAMILA","grado":"5A","jornada":"Manana","acudiente":"SARMIENTO MONTANA LEIDY YOHANA","telefono":"3134046453","correo":"yohanasarmiento814@gmail.com","direccion":"CL 18 14 28","documento":"1222122280"},
+  {"nombre":"REINA CASTANO ASHLEY VALENTINA","grado":"5B","jornada":"Manana","acudiente":"REINA OSPINA CAMILO ANDRES","telefono":"3102343484","correo":"camilo_3484@hotmail.com","direccion":"CL 25 21 37","documento":"1222125827"},
+  {"nombre":"RICAURTE BERNAL MARIA SALOME","grado":"2B","jornada":"Manana","acudiente":"RICAURTE AVELLA HEILER MARTIN","telefono":"3118746658","correo":"heilerr44@hmail.com","direccion":"CR 8 15 53","documento":"1032509577"},
+  {"nombre":"TRIANA ACEVEDO DANIELA SOFIA","grado":"4A","jornada":"Manana","acudiente":"ACEVEDO SAAVEDRA ELIANA ANDREA","telefono":"3133298742","correo":"ajacevedo75@hotmail.com","direccion":"CR 29 17 59","documento":"1222125760"},
+  {"nombre":"SANCHEZ SILVA JUAN ESTEBAN","grado":"4B","jornada":"Manana","acudiente":"SILVA JOHANA LEIDY JOHANA","telefono":"3133514641","correo":"leidy.silvas@gmail.com","direccion":"CL 37 1 34","documento":"1222126555"},
+  {"nombre":"TIQUE CONDE ANDRES FELIPE","grado":"5A","jornada":"Manana","acudiente":"TIQUE FIERRO YESID NORBERTO","telefono":"3208351107","correo":"linamarceconde@gmail.com","direccion":"CL 6 21 61","documento":"1222124194"},
+  {"nombre":"RICAURTE BERNAL MARTIN THOMAS","grado":"5B","jornada":"Manana","acudiente":"RICAURTE AVELLA HEILER MARTIN","telefono":"3118746658","correo":"heilerr44@gmail.com","direccion":"CR 8 15 53","documento":"1222122873"},
+  {"nombre":"CARDOZO MOSQUERA DYLAN","grado":"4A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"TOJUELO MONGUA LUIS MARIO","grado":"4B","jornada":"Manana","acudiente":"MONGUA ARIAS OTILIA","telefono":"3204379463","correo":"otimongua@gmail.com","direccion":"VIA MATEPANTANO 27 215 CASA 1","documento":"1222128441"},
+  {"nombre":"VALDERRAMA VARGAS JERONIMO ALEJANDRO","grado":"5A","jornada":"Manana","acudiente":"VALDERRAMA GUTIERREZ JOSE ALEXANDER","telefono":"3112165694","correo":"alexandervalderrama745@gmail.com","direccion":"CL 40 23 37 TO 5 APTO 504","documento":"1222121779"},
+  {"nombre":"RUEDA GALINDO JUAN MIGUEL","grado":"5B","jornada":"Manana","acudiente":"GALINDO LEVA LINDA CAROLINA","telefono":"3174402027","correo":"linka.197@gmail.com","direccion":"CL 36 16 35","documento":"1122532631"},
+  {"nombre":"MARIN LOPEZ EMMANUEL","grado":"4A","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"VIVAS RUIZ EVENLYN MAIA","grado":"4B","jornada":"Manana","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"VARGAS CORTES ISABELLA","grado":"5A","jornada":"Manana","acudiente":"CORTES ACEVEDO NANCY JULIETH","telefono":"3123014800","correo":"jcacontadora1@gmail.com","direccion":"VEREDA LA VEGA","documento":"1222125192"},
+  {"nombre":"SANCHEZ ROZO SHARLOTTE ZARAIH","grado":"5B","jornada":"Manana","acudiente":"SANCHEZ MIGUEL ANGEL","telefono":"3106892873","correo":"m.a.s.sanchez1415@gmail.com","direccion":"CL 20 22 136","documento":"1222124217"},
+  {"nombre":"TORRES PEREZ VIVIAN DANIELA","grado":"5B","jornada":"Manana","acudiente":"TORRES TOBO CESAR ORLANDO","telefono":"3204196769","correo":"cesartorrest0305@hotmail.com","direccion":"CR 44 34 15","documento":"1222124538"},
+  {"nombre":"BARRERA GONZALEZ CELESTE","grado":"1C","jornada":"Tarde","acudiente":"GONZALEZ RINCON NATHALIA","telefono":"3142344230","correo":"nathagonzalez2023@gmail.com","direccion":"CR 8 25 73","documento":"1222135701"},
+  {"nombre":"AGUILAR VARGAS EMILY SARAY","grado":"1D","jornada":"Tarde","acudiente":"VARGAS ROJAS YANIRA MILENA","telefono":"3123144457","correo":"mayuelo18@gmail.com","direccion":"CR 26 16 08","documento":"1222134431"},
+  {"nombre":"ALCALA CASTELLANOS MARIA VICTORIA","grado":"2C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"BAEZ PEREZ MARTIN SAID","grado":"2D","jornada":"Tarde","acudiente":"BAEZ GONZALEZ RUBEN DARIO","telefono":"3134129943","correo":"rdbg1985@gmail.com","direccion":"CL 40 TV 23","documento":"1222133824"},
+  {"nombre":"BENAVIDES BAUTISTA ISABELLA","grado":"3C","jornada":"Tarde","acudiente":"BENAVIDES HENRY SEBASTIAN","telefono":"3003462042","correo":"sebastianbenavides07@hotmail.com","direccion":"CL 29 10 11","documento":"1222129682"},
+  {"nombre":"AVENDANO DIAZ LUIS JOSE","grado":"3D","jornada":"Tarde","acudiente":"AVENDANO ORTIZ JOSE LUIS","telefono":"3212088088","correo":"jlao_2006@hotmail.com","direccion":"CR 25 16 54","documento":"1222129852"},
+  {"nombre":"BENITEZ GARCIA MARIA ALEJANDRA","grado":"4C","jornada":"Tarde","acudiente":"BENITEZ MARIO FERNANDO","telefono":"3187727975","correo":"eq.ingedal.sas@gmail.com","direccion":"CL 12 27 50","documento":"1096247189"},
+  {"nombre":"ACEVEDO CAMARGO EMILY GABRIELA","grado":"5C","jornada":"Tarde","acudiente":"CAMARGO CACERES LIZETH TATIANA","telefono":"3202682436","correo":"tatianacacerez11@gmail.com","direccion":"CL 23 28 75","documento":"1222123496"},
+  {"nombre":"ACOSTA FONSECA SAMUEL JERONIMO","grado":"5D","jornada":"Tarde","acudiente":"FONSECA BUITRAGO AYDA DORANY","telefono":"3125020102","correo":"doranyf@hotmail.com","direccion":"CL 33 28 47","documento":"1222123118"},
+  {"nombre":"BAYONA VARGAS MIA GABRIELA","grado":"1C","jornada":"Tarde","acudiente":"BAYONA BRICENO JUAN GABRIEL","telefono":"3157279509","correo":"juanbayona0912@hotmail.com","direccion":"CR 8 15 53","documento":"1222134947"},
+  {"nombre":"ALVAREZ PALACIOS NICOLAS","grado":"1D","jornada":"Tarde","acudiente":"ALVAREZ GALAN ELKIN RICARDO","telefono":"3138727472","correo":"ricardo_algalan@hotmail.com","direccion":"CL 30 28 46","documento":"1222136271"},
+  {"nombre":"BAEZ ALBARRACIN THIAGO ALEJANDRO","grado":"2C","jornada":"Tarde","acudiente":"BAEZ DUENAS LUIS ALFREDO","telefono":"3144582641","correo":"thigobaez5633@gmail.com","direccion":"CL 54 CR 7 OESTE TORRES DE SAN MARCO TOV47 AP 501","documento":"1222132086"},
+  {"nombre":"BARRERA BARRERA EMMILY","grado":"2D","jornada":"Tarde","acudiente":"BARRERA SIABATTO CARLOS FERNANDO","telefono":"3118491994","correo":"kfer05@hotmail.com","direccion":"CR 33 22 25","documento":"1058360618"},
+  {"nombre":"CARDENAS CAMARGO SARA ISABELLA","grado":"3C","jornada":"Tarde","acudiente":"CARDENAS ROMERO LUIS FERNEY","telefono":"3114961811","correo":"feryi2009@hotmail.com","direccion":"CL 40 TV 6 67","documento":"1118575326"},
+  {"nombre":"CAMARGO GALLARDO VIVIAN LUCIA","grado":"3D","jornada":"Tarde","acudiente":"GALLARDO ORTEGA MONICA VIVIANA","telefono":"3103708806","correo":"mgallardo.seyopal@gmail.com","direccion":"CL 58 1 92","documento":"1222130278"},
+  {"nombre":"CALDERON LOPEZ DILAN BLADIMIR","grado":"4C","jornada":"Tarde","acudiente":"CALDERON MOLINA BLADIMIR","telefono":"3228206366","correo":"transportesblcaldelonltda@gmail.com","direccion":"CR 23 28 100","documento":"1222127701"},
+  {"nombre":"ARDILA ACERO ARIADNA SALOME","grado":"5C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"BARBOSA HERRERA JUAN JOSE","grado":"5D","jornada":"Tarde","acudiente":"COJO PIDIACHE EFRAIN","telefono":"3112648536","correo":"efraincojo@hotmail.com","direccion":"CL 36 6 115","documento":"1222121994"},
+  {"nombre":"CAMARGO TORRES JUAN JOSE","grado":"1C","jornada":"Tarde","acudiente":"TORRES NINO FABIOLA","telefono":"3112397766","correo":"fabioladiscapacidad@gmail.com","direccion":"CR 8 15 53","documento":"1222134346"},
+  {"nombre":"ALVAREZ RUEDA GABRIEL SANTIAGO","grado":"1D","jornada":"Tarde","acudiente":"RUEDA PABON LIDIA","telefono":"3183929078","correo":"lr8902@gmail.com","direccion":"CL 26 28 67","documento":"1222135255"},
+  {"nombre":"CARRENO LOPEZ EVALUNA","grado":"2C","jornada":"Tarde","acudiente":"MUNOZ MARQUEZ JULIAN LEONARDO","telefono":"3108034036","correo":"julianmarquez963@gmail.com","direccion":"CR 29 29 35","documento":"1118578004"},
+  {"nombre":"CARDENAS LOPEZ SAMY VALENTINA","grado":"2D","jornada":"Tarde","acudiente":"CARDENAS CHAPARRO LUIS GUILLERMO","telefono":"3232182627","correo":"gillocardenas2025@gmail.com","direccion":"KM 8 VIA YOPAL -AGUAZUL","documento":"1222133669"},
+  {"nombre":"GOMEZ BOADA MARTIN ELIAS","grado":"3C","jornada":"Tarde","acudiente":"GOMEZ MARTINEZ JAIRO","telefono":"3102530667","correo":"margboada@hotmail.com","direccion":"CR 22 24 32","documento":"1222128879"},
+  {"nombre":"CASTRO ARIAS EMILIA DESIREE","grado":"3D","jornada":"Tarde","acudiente":"CASTRO SOTAQUIRA DIONEL","telefono":"3203102034","correo":"dionelk83@gmail.com","direccion":"CL 40 2 81","documento":"1118576174"},
+  {"nombre":"CAMACHO LOPEZ VALENTINA","grado":"4C","jornada":"Tarde","acudiente":"LOPEZ MORENO JULIETH VERONICA","telefono":"3167419545","correo":"jvlm360@gmail.com","direccion":"CL 31 37 27 MZ P LOTE 5","documento":"1121955858"},
+  {"nombre":"BARRAGAN QUISPI MARTIN ESTEBAN","grado":"5C","jornada":"Tarde","acudiente":"QUISPI REMACHE ANA GLADYS","telefono":"3144138077","correo":"analady2024@gmail.com","direccion":"CL 19 23 11","documento":"1222124335"},
+  {"nombre":"BAYONA ANDRADE SARA SOFIA","grado":"5D","jornada":"Tarde","acudiente":"BAYONA BRICENO JUAN GABRIEL","telefono":"3157279509","correo":"juanbayona0912@hotmail.com","direccion":"CR 2 15 32","documento":"1051831256"},
+  {"nombre":"CEPEDA CELY MARTIN JERONIMO","grado":"1C","jornada":"Tarde","acudiente":"CEPEDA MESA YUBER HERNANDO","telefono":"3102349681","correo":"yuher001@hotmail.com","direccion":"CL 35 13 38","documento":"1052418332"},
+  {"nombre":"CAMARGO TORRES EMANUEL","grado":"1D","jornada":"Tarde","acudiente":"TORRES NINO FABIOLA","telefono":"3112397766","correo":"fabioladiscapacidad@gmail.com","direccion":"CR 8 15 53","documento":"1222134347"},
+  {"nombre":"CASTRO MORENO DYLAN ZAID","grado":"2C","jornada":"Tarde","acudiente":"MORENO CAMARGO ZEIDA LUZMILA","telefono":"3125067848","correo":"luz-mi-02@gmail.com","direccion":"CR 33 30 10","documento":"1118578153"},
+  {"nombre":"CARDENAS MARTINEZ SAMUEL DAVID","grado":"2D","jornada":"Tarde","acudiente":"MARTINEZ PEREZ LAURA PAOLA","telefono":"3102841551","correo":"laurizmartinez_1999@hotmail.com","direccion":"CL 47 4 47","documento":"1118577249"},
+  {"nombre":"LAVERDA FIAGA LAUREN SALOME","grado":"3C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"DOMINGUEZ CASTELBLANCO MARIA FERNANDA","grado":"3D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"CAMEJO CAMEJO DAVID ALEJANDRO","grado":"4C","jornada":"Tarde","acudiente":"CAMEJO GOMEZ OSCAR DAVID","telefono":"3155759409","correo":"camejo80@gmail.com","direccion":"CR 26 16 28","documento":"1092545651"},
+  {"nombre":"CARDENAS LAVERDE JUAN DAVID","grado":"5C","jornada":"Tarde","acudiente":"LAVERDE PAEZ LINEY","telefono":"3114970053","correo":"liney_8820@hotmail.com","direccion":"CR 2 58 85","documento":"1222122627"},
+  {"nombre":"CHARRY RAMIREZ MELANNY GISSET","grado":"5D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"COLORADO VEGA LUCIANA","grado":"1C","jornada":"Tarde","acudiente":"COLORADO CUTA JUAN JOSE","telefono":"3107530355","correo":"juanjosecoloradocuta@gmail.com","direccion":"CR 8 15 53","documento":"1222135903"},
+  {"nombre":"CANON MELGAREJO DAVID LUIZ","grado":"1D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"CUCAITA BARRERA ANGEL MATHIAS","grado":"2C","jornada":"Tarde","acudiente":"BARRERA PATINO LAURA JAZMIN","telefono":"3214347163","correo":"jazminbarrera.201819@gmail.com","direccion":"CL 31 29 26","documento":"1029969226"},
+  {"nombre":"CARRENO CLAVIJO DYLAN EMILIANO","grado":"2D","jornada":"Tarde","acudiente":"CARRENO CARLOS ANDRES","telefono":"3212718804","correo":"carlos880717@gmail.com","direccion":"CL 33 28 47","documento":"1146337945"},
+  {"nombre":"MONTANA ROJAS DIEGO ALEJANDRO","grado":"3C","jornada":"Tarde","acudiente":"MONTANA PORRES JOSE NICANOR","telefono":"3208344504","correo":"jonimon0110@gmail.com","direccion":"CR 31 31 26","documento":"1118575217"},
+  {"nombre":"DUARTE GROSSO PEDRO JOSE","grado":"3D","jornada":"Tarde","acudiente":"DUARTE PORTELLA CAMILO ANDRES","telefono":"3123723315","correo":"camilo626_duarte@hotmail.com","direccion":"KM 3 VIA MORICHAL","documento":"1118576429"},
+  {"nombre":"CORTES RUBIANO ISAAC BENJAMIN","grado":"4C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"GRANADOS PEREZ ZHARICK ALEJANDRA","grado":"5C","jornada":"Tarde","acudiente":"GRANADOS RODRIGUEZ LUIS ALEJANDRO","telefono":"3104823438","correo":"Wjannyc82@gmail.com","direccion":"CL 18 21 102","documento":"1057985753"},
+  {"nombre":"GARZON BARRERA MIA ISABELLA","grado":"5D","jornada":"Tarde","acudiente":"BARRERA CORONADO SHARANDY DAYANED","telefono":"3017003601","correo":"sharandybarrerac@gmail.com","direccion":"CR 8 15 53","documento":"1222124492"},
+  {"nombre":"CORTES MONSALVE ISAAC ALFONSO","grado":"1C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"CASTILLO AYA OSCAR DANIEL","grado":"1D","jornada":"Tarde","acudiente":"CASTILLO SILVA OSCAR JAVIER JUNIOR","telefono":"3106763453","correo":"oscarjj_22@hotmail.com","direccion":"TV 23 37 87 TO 9 AP 501","documento":"1142115298"},
+  {"nombre":"DIAZ PIEDRAHITA MARIA LUCIANA","grado":"2C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"CASADIEGOS MEDINA GABRIEL","grado":"2D","jornada":"Tarde","acudiente":"MEDINA GOMEZ MARIA CAMILA","telefono":"3145840743","correo":"camimedinag115@gmail.com","direccion":"CL 30 28 46","documento":"1118576220"},
+  {"nombre":"PLAZAS SUAREZ LUIS JOSE","grado":"3C","jornada":"Tarde","acudiente":"SUAREZ PEREZ LUCY ESTRITH","telefono":"3114948166","correo":"lucy.suarez0714@gmail.com","direccion":"CR 8 15 53","documento":"1118576909"},
+  {"nombre":"GAVIRIA AVILA DANIEL EDUARDO","grado":"3D","jornada":"Tarde","acudiente":"GAVIRIA FUENTES CESAR EDUARDO","telefono":"3212030006","correo":"cegafu75@hotmail.com","direccion":"CL 23 24 21","documento":"1222129527"},
+  {"nombre":"GOMEZ BUENO MAIA VICTORIA","grado":"4C","jornada":"Tarde","acudiente":"GOMEZ GARCIA EDWARD BENILDO","telefono":"3204012660","correo":"abogado.eduard@gmail.com","direccion":"CR 19 9 34","documento":"1222128911"},
+  {"nombre":"GUERRERO FLOREZ LUCIA","grado":"5C","jornada":"Tarde","acudiente":"FLOREZ VELASCO JULIETH SUSANA","telefono":"3165856017","correo":"su54n4@hotmail.com","direccion":"VEREDA TACARIMENA","documento":"1222124934"},
+  {"nombre":"GUARNIZO MARTINEZ EMILY ANDREA","grado":"5D","jornada":"Tarde","acudiente":"GUARNIZO MARTINEZ OSCAR JAVIER","telefono":"3212086935","correo":"guarna23@gmail.com","direccion":"CL 20 32 71","documento":"1222125478"},
+  {"nombre":"CRISTANCHO SANABRIA THOMAS MATIAS","grado":"1C","jornada":"Tarde","acudiente":"SANABRIA CRUZ NYDIA JOHANA","telefono":"3103321875","correo":"johanita0114@hotmail.com","direccion":"CL 40 23 87 TO 3 APTO 101","documento":"1222135638"},
+  {"nombre":"CASTRO TIRADO MONTSERRT","grado":"1D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"GALINDO PERILLA MARIA JOSE","grado":"2C","jornada":"Tarde","acudiente":"GALINDO SANCHEZ FREDY ALEXANDER","telefono":"3112804075","correo":"fredya.galindo.76@gmail.com","direccion":"CR 16 16 61","documento":"1074534161"},
+  {"nombre":"DOMINGUEZ CASTELBLANCO MARIANA","grado":"2D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"SEPULVEDA JOYA JULIETA","grado":"3C","jornada":"Tarde","acudiente":"SEPULVEDA SERRANO NESTOR SEPULVEDA","telefono":"3144908618","correo":"esspentagono@gmail.com","direccion":"CR 47 34 22","documento":"1222129691"},
+  {"nombre":"HUERFANO NINCO ELENA","grado":"3D","jornada":"Tarde","acudiente":"HUERFANO MENDOZA EDUIN JAVIER","telefono":"3203039462","correo":"huerfaninho9@hotmail.com","direccion":"CR 27 27 32","documento":"1123817633"},
+  {"nombre":"GONZALEZ NARANJO JUAN JOSE","grado":"4C","jornada":"Tarde","acudiente":"NARANJO PUENTES LYDA CONSTANZA","telefono":"3212477940","correo":"lyda.naranjo.sgi@gmail.com","direccion":"CR 23 36 46","documento":"1222126659"},
+  {"nombre":"HIGUERA JIMENEZ REINALDO","grado":"5C","jornada":"Tarde","acudiente":"HIGUERA RINCON REINALDO","telefono":"3133434057","correo":"rhiguerarincon@gmail.com","direccion":"CR 27 26 16","documento":"1013022845"},
+  {"nombre":"HERNANDEZ TRIANA LUNA SOFIA","grado":"5D","jornada":"Tarde","acudiente":"TRIANA RINCON JENNY PAOLA","telefono":"3213079764","correo":"paotrianarincon95@gmail.com","direccion":"CR 13 24 76","documento":"1222124240"},
+  {"nombre":"GARCIA PLAZAS EDWIN ESTEBAN","grado":"1C","jornada":"Tarde","acudiente":"GARCIA GARCIA EDWIN YESID","telefono":"3232486273","correo":"Edwin-yesid-18@hotmail.com","direccion":"CR 15 36 03","documento":"1116876508"},
+  {"nombre":"CHAPARRO MESA ERICK JOEL","grado":"1D","jornada":"Tarde","acudiente":"CHAPARRO PONGUTA WILLIAM DANIEL","telefono":"3208099019","correo":"danichaparro85@gmail.com","direccion":"CL 27 12 27","documento":"1118578854"},
+  {"nombre":"GARCIA BONILLA MARIA ANTONELLA","grado":"2C","jornada":"Tarde","acudiente":"BONILLA GARCIA LAURA VANNESA","telefono":"3043228021","correo":"laurabonilla.gc@gmail.com","direccion":"CL 40 44 MZ D","documento":"1033122254"},
+  {"nombre":"GONZALEZ GONZALEZ SAMUEL ANDRES","grado":"2D","jornada":"Tarde","acudiente":"GONZALEZ GONZALEZ MARIEL ANDREA","telefono":"3113084596","correo":"mariel.gonzalez30@gmail.com","direccion":"CR 16 36 41","documento":"1118577262"},
+  {"nombre":"URBANO DELGADO EMMANUEL","grado":"3C","jornada":"Tarde","acudiente":"DELGADO SANCHEZ CINDY LORENA","telefono":"3143448246","correo":"lorenadelgado30@gmail.com","direccion":"CR 21 21 66","documento":"1118575597"},
+  {"nombre":"PATINO SANCHEZ ISABELA","grado":"3D","jornada":"Tarde","acudiente":"SANCHEZ SANDRA MILENA","telefono":"3134501901","correo":"samibelapat17@gmail.com","direccion":"CR 17 35 64","documento":"1222128724"},
+  {"nombre":"HURTADO FERNANDEZ SAMUEL DAVID","grado":"4C","jornada":"Tarde","acudiente":"HURTADO BELLO WILFREDO","telefono":"3102037338","correo":"hurtadobello87@gmail.com","direccion":"CR 46 50 24","documento":"1222127152"},
+  {"nombre":"MONSALVE RIVEROS SAMUEL MATIAS","grado":"5C","jornada":"Tarde","acudiente":"MONSALVE PARRA PEDRO MANUEL","telefono":"3215953229","correo":"monsalvemanuel41@gmail.com","direccion":"CR 2 34 48","documento":"1222122753"},
+  {"nombre":"NINO TORRES JUAN FELIPE","grado":"5D","jornada":"Tarde","acudiente":"NINO ALARCON JHON ALEXANDER","telefono":"3214683620","correo":"alexander72727985@gmail.com","direccion":"CL 22 64","documento":"1222123908"},
+  {"nombre":"GONZALEZ MARTINEZ OLIVIA","grado":"1C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"CHAPARRO OJEDA ISABELLA","grado":"1D","jornada":"Tarde","acudiente":"CHAPARRO BOHORQUEZ EULOGIO","telefono":"3235913334","correo":"eulogiocha32@gmail.com","direccion":"CR 11 29 04","documento":"1222135282"},
+  {"nombre":"HERNANDEZ SOSA MARIANGEL","grado":"2C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"JARAMILLO RICAURTE MIA VALENTINA","grado":"2D","jornada":"Tarde","acudiente":"RICAURTE ARANGO SANDRA MILENA","telefono":"3124815014","correo":"petalito1994@gmail.com","direccion":"CL 42 1 219","documento":"1222131316"},
+  {"nombre":"ZORRO BARRERA MARIA LUCIA","grado":"3C","jornada":"Tarde","acudiente":"BARRERA MONGUI LILIANA","telefono":"3175242010","correo":"lbarreramongui@gmail.com","direccion":"CL 33 28 47","documento":"1116555965"},
+  {"nombre":"REYES MARQUEZ ISABELLA","grado":"3D","jornada":"Tarde","acudiente":"REYES ALVAREZ LEINER ANDRES","telefono":"3106890974","correo":"andrereyes2187@gmail.com","direccion":"CR 28 29 41","documento":"1222129911"},
+  {"nombre":"JIMENEZ MURILLO MARIA ISABEL","grado":"4C","jornada":"Tarde","acudiente":"MURILLO OSUNA INGRID LILIANA","telefono":"3202476586","correo":"lilianita.19931026@gmail.com","direccion":"CR 22 8 40","documento":"1115918234"},
+  {"nombre":"MORENO CASTILLO JERONIMO","grado":"5C","jornada":"Tarde","acudiente":"CASTILLO GUTIERREZ IRMA IDALY","telefono":"3105508615","correo":"irmaidalycastillo@hotmail.com","direccion":"CL 34 12 10","documento":"1222125500"},
+  {"nombre":"NUNEZ JASPE SHARON MARIANA","grado":"5D","jornada":"Tarde","acudiente":"JASPE FUENTES NADINED","telefono":"3183677737","correo":"Nadinjaspe040159@gmail.com","direccion":"CL 9 23 95","documento":"1222125318"},
+  {"nombre":"GUERRERO PRECIADO LUCIANA","grado":"1C","jornada":"Tarde","acudiente":"GUERRERO MENDOZA EDUAR ALBEIRO","telefono":"3134412317","correo":"eagmen@hotmail.com","direccion":"CL 27 11 29B","documento":"1118578856"},
+  {"nombre":"CONTRERAS PEREZ URIEL ALEJANDRO","grado":"1D","jornada":"Tarde","acudiente":"PEREZ SANDOVAL ELIANA","telefono":"3122914865","correo":"enfermeliana@gmail.com","direccion":"CR 37 37 69","documento":"1118578056"},
+  {"nombre":"JOYA RODRIGUEZ JERONIMO","grado":"2C","jornada":"Tarde","acudiente":"RODRIGUEZ MARTINEZ DEISY LORENA","telefono":"3118910620","correo":"lorenarodriguez-23@hotmail.com","direccion":"CL 40 TV 23 37 TO 8 APTO 407","documento":"1222134110"},
+  {"nombre":"MANESES CICERY JOEL","grado":"2D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"ROBAYO NAVAS ANA ISABELLA","grado":"3D","jornada":"Tarde","acudiente":"NAVAS SANDOVAL ZAYRA YENNY","telefono":"3112712040","correo":"zayra-navas@hotmail.com","direccion":"CL 40 23 73 TO 8 APTO 209","documento":"1057986642"},
+  {"nombre":"MARINO MARTINEZ LUCIANA","grado":"4C","jornada":"Tarde","acudiente":"MARTINEZ FONSECA MONICA PATRICIA","telefono":"3115514726","correo":"moinikita_0507@hotmail.com","direccion":"CL 26 11 94","documento":"1222128690"},
+  {"nombre":"NORENA PATINO SANTIAGO","grado":"5C","jornada":"Tarde","acudiente":"NORENA NORENA JULIAN ALBERTO","telefono":"3116424302","correo":"jinstg2801@gmail.com","direccion":"FINCA SAN JOSE","documento":"1114735140"},
+  {"nombre":"PEREZ DIAZ MARIA JOSE","grado":"5D","jornada":"Tarde","acudiente":"DIAZ SEGURA KAREN LORENA","telefono":"3103364588","correo":"kalods@hotmail.com","direccion":"CL 37 24 45","documento":"1222121637"},
+  {"nombre":"LAVERDE GOMEZ EIMY GABRIELA","grado":"1C","jornada":"Tarde","acudiente":"LAVERDE GIRALDO ELKIN HUMBERTO","telefono":"3224758340","correo":"elkingiraldo2102@gmail.com","direccion":"CR 30 CR 3","documento":"1118578865"},
+  {"nombre":"GONZALEZ GUZMAN LUIS JOAQUIN","grado":"1D","jornada":"Tarde","acudiente":"GONZALEZ CAYAGUA DIDIER","telefono":"3124052711","correo":"gdidier302@gmail.com","direccion":"CL 24 12 79","documento":"1222135169"},
+  {"nombre":"MONTANA MOLANO EMILY VALERIA","grado":"2C","jornada":"Tarde","acudiente":"MOLANO GARZON ADRIANA CAROLINA","telefono":"3144212301","correo":"carolinamolanogarzon@gmail.com","direccion":"CR 8 15 53","documento":"1123449804"},
+  {"nombre":"MESA CORDOBA ADRIAN MATHIAS","grado":"2D","jornada":"Tarde","acudiente":"MESA GOMEZ PLUTARCO","telefono":"3107894094","correo":"plut_mago1984@gmail.com","direccion":"CL 18 10 51","documento":"1222131431"},
+  {"nombre":"VERDUGO RUIZ VALERY DAHIANA","grado":"3D","jornada":"Tarde","acudiente":"VERDUGO VELANDIA EDGAR ALIRIO","telefono":"3114686039","correo":"alilov2010@gmail.com","direccion":"CL 25 14 62","documento":"1222127550"},
+  {"nombre":"MONTENEGRO VALDERRAMA GABRIELA","grado":"4C","jornada":"Tarde","acudiente":"MONTENEGRO HERRERA JUAN PABLO","telefono":"3102625004","correo":"jp19845@hotmail.com","direccion":"CR 6 24 43","documento":"1222127945"},
+  {"nombre":"OCHOA VARGAS SARA ALEJANDRA","grado":"5C","jornada":"Tarde","acudiente":"OCHOA GONZALEZ FERNANDO ANTONIO","telefono":"3204900863","correo":"saraochoa150693@gmail.com","direccion":"CL 37 TV 6 17","documento":"1222121527"},
+  {"nombre":"RIVERO GUEVARA THOMAS DAVID","grado":"5D","jornada":"Tarde","acudiente":"GUEVARA GONZALEZ NINI JOHANNA","telefono":"3125798744","correo":"niniguevarag@hotmail.com","direccion":"CR 12 46 33","documento":"1222124368"},
+  {"nombre":"MONTES GAVIRIA EMMY VALERIA","grado":"1C","jornada":"Tarde","acudiente":"MONTES GARCIA ROGELIO EFREN","telefono":"3112769232","correo":"efren19montes@gmail.com","direccion":"CR 13 26 74","documento":"1118578422"},
+  {"nombre":"GONZALEZ NOVOA JACOBO ANDRES","grado":"1D","jornada":"Tarde","acudiente":"NOVOA GONZALEZ YOLVY SAMANTHA","telefono":"3203793902 - 3208149770","correo":"qrq_samanthaprofile@gmail.com","direccion":"CL 42 1 127","documento":"1053617731"},
+  {"nombre":"REMOLINA BARON ROBINSON DAVID","grado":"2C","jornada":"Tarde","acudiente":"BARON RIVERA MONICA LILIANA","telefono":"3117587649","correo":"monicalilianabr@hotmail.com","direccion":"CL 40 24 23","documento":"1097144243"},
+  {"nombre":"MONROY PORRAS VALERY LUCIANA","grado":"2D","jornada":"Tarde","acudiente":"PORRAS AVILA CLAUDIA PATRICIA","telefono":"3125205559","correo":"pati.clau47@hotmail.com","direccion":"CR 11 53 28","documento":"1222132485"},
+  {"nombre":"OLIVEROS SIMBAQUEVA EMILY NICOL","grado":"4C","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+  {"nombre":"RODRIGUEZ LOPEZ LUCIANA","grado":"5C","jornada":"Tarde","acudiente":"LOPEZ TORRES LEIDY CATHERINE","telefono":"3175121520","correo":"katelopez9202@gmail.com","direccion":"CL 38 23 61","documento":"1014741281"},
+  {"nombre":"SANCHEZ ARANA JULIAN DAVID","grado":"5D","jornada":"Tarde","acudiente":"SANCHEZ ROJAS HERLY","telefono":"3123107089","correo":"herly1323@hotmail.com","direccion":"CL 36 25 57","documento":"1222120969"},
+  {"nombre":"OROS WALTEROS ERICK SAMUEL","grado":"1C","jornada":"Tarde","acudiente":"OROS DE DIOS YULIER EMERSON","telefono":"3202807884","correo":"emersandedios@gmail.com","direccion":"CR 19 23 12","documento":"1222136229"},
+  {"nombre":"HUERTAS MALDONADO JOHAN MATIAS","grado":"1D","jornada":"Tarde","acudiente":"MALDONADO ANGELA BRITHEY","telefono":"3132523923","correo":"brithey24@hotmail.com","direccion":"CR 17 29 05","documento":"1222136577"},
+  {"nombre":"ROA GUERRERO JUAN MARTIN","grado":"2C","jornada":"Tarde","acudiente":"GUERRERO HERNANDEZ AUDENNY","telefono":"3212385178","correo":"audennyguerrero@gmail.com","direccion":"CR 8 46 19","documento":"1222133554"},
+  {"nombre":"ORTEGA RUIZ ANGEL DAVID","grado":"2D","jornada":"Tarde","acudiente":"ORTEGA PUMENE ELADIO ANTONIO","telefono":"3208924524","correo":"eladioortega@gmail.com","direccion":"CR 43 36 16","documento":"1222133084"},
+  {"nombre":"PEREZ TORRES MARTIN FRANCISCO","grado":"4C","jornada":"Tarde","acudiente":"TORRES AYDA LUZ","telefono":"3102402195","correo":"aylutoju@gmail.com","direccion":"CR 37 37 89","documento":"1222127425"},
+  {"nombre":"TOLOZA PARRA LAURA ISABELLA","grado":"5C","jornada":"Tarde","acudiente":"PARRA SUAREZ RUTH MARY","telefono":"3102503438","correo":"rukita-871@hotmail.com","direccion":"CL 54 4 45","documento":"1222124060"},
+  {"nombre":"SEGURA HERRERA JUAN JOSE","grado":"5D","jornada":"Tarde","acudiente":"HERRERA ALIAN PEGGY GERALDIN","telefono":"3143000103","correo":"yeraldinherreraalian@gmail.com","direccion":"CR 7 26 95","documento":"1222123339"},
+  {"nombre":"PANESSO ROSAS ARIANNA ISABELLA","grado":"1C","jornada":"Tarde","acudiente":"ROSAS FERNANDEZ YAJAIRA","telefono":"3102177302","correo":"yajaira.rosales18@outlook.es","direccion":"CL 42  11 39","documento":"1222136403"},
+  {"nombre":"NOVA PAEZ DYLAN SMITH","grado":"1D","jornada":"Tarde","acudiente":"NOVA ARBOLEDA JUAN PABLO","telefono":"3125368890","correo":"juanova_79@hotmail.com","direccion":"MZ 128 CA 20 LA BENDICION","documento":"1118578412"},
+  {"nombre":"ROMERO RODRIGUEZ MARIANA","grado":"2C","jornada":"Tarde","acudiente":"RODRIGUEZ CARO MARIA ANA LYDIA","telefono":"3132675684","correo":"nanyta.roca@gmail.com","direccion":"CR 32 24 63","documento":"1222132225"},
+  {"nombre":"RAVELO GARZON ARIANNA ISABELLA","grado":"2D","jornada":"Tarde","acudiente":"GARZON RODRIGUEZ DIANA PAOLA","telefono":"3146678902","correo":"yana9326@hotmail.com","direccion":"CL 42 1 127","documento":"1052846192"},
+  {"nombre":"PORTELA SALAMANCA THIAGO FABIAN","grado":"4C","jornada":"Tarde","acudiente":"SALAMANCA CHIPIAJE JENNY JULIETH","telefono":"3115925885","correo":"jennysalamanca1607@gmail.com","direccion":"CR 8 15 53","documento":"1222126448"},
+  {"nombre":"URIBE MARTINEZ VALERIA ALEJANDRA","grado":"5C","jornada":"Tarde","acudiente":"MARTINEZ RICO AURORA","telefono":"3133108413","correo":"auris701@gmail.com","direccion":"KM 2 VIA SIRIVANA","documento":"1145427931"},
+  {"nombre":"VEGA LEMUS SILVANA","grado":"5D","jornada":"Tarde","acudiente":"LEMUS PATINO YANETH","telefono":"3213273506","correo":"ylemuspatino@gmail.com","direccion":"CL 25 11 06","documento":"1222125423"},
+  {"nombre":"RAMIREZ CORTES MATEO","grado":"1C","jornada":"Tarde","acudiente":"RAMIREZ CRUZ DANIEL JOSUE","telefono":"3123526496","correo":"diana101011@gmail.com","direccion":"MZ 6 CASA 23 BARRIO NUEVA GRANADA","documento":"1222135276"},
+  {"nombre":"PATINO RAMIREZ ERICK MATHIAS","grado":"1D","jornada":"Tarde","acudiente":"PATINO AVELLA FERLEY","telefono":"3173192447","correo":"ferley.patio@gmail.com","direccion":"CR 15 31 27","documento":"1222135699"},
+  {"nombre":"SANABRIA VILLADA MARIA ANTONIA","grado":"2C","jornada":"Tarde","acudiente":"VILLADA CORREDOR YANITH DAYANNA","telefono":"3143982873","correo":"dayanavillada17@gmail.com","direccion":"CL 28 19 56","documento":"1222134525"},
+  {"nombre":"SILVA BARRAGAN JUAN FERNANDO","grado":"2D","jornada":"Tarde","acudiente":"BARRAGAN CARRENO LISETH","telefono":"3105526569","correo":"liseth.barragan.c@gmail.com","direccion":"CL 32 15 30","documento":"1222131949"},
+  {"nombre":"RINCON ALARCON SARA ISABELLA","grado":"4C","jornada":"Tarde","acudiente":"ALARCON YUNADO ANGIE ROCIO","telefono":"3113966139","correo":"angiealarcon9422@gmail.com","direccion":"CL 41 8 10","documento":"1222129096"},
+  {"nombre":"GONZALEZ NOVOA ANDRES SIMON","grado":"5C","jornada":"Tarde","acudiente":"NOVOA GONZALEZ YOLVY SAMANTHA","telefono":"3203793902","correo":"arq.samanthapofile@gmail.com","direccion":"CL 16 36 35","documento":"1051074050"},
+  {"nombre":"RUBIANO CAMARGO JHOVAN","grado":"1C","jornada":"Tarde","acudiente":"CAMARGO GARCIA DIANA XIMENA","telefono":"3505690523","correo":"ximena.camargo87@gmail.com","direccion":"CR 23  9 35","documento":"1222136630"},
+  {"nombre":"PEREZ RICO BRANDON ANDRES","grado":"1D","jornada":"Tarde","acudiente":"RICO GUZMAN DAHIANA JASBLEIDY","telefono":"3212690584","correo":"ddahianajasbleidyrico@gmail.com","direccion":"CR 9 45 12","documento":"1118578155"},
+  {"nombre":"SANCHEZ ARAQUE ABIGAIL","grado":"2C","jornada":"Tarde","acudiente":"ARAQUE LOZANO ELIEZETH YERALDINE","telefono":"3108012795","correo":"yeraldinearaquelozano@gmail.com","direccion":"CR 32 20 76","documento":"1222132234"},
+  {"nombre":"TELLO GARAVITO NICOLAS MATIAS","grado":"2D","jornada":"Tarde","acudiente":"GARAVITO SANCHEZ MAIRA ALEXANDRA","telefono":"3177727577","correo":"mairaalejandragaravito@gmail.com","direccion":"CR 12 35 18","documento":"1222133623"},
+  {"nombre":"TORRES CUTA SAMUEL ALEJANDRO","grado":"4C","jornada":"Tarde","acudiente":"TORRES SALAMANCA OSCAR IVAN","telefono":"3214710582","correo":"osivtosa.601014@yahoo.es","direccion":"LA DECISION P 5 TO 21 APTO 504","documento":"1222125974"},
+  {"nombre":"URRUTIA MEDINA JUAN SEBASTIAN","grado":"1C","jornada":"Tarde","acudiente":"URRITIA LOPEZ GEORGE SEBASTIAN","telefono":"3133551024","correo":"george.sebastian@gmail.com","direccion":"CL 43 06 02","documento":"1222136545"},
+  {"nombre":"RIOS LOPEZ LIAM SAMUEL","grado":"1D","jornada":"Tarde","acudiente":"LOPEZ BUITRAGO JERALDINI","telefono":"3105676815","correo":"jeraldinilopez96@gmail.com","direccion":"MZ 100 CS 15 LA BENDICION","documento":"1222136272"},
+  {"nombre":"VALLARINO DIAZ MATEO","grado":"2C","jornada":"Tarde","acudiente":"VALLARINO MANUEL ANTONIO","telefono":"3138811469","correo":"mavamu1@gmail.com","direccion":"CR 48 38 15","documento":"1019916902"},
+  {"nombre":"RODRIGUEZ ABRIL JUAN ESTEBAN","grado":"2D","jornada":"Tarde","acudiente":"RODRIGUEZ ABRIL YENNY PILAR","telefono":"3133610732","correo":"abrilpilar95@gmail.com","direccion":"CL 35 36 40","documento":"1222131246"},
+  {"nombre":"ZAFRA GARCIA MARIA JULIANA","grado":"2C","jornada":"Tarde","acudiente":"GARCIA CASTRO ERIKA MARCELA","telefono":"3148934785","correo":"erikg_93@hotmail.com","direccion":"CR 27 34 79","documento":"1222133981"},
+  {"nombre":"CHAPARRO JEROMINO DANIEL MATHIAS","grado":"2D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
+];
 
 var STUDENTS_DB = {
   "TRIANA ACEVEDO DANIELA SOFIA": {
@@ -3637,6 +4061,7 @@ var modalIndex = -1;
 
 window.onload = function() {
   loadCases();
+  initEstudiantes();
 };
 
 function apiCall(params) {
@@ -3678,7 +4103,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","director","docentes","stats","config"];
+  var tabs=["dashboard","nuevo","casos","historial","director","docentes","stats","estudiantes","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -3686,6 +4111,7 @@ function showPage(name) {
   if(name==="director") renderDirector();
   if(name==="docentes"){loadPermisos();loadQuejas();}
   if(name==="stats") renderStats();
+  if(name==="estudiantes") renderEstudiantes();
   window.scrollTo(0,0);
 }
 
@@ -4268,6 +4694,186 @@ function deleteQueja(idx){
   apiCall({action:"deleteQueja",id:q.id}).then(function(){quejas.splice(idx,1);renderQuejas();toast("Queja eliminada","red");}).catch(function(){toast("Error al eliminar","red");});
 }
 
+// ============================================================
+// ESTUDIANTES
+// ============================================================
+var studentsData = [];  // merged: BASE_STUDENTS + edits from Sheets
+var currentEstIndex = -1;
+
+function initEstudiantes() {
+  // Start with base data, will be overridden by Sheets data
+  studentsData = BASE_STUDENTS.map(function(s, i) {
+    return Object.assign({}, s, {idx: i, edited: false});
+  });
+  loadEstudiantesEdits();
+}
+
+function loadEstudiantesEdits() {
+  apiCall({action: 'listEstudiantes'}).then(function(data) {
+    if (!Array.isArray(data)) return;
+    data.forEach(function(edit) {
+      var nombre = String(edit.nombre || '').trim().toUpperCase();
+      var found = studentsData.findIndex(function(s) {
+        return s.nombre === nombre;
+      });
+      if (found >= 0) {
+        studentsData[found] = Object.assign({}, studentsData[found], {
+          acudiente: String(edit.acudiente || studentsData[found].acudiente || ''),
+          telefono: String(edit.telefono || studentsData[found].telefono || ''),
+          correo: String(edit.correo || studentsData[found].correo || ''),
+          direccion: String(edit.direccion || studentsData[found].direccion || ''),
+          documento: String(edit.documento || studentsData[found].documento || ''),
+          edited: true
+        });
+      } else {
+        // Student not in base but edited - add them
+        studentsData.push({
+          nombre: nombre,
+          grado: String(edit.grado || ''),
+          jornada: String(edit.jornada || ''),
+          acudiente: String(edit.acudiente || ''),
+          telefono: String(edit.telefono || ''),
+          correo: String(edit.correo || ''),
+          direccion: String(edit.direccion || ''),
+          documento: String(edit.documento || ''),
+          edited: true
+        });
+      }
+    });
+    renderEstudiantes();
+  }).catch(function() {
+    renderEstudiantes();
+  });
+}
+
+function getEstFiltered() {
+  var search = document.getElementById('est-search').value.trim().toLowerCase();
+  var jornada = document.getElementById('est-jornada').value;
+  var grado = document.getElementById('est-grado').value;
+  var contacto = document.getElementById('est-contacto').value;
+  return studentsData.filter(function(s) {
+    var matchSearch = !search || s.nombre.toLowerCase().includes(search);
+    var matchJornada = !jornada || s.jornada === jornada;
+    var matchGrado = !grado || s.grado === grado;
+    var matchContacto = !contacto ||
+      (contacto === 'con' && (s.telefono || s.acudiente)) ||
+      (contacto === 'sin' && !s.telefono && !s.acudiente);
+    return matchSearch && matchJornada && matchGrado && matchContacto;
+  });
+}
+
+function renderEstudiantes() {
+  var filtered = getEstFiltered();
+  var count = document.getElementById('est-count');
+  count.textContent = filtered.length + ' estudiante(s)';
+  var list = document.getElementById('est-list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><p>No se encontraron estudiantes</p></div>';
+    return;
+  }
+  list.innerHTML = '';
+  filtered.forEach(function(s) {
+    var hasContact = s.telefono || s.acudiente;
+    var div = document.createElement('div');
+    div.className = 'card';
+    div.style.borderLeft = '4px solid ' + (hasContact ? 'var(--green)' : 'var(--gray-light)');
+    div.style.cursor = 'pointer';
+    div.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
+        '<div style="font-weight:700;color:var(--navy);font-size:0.95rem">' + s.nombre + '</div>' +
+        '<span class="tag ' + (hasContact ? 'tag-green' : 'tag-gray') + '">' + s.grado + '</span>' +
+      '</div>' +
+      '<div class="tags" style="margin-top:6px">' +
+        '<span class="tag tag-gray">' + s.jornada + '</span>' +
+        (s.acudiente ? '<span class="tag tag-gray">' + s.acudiente + '</span>' : '') +
+      '</div>' +
+      (s.telefono ?
+        '<div style="font-size:0.85rem;color:var(--navy);margin-top:6px;font-weight:600">📞 ' + s.telefono + '</div>'
+        : '<div style="font-size:0.82rem;color:var(--gray);margin-top:6px">Sin datos de contacto</div>') +
+      '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Toca para ver perfil y editar</div>';
+    div.addEventListener('click', function() { openEstModal(s); });
+    list.appendChild(div);
+  });
+}
+
+function openEstModal(s) {
+  currentEstIndex = studentsData.indexOf(s);
+  document.getElementById('est-modal-nombre').textContent = s.nombre;
+  document.getElementById('est-modal-grado').textContent = s.grado + ' · ' + s.jornada;
+  document.getElementById('est-edit-acudiente').value = s.acudiente || '';
+  document.getElementById('est-edit-telefono').value = s.telefono || '';
+  document.getElementById('est-edit-correo').value = s.correo || '';
+  document.getElementById('est-edit-direccion').value = s.direccion || '';
+  document.getElementById('est-edit-documento').value = s.documento || '';
+
+  // Show disciplinary history
+  var studentCases = cases.filter(function(c) { return c.studentName === s.nombre; });
+  var histHTML = '';
+  if (studentCases.length) {
+    histHTML = '<div class="card" style="background:var(--gray-bg);margin-bottom:0">' +
+      '<div class="slbl" style="margin-bottom:10px">Historial disciplinario (' + studentCases.length + ' caso(s))</div>';
+    studentCases.forEach(function(c) {
+      histHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--gray-light)">' +
+        '<div style="display:flex;justify-content:space-between">' +
+          '<span class="tag ' + (c.type==='convivencia'?'tag-red':'tag-blue') + '" style="font-size:0.68rem">' + c.type + '</span>' +
+          stag(c.status) +
+        '</div>' +
+        '<div style="font-size:0.82rem;color:#475569;margin-top:4px">' + fmtD(c.date) + ' · ' + (c.asignatura || c.teacher) + '</div>' +
+        '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + (c.description.length > 80 ? c.description.slice(0,80)+'...' : c.description) + '</div>' +
+      '</div>';
+    });
+    histHTML += '</div>';
+  } else {
+    histHTML = '<div style="font-size:0.85rem;color:var(--gray);padding:8px 0">Sin casos disciplinarios registrados.</div>';
+  }
+  document.getElementById('est-modal-historial').innerHTML = histHTML;
+
+  document.getElementById('est-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEstModal(e) {
+  if (e.target === document.getElementById('est-modal-overlay')) closeEstModalDirect();
+}
+function closeEstModalDirect() {
+  document.getElementById('est-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveEstudiante() {
+  if (currentEstIndex < 0) return;
+  var s = studentsData[currentEstIndex];
+  var updated = Object.assign({}, s, {
+    acudiente: document.getElementById('est-edit-acudiente').value.trim(),
+    telefono: document.getElementById('est-edit-telefono').value.trim(),
+    correo: document.getElementById('est-edit-correo').value.trim(),
+    direccion: document.getElementById('est-edit-direccion').value.trim(),
+    documento: document.getElementById('est-edit-documento').value.trim(),
+    edited: true
+  });
+  var btn = document.getElementById('est-save-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveEstudiante',
+    nombre: updated.nombre,
+    grado: updated.grado,
+    jornada: updated.jornada,
+    acudiente: updated.acudiente,
+    telefono: updated.telefono,
+    correo: updated.correo,
+    direccion: updated.direccion,
+    documento: updated.documento
+  }).then(function() {
+    studentsData[currentEstIndex] = updated;
+    closeEstModalDirect();
+    renderEstudiantes();
+    toast('Datos actualizados', 'ok');
+  }).catch(function() {
+    toast('Error al guardar', 'red');
+  }).finally(function() {
+    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+  });
+}
 </script>
 </body>
 </html>
