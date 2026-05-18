@@ -1,0 +1,4273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F2942">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Registro Integral · Gimnasio ComfaCasanare</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F2942;--navy-light:#1B4F72;--cream:#F7F4EF;--white:#FFFFFF;--amber:#F59E0B;--amber-dark:#B45309;--green:#10B981;--green-dark:#065F46;--green-bg:#D1FAE5;--red:#EF4444;--red-dark:#991B1B;--red-bg:#FEE2E2;--blue:#3B82F6;--blue-dark:#1E40AF;--blue-bg:#DBEAFE;--gray:#64748B;--gray-light:#E2E8F0;--gray-bg:#F1F5F9;--text:#1E293B;--shadow:0 2px 12px rgba(15,41,66,0.10);--radius:14px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh;}
+.serif{font-family:'Playfair Display',Georgia,serif;}
+nav{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);position:sticky;top:0;z-index:100;box-shadow:0 4px 24px rgba(15,41,66,0.25);}
+.nav-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 6px;}
+.nav-title h1{color:white;font-size:1.05rem;font-weight:800;font-family:'Playfair Display',serif;}
+.nav-title p{font-size:0.65rem;color:#94A3B8;letter-spacing:0.1em;text-transform:uppercase;margin-top:1px;}
+.badge{background:var(--amber);color:var(--navy);font-weight:700;font-size:0.75rem;padding:4px 12px;border-radius:20px;}
+.nav-tabs{display:flex;gap:2px;padding:6px 12px 10px;overflow-x:auto;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{background:none;border:none;cursor:pointer;padding:8px 10px;border-radius:8px;font-size:0.75rem;font-weight:600;font-family:'DM Sans',sans-serif;color:#94A3B8;white-space:nowrap;transition:all 0.2s;}
+.nav-tab:hover{background:rgba(255,255,255,0.1);color:white;}
+.nav-tab.active{background:rgba(255,255,255,0.18);color:white;}
+.page{display:none;max-width:720px;margin:0 auto;padding:24px 16px 100px;}
+.page.visible{display:flex;flex-direction:column;gap:20px;animation:fadeIn 0.25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:4px solid var(--navy);}
+.stat-num{font-size:2.2rem;font-weight:800;color:var(--navy);line-height:1;}
+.stat-label{font-size:0.78rem;color:var(--gray);font-weight:500;margin-top:4px;}
+.case-card{background:var(--white);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);border-left:4px solid var(--blue);cursor:pointer;transition:all 0.2s;}
+.case-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(15,41,66,0.14);}
+.case-card.convivencia{border-left-color:var(--red);}
+.case-card.academico{border-left-color:var(--blue);}
+.doc-card{background:var(--white);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);border-left:4px solid var(--amber);}
+.doc-card.queja{border-left-color:var(--red);}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+.tag-red{background:var(--red-bg);color:var(--red-dark);}
+.tag-blue{background:var(--blue-bg);color:var(--blue-dark);}
+.tag-amber{background:#FFF3CD;color:#856404;}
+.tag-green{background:var(--green-bg);color:var(--green-dark);}
+.tag-gray{background:var(--gray-bg);color:var(--gray);}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+label.lbl{display:block;font-size:0.78rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:7px;}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.95rem;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);outline:none;transition:border-color 0.2s;appearance:none;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--navy);}
+select:disabled{background:var(--gray-bg);color:var(--gray);}
+textarea{resize:vertical;min-height:90px;}
+.field{display:flex;flex-direction:column;gap:0;}
+.ferr{color:var(--red);font-size:0.75rem;margin-top:4px;min-height:18px;}
+.form-section{display:flex;flex-direction:column;gap:16px;}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tipo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.type-btn{padding:12px;border:2px solid var(--gray-light);border-radius:12px;background:var(--white);color:var(--gray);font-weight:600;font-size:0.88rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-align:center;}
+.type-btn.sel{border-color:var(--navy);background:var(--navy);color:white;}
+.tipo-btn{padding:10px;border:2px solid var(--gray-light);border-radius:12px;background:var(--white);color:var(--gray);font-weight:700;font-size:0.95rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-align:center;}
+.tipo-I{border-color:#F59E0B!important;background:#F59E0B!important;color:white!important;}
+.tipo-II{border-color:#EF4444!important;background:#EF4444!important;color:white!important;}
+.tipo-III{border-color:#7C3AED!important;background:#7C3AED!important;color:white!important;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:12px 22px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn:disabled{opacity:0.55;cursor:not-allowed;}
+.btn-primary{background:var(--navy);color:white;}
+.btn-primary:hover:not(:disabled){background:var(--navy-light);}
+.btn-green{background:var(--green);color:white;}
+.btn-amber{background:var(--amber);color:var(--navy);}
+.btn-ghost{background:transparent;color:var(--gray);border:1.5px solid var(--gray-light);}
+.btn-ghost:hover{border-color:var(--navy);color:var(--navy);}
+.btn-danger{background:transparent;color:var(--red);border:1.5px solid var(--red-bg);}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-row .btn{flex:1;min-width:120px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.fg3 select{padding:9px 10px;font-size:0.82rem;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.detail-block{background:var(--gray-bg);border-radius:10px;padding:14px;font-size:0.92rem;line-height:1.65;color:#334155;}
+.detail-block.gr{background:#F0FDF4;}
+.slbl{font-size:0.72rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;}
+.empty{text-align:center;padding:50px 20px;color:#94A3B8;}
+.empty-icon{font-size:3rem;margin-bottom:12px;}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(15,41,66,0.45);z-index:500;display:none;align-items:center;justify-content:center;}
+.loading-overlay.show{display:flex;}
+.loading-box{background:var(--navy);color:white;padding:24px 36px;border-radius:16px;display:flex;align-items:center;gap:14px;font-weight:600;}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:white;padding:12px 24px;border-radius:50px;font-size:0.88rem;font-weight:600;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.25);opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.red{background:var(--red);}
+.toast.ok{background:var(--green);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,41,66,0.55);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:22px 22px 0 0;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;padding:28px 22px 40px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);}
+@keyframes slideUp{from{transform:translateY(60px)}to{transform:translateY(0)}}
+.back-btn{background:none;border:none;cursor:pointer;color:var(--gray);font-size:0.88rem;font-weight:600;font-family:'DM Sans',sans-serif;padding:8px 0;display:inline-flex;align-items:center;gap:6px;}
+.pwd-overlay{display:none;position:fixed;inset:0;background:rgba(15,41,66,0.65);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.pwd-overlay.open{display:flex;}
+.pwd-box{background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.pwd-box h3{font-family:'Playfair Display',serif;color:var(--navy);font-size:1.2rem;margin-bottom:6px;}
+.pwd-box p{font-size:0.85rem;color:var(--gray);margin-bottom:18px;}
+.pwd-input-wrap{position:relative;}
+.pwd-input-wrap input{padding-right:44px;}
+.pwd-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gray);}
+.pwd-err{color:var(--red);font-size:0.78rem;margin-top:6px;display:none;}
+.pwd-err.show{display:block;}
+.chk-row{display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;padding:6px 0;}
+.chk-row input[type=checkbox]{width:auto;padding:0;margin:0;}
+.notif-btn{width:100%;padding:12px 16px;border:2px solid var(--gray-light);border-radius:10px;background:var(--white);color:var(--gray);font-weight:600;font-size:0.9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-align:left;}
+.notif-btn.active{border-color:var(--navy);background:var(--navy);color:white;}
+@media(min-width:640px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+@media print{nav,.no-print{display:none!important}body{background:white}.page{display:flex!important;padding:0}.case-card,.doc-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;margin-bottom:8px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-top">
+    <div class="nav-title"><h1>Gimnasio ComfaCasanare</h1><p>Registro Integral</p></div>
+    <div class="badge" id="badge">0 activos</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">📊 Panel</button>
+    <button class="nav-tab" onclick="showPage('nuevo')">➕ Caso</button>
+    <button class="nav-tab" onclick="showPage('casos')">📋 Casos</button>
+    <button class="nav-tab" onclick="showPage('historial')">🔍 Historial</button>
+    <button class="nav-tab" onclick="showPage('director')">🏫 Director</button>
+    <button class="nav-tab" onclick="showPage('docentes')">👩‍🏫 Docentes</button>
+    <button class="nav-tab" onclick="showPage('stats')">📈 Stats</button>
+    <button class="nav-tab no-print" onclick="showPage('config')">⚙️</button>
+  </div>
+</nav>
+
+<div class="loading-overlay" id="loading"><div class="loading-box"><div class="spinner"></div> Sincronizando...</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- MODAL CONTRASEÑA -->
+<div class="pwd-overlay" id="pwd-overlay">
+  <div class="pwd-box">
+    <h3>🔒 Eliminar caso</h3>
+    <p>Ingresa la contraseña de administrador.</p>
+    <div class="pwd-input-wrap">
+      <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')confirmDelete()">
+      <button class="pwd-toggle" onclick="togglePwd()">👁️</button>
+    </div>
+    <div class="pwd-err" id="pwd-err">Contraseña incorrecta.</div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closePwd()">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmDelete()" style="flex:2">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page visible" id="page-dashboard">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Resumen general</div>
+  <div class="card-grid">
+    <div class="stat-card" style="border-top-color:var(--navy)"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total casos</div></div>
+    <div class="stat-card" style="border-top-color:var(--amber)"><div class="stat-num" style="color:var(--amber-dark)" id="s-ab">0</div><div class="stat-label">Abiertos</div></div>
+    <div class="stat-card" style="border-top-color:var(--green)"><div class="stat-num" style="color:var(--green-dark)" id="s-res">0</div><div class="stat-label">Resueltos</div></div>
+    <div class="stat-card" style="border-top-color:var(--red)"><div class="stat-num" style="color:var(--red-dark)" id="s-conv">0</div><div class="stat-label">Convivencia</div></div>
+    <div class="stat-card" style="border-top-color:var(--blue)"><div class="stat-num" style="color:var(--blue-dark)" id="s-acad">0</div><div class="stat-label">Academicos</div></div>
+  </div>
+  <div><div class="slbl" style="margin-bottom:12px">Casos recientes</div><div id="d-recent" style="display:flex;flex-direction:column;gap:10px"></div></div>
+</div>
+<!-- NUEVO CASO -->
+<div class="page" id="page-nuevo">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Registrar nuevo caso</div>
+  <div class="card form-section">
+    <div class="field">
+      <label class="lbl">Tipo de caso</label>
+      <div class="type-grid">
+        <button class="type-btn sel" id="btn-conv" onclick="selType('convivencia')">Convivencia</button>
+        <button class="type-btn" id="btn-acad" onclick="selType('academico')">Academico</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="lbl">Tipologia</label>
+      <div class="tipo-grid">
+        <button class="tipo-btn" id="tbtn-I" onclick="selTipo('I')">Tipo I</button>
+        <button class="tipo-btn" id="tbtn-II" onclick="selTipo('II')">Tipo II</button>
+        <button class="tipo-btn" id="tbtn-III" onclick="selTipo('III')">Tipo III</button>
+      </div>
+      <div class="ferr" id="e-tipo"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Jornada</label>
+      <select id="f-jornada" onchange="updateGrades()">
+        <option value="">Seleccionar jornada...</option>
+        <option value="Manana">Manana</option>
+        <option value="Tarde">Tarde</option>
+      </select>
+      <div class="ferr" id="e-jornada"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Grado</label>
+      <select id="f-grade" onchange="updateStudents()" disabled>
+        <option value="">Primero selecciona jornada...</option>
+      </select>
+      <div class="ferr" id="e-grade"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Estudiante</label>
+      <select id="f-student" disabled>
+        <option value="">Primero selecciona grado...</option>
+      </select>
+      <div class="ferr" id="e-student"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Docente que reporta</label>
+      <select id="f-teacher" onchange="onTeacherChange()">
+        <option value="">Seleccionar docente...</option>
+        <optgroup label="Manana">
+          <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
+          <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
+          <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+          <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
+          <option>Sofia Lesmes</option>
+        </optgroup>
+        <optgroup label="Tarde">
+          <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
+          <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
+          <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
+          <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
+          <option>Yiseth Daza</option>
+        </optgroup>
+        <option>Otro docente</option>
+      </select>
+      <div class="ferr" id="e-teacher"></div>
+      <input type="text" id="f-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
+    </div>
+    <div class="field" id="campo-asignatura" style="display:none">
+      <label class="lbl">Asignatura</label>
+      <input type="text" id="f-asignatura" readonly style="background:var(--gray-bg);color:var(--gray);font-weight:600">
+    </div>
+    <div class="field" id="campo-asignatura-otro" style="display:none">
+      <label class="lbl">Asignatura</label>
+      <input type="text" id="f-asignatura-otro" placeholder="Escribe la asignatura">
+    </div>
+    <div class="field">
+      <label class="lbl">Descripcion del caso</label>
+      <textarea id="f-desc" placeholder="Describe que ocurrio..."></textarea>
+      <div class="ferr" id="e-desc"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Acciones tomadas <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional)</span></label>
+      <textarea id="f-actions" placeholder="Remision a orientacion? Compromiso firmado?"></textarea>
+    </div>
+    <div class="field">
+      <label class="lbl">Citacion al acudiente</label>
+      <div class="type-grid">
+        <button class="type-btn" id="btn-cit-si" onclick="selCitacion('si')">Si fue citado</button>
+        <button class="type-btn" id="btn-cit-no" onclick="selCitacion('no')">No fue citado</button>
+      </div>
+    </div>
+    <div class="field" id="campo-fecha-cit" style="display:none">
+      <label class="lbl">Fecha de citacion</label>
+      <input type="date" id="f-fecha-cit">
+    </div>
+    <div class="field" id="campo-asistencia" style="display:none">
+      <label class="lbl">Asistio el acudiente?</label>
+      <div class="type-grid">
+        <button class="type-btn" id="btn-asist-si" onclick="selAsistencia('asistio')">Asistio</button>
+        <button class="type-btn" id="btn-asist-no" onclick="selAsistencia('no_asistio')">No asistio</button>
+      </div>
+    </div>
+    <div class="btn-row" style="padding-top:4px">
+      <button class="btn btn-ghost no-print" onclick="clearForm()">Limpiar</button>
+      <button class="btn btn-primary" id="btn-submit" onclick="submitCase()" style="flex:2">Registrar caso</button>
+    </div>
+  </div>
+</div>
+<!-- CASOS -->
+<div class="page" id="page-casos">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Casos registrados</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost no-print" onclick="loadCases()" style="padding:9px 14px;font-size:0.85rem">&#x1F504;</button>
+      <button class="btn btn-ghost no-print" onclick="window.print()" style="padding:9px 14px;font-size:0.85rem">&#x1F5A8;</button>
+    </div>
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <input type="text" id="s-name" placeholder="Buscar por nombre..." oninput="renderCases()">
+    <div class="fg3">
+      <select id="f-fgrade" onchange="renderCases()">
+        <option value="">Grado</option>
+        <optgroup label="Manana"><option>1A</option><option>1B</option><option>2A</option><option>2B</option><option>3A</option><option>3B</option><option>4A</option><option>4B</option><option>5A</option><option>5B</option></optgroup>
+        <optgroup label="Tarde"><option>1C</option><option>1D</option><option>2C</option><option>2D</option><option>3C</option><option>3D</option><option>4C</option><option>4D</option><option>5C</option><option>5D</option></optgroup>
+      </select>
+      <select id="f-ftype" onchange="renderCases()"><option value="">Tipo</option><option value="convivencia">Convivencia</option><option value="academico">Academico</option></select>
+      <select id="f-fstatus" onchange="renderCases()"><option value="">Estado</option><option value="abierto">Abierto</option><option value="resuelto">Resuelto</option></select>
+    </div>
+    <div class="fg2">
+      <select id="f-fjornada" onchange="renderCases()"><option value="">Jornada</option><option value="Manana">Manana</option><option value="Tarde">Tarde</option></select>
+      <select id="f-ftipo" onchange="renderCases()"><option value="">Tipologia</option><option value="I">Tipo I</option><option value="II">Tipo II</option><option value="III">Tipo III</option></select>
+    </div>
+    <button class="btn btn-ghost no-print" id="btn-clf" onclick="clearFilters()" style="display:none;font-size:0.8rem;padding:8px">Limpiar filtros</button>
+  </div>
+  <div id="cases-list" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="page" id="page-historial">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Historial por estudiante</div>
+  <div class="card"><label class="lbl">Seleccionar estudiante</label>
+    <select id="h-select" onchange="renderHistorial()"><option value="">Elegir estudiante...</option></select>
+  </div>
+  <div id="h-summary"></div>
+  <div id="h-list" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+<!-- DIRECTOR -->
+<div class="page" id="page-director">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Portal Director de Grado</div>
+  <div class="card">
+    <label class="lbl">Selecciona tu grado</label>
+    <select id="dir-grade" onchange="renderDirector()">
+      <option value="">Elegir grado...</option>
+      <optgroup label="Manana">
+        <option value="1A">1A - Dir. Maria De Los Angeles Barrera</option>
+        <option value="1B">1B - Dir. Leilys Rodriguez</option>
+        <option value="2A">2A - Dir. Adriana Romero</option>
+        <option value="2B">2B - Dir. Angela Ibanez</option>
+        <option value="3A">3A - Dir. Ana Bolanos</option>
+        <option value="3B">3B - Dir. Mari Luz Rodriguez</option>
+        <option value="4A">4A - Dir. Sofia Lesmes</option>
+        <option value="4B">4B - Dir. Consuelo Ardila</option>
+        <option value="5A">5A - Dir. Carolina Padilla</option>
+        <option value="5B">5B - Dir. Maria Helena Soto</option>
+      </optgroup>
+      <optgroup label="Tarde">
+        <option value="1C">1C - Dir. Leidy Gonzalez</option>
+        <option value="1D">1D - Dir. Diana Sanchez</option>
+        <option value="2C">2C - Dir. Yiseth Daza</option>
+        <option value="2D">2D - Dir. Isbel Sanchez</option>
+        <option value="3C">3C - Dir. Juan Duenas</option>
+        <option value="3D">3D - Dir. Leidy Atilua</option>
+        <option value="4C">4C - Dir. Mabel Sanchez</option>
+        <option value="4D">4D - Dir. Nidia Torres</option>
+        <option value="5C">5C - Dir. Mildred Corredor</option>
+        <option value="5D">5D - Dir. Leidy Pedraos</option>
+      </optgroup>
+    </select>
+  </div>
+  <div id="dir-content"></div>
+</div>
+<!-- DOCENTES -->
+<div class="page" id="page-docentes">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Gestion Docente</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button class="type-btn sel" id="dtab-permisos" onclick="selDocTab('permisos')" style="flex:1;padding:10px;min-width:100px">Permisos</button>
+    <button class="type-btn" id="dtab-quejas" onclick="selDocTab('quejas')" style="flex:1;padding:10px;min-width:100px">Quejas</button>
+    <button class="type-btn" id="dtab-panel" onclick="selDocTab('panel')" style="flex:1;padding:10px;min-width:100px">Panel</button>
+  </div>
+
+  <div id="dpanel-permisos" style="display:flex;flex-direction:column;gap:20px">
+    <div class="card form-section">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar permiso</div>
+      <div class="field">
+        <label class="lbl">Docente</label>
+        <select id="dp-teacher" onchange="chkPermisoOther()">
+          <option value="">Seleccionar docente...</option>
+          <optgroup label="Manana">
+            <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
+            <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
+            <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+            <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
+            <option>Sofia Lesmes</option>
+          </optgroup>
+          <optgroup label="Tarde">
+            <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
+            <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
+            <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
+            <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
+            <option>Yiseth Daza</option>
+          </optgroup>
+          <option>Otro docente</option>
+        </select>
+        <div class="ferr" id="ep-teacher"></div>
+        <input type="text" id="dp-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
+      </div>
+      <div class="field">
+        <label class="lbl">Fecha del permiso</label>
+        <input type="date" id="dp-fecha">
+        <div class="ferr" id="ep-fecha"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Duracion</label>
+        <div class="type-grid">
+          <button class="type-btn sel" id="dp-btn-dia" onclick="selPermisoDuracion('dia')">Todo el dia</button>
+          <button class="type-btn" id="dp-btn-horas" onclick="selPermisoDuracion('horas')">Parcial</button>
+        </div>
+      </div>
+      <div class="field" id="dp-campo-horas" style="display:none">
+        <label class="lbl">Cuantas horas?</label>
+        <input type="number" id="dp-horas" placeholder="Ej: 2" min="1" max="8">
+      </div>
+      <div class="field">
+        <label class="lbl">Motivo</label>
+        <textarea id="dp-motivo" placeholder="Describe el motivo del permiso..."></textarea>
+        <div class="ferr" id="ep-motivo"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="clearPermisoForm()">Limpiar</button>
+        <button class="btn btn-primary" id="dp-btn-submit" onclick="submitPermiso()" style="flex:2">Registrar permiso</button>
+      </div>
+    </div>
+    <div><div class="slbl" style="margin-bottom:12px">Permisos registrados</div><div id="permisos-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
+  </div>
+
+  <div id="dpanel-quejas" style="display:none;flex-direction:column;gap:20px">
+    <div class="card form-section">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar queja de padre</div>
+      <div class="field">
+        <label class="lbl">Docente</label>
+        <select id="dq-teacher" onchange="chkQuejaOther()">
+          <option value="">Seleccionar docente...</option>
+          <optgroup label="Manana">
+            <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
+            <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
+            <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+            <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
+            <option>Sofia Lesmes</option>
+          </optgroup>
+          <optgroup label="Tarde">
+            <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
+            <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
+            <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
+            <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
+            <option>Yiseth Daza</option>
+          </optgroup>
+          <option>Otro docente</option>
+        </select>
+        <div class="ferr" id="eq-teacher"></div>
+        <input type="text" id="dq-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
+      </div>
+      <div class="field">
+        <label class="lbl">Fecha</label>
+        <input type="date" id="dq-fecha">
+        <div class="ferr" id="eq-fecha"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Descripcion de la queja</label>
+        <textarea id="dq-desc" placeholder="Describe la situacion reportada..."></textarea>
+        <div class="ferr" id="eq-desc"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Llamado de atencion verbal?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="dq-btn-verbal-si" onclick="selVerbal('si')">Si</button>
+          <button class="type-btn" id="dq-btn-verbal-no" onclick="selVerbal('no')">No</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Llamado de atencion escrito?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="dq-btn-escrito-si" onclick="selEscrito('si')">Si</button>
+          <button class="type-btn" id="dq-btn-escrito-no" onclick="selEscrito('no')">No</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">A quien se notifico?</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <button type="button" class="notif-btn" id="notif-rectoria" onclick="toggleNotif('rectoria')">Rectoria</button>
+          <button type="button" class="notif-btn" id="notif-convivencia" onclick="toggleNotif('convivencia')">Coord. Convivencia</button>
+          <button type="button" class="notif-btn" id="notif-academica" onclick="toggleNotif('academica')">Coord. Academica</button>
+          <button type="button" class="notif-btn" id="notif-otro" onclick="toggleNotifOtro()">Otro</button>
+          <input type="text" id="dq-not-otro-texto" placeholder="Especifica a quien" style="display:none;margin-top:4px">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="clearQuejaForm()">Limpiar</button>
+        <button class="btn btn-primary" id="dq-btn-submit" onclick="submitQueja()" style="flex:2">Registrar queja</button>
+      </div>
+    </div>
+    <div><div class="slbl" style="margin-bottom:12px">Quejas registradas</div><div id="quejas-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
+  </div>
+
+  <!-- PANEL DOCENTE -->
+  <div id="dpanel-panel" style="display:none;flex-direction:column;gap:20px">
+    <div class="card">
+      <label class="lbl">Selecciona el docente</label>
+      <select id="panel-teacher" onchange="renderPanelDocente()">
+        <option value="">Elegir docente...</option>
+        <optgroup label="Manana">
+          <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
+          <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
+          <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+          <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
+          <option>Sofia Lesmes</option>
+        </optgroup>
+        <optgroup label="Tarde">
+          <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
+          <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
+          <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
+          <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
+          <option>Yiseth Daza</option>
+        </optgroup>
+      </select>
+    </div>
+    <div id="panel-docente-content"></div>
+  </div>
+</div>
+
+<!-- ESTADÍSTICAS -->
+<div class="page" id="page-stats">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Estadísticas</div>
+
+  <!-- Resumen rápido -->
+  <div class="card-grid" id="stats-summary"></div>
+
+  <!-- Por mes -->
+  <div class="card">
+    <div class="slbl" style="margin-bottom:16px">Evolución mensual</div>
+    <div id="stats-mes"></div>
+  </div>
+
+  <!-- Por grado -->
+  <div class="card">
+    <div class="slbl" style="margin-bottom:16px">Casos por grado</div>
+    <div id="stats-grado"></div>
+  </div>
+
+  <!-- Por tipología -->
+  <div class="card">
+    <div class="slbl" style="margin-bottom:16px">Casos por tipología</div>
+    <div id="stats-tipo"></div>
+  </div>
+
+  <!-- Por jornada -->
+  <div class="card">
+    <div class="slbl" style="margin-bottom:16px">Casos por jornada</div>
+    <div id="stats-jornada"></div>
+  </div>
+
+  <!-- Top reincidentes -->
+  <div class="card">
+    <div class="slbl" style="margin-bottom:16px">Top 10 estudiantes reincidentes</div>
+    <div id="stats-reincidentes"></div>
+  </div>
+
+  <!-- Docentes que más reportan -->
+  <div class="card">
+    <div class="slbl" style="margin-bottom:16px">Docentes que más reportan</div>
+    <div id="stats-docentes"></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CASO -->
+<div class="modal-overlay" id="edit-overlay" onclick="closeEditMO(event)">
+  <div class="modal">
+    <button class="back-btn no-print" onclick="closeEdit()" style="margin-bottom:16px">← Cancelar</button>
+    <div class="serif" style="font-size:1.2rem;color:var(--navy);font-weight:700;margin-bottom:16px">Editar caso</div>
+    <div class="form-section">
+      <div class="field">
+        <label class="lbl">Tipo de caso</label>
+        <div class="type-grid">
+          <button class="type-btn" id="edit-btn-conv" onclick="selEditType('convivencia')">Convivencia</button>
+          <button class="type-btn" id="edit-btn-acad" onclick="selEditType('academico')">Academico</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Tipología</label>
+        <div class="tipo-grid">
+          <button class="tipo-btn" id="edit-tbtn-I" onclick="selEditTipo('I')">Tipo I</button>
+          <button class="tipo-btn" id="edit-tbtn-II" onclick="selEditTipo('II')">Tipo II</button>
+          <button class="tipo-btn" id="edit-tbtn-III" onclick="selEditTipo('III')">Tipo III</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Descripción del caso</label>
+        <textarea id="edit-desc" rows="5"></textarea>
+      </div>
+      <div class="field">
+        <label class="lbl">Acciones tomadas</label>
+        <textarea id="edit-actions" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label class="lbl">Enlace del acta <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional)</span></label>
+        <input type="text" id="edit-acta" placeholder="Pega aqui el enlace de Google Drive...">
+        <div style="font-size:0.78rem;color:var(--gray);margin-top:4px">El archivo debe tener permiso "Cualquier persona con el enlace puede ver"</div>
+      </div>
+      <div class="field">
+        <label class="lbl">Estado</label>
+        <div class="type-grid">
+          <button class="type-btn" id="edit-btn-abierto" onclick="selEditStatus('abierto')">Abierto</button>
+          <button class="type-btn" id="edit-btn-resuelto" onclick="selEditStatus('resuelto')">Resuelto</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Citación al acudiente</label>
+        <div class="type-grid">
+          <button class="type-btn" id="edit-btn-cit-si" onclick="selEditCitacion('si')">Si fue citado</button>
+          <button class="type-btn" id="edit-btn-cit-no" onclick="selEditCitacion('no')">No fue citado</button>
+        </div>
+      </div>
+      <div class="field" id="edit-campo-fecha-cit" style="display:none">
+        <label class="lbl">Fecha de citación</label>
+        <input type="date" id="edit-fecha-cit">
+      </div>
+      <div class="field" id="edit-campo-asistencia" style="display:none">
+        <label class="lbl">¿Asistió el acudiente?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="edit-btn-asist-si" onclick="selEditAsistencia('asistio')">Asistio</button>
+          <button class="type-btn" id="edit-btn-asist-no" onclick="selEditAsistencia('no_asistio')">No asistio</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="edit-btn-save" onclick="saveEdit()" style="width:100%;padding:14px;margin-top:8px">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG -->
+<div class="page" id="page-config">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Configuracion</div>
+  <div class="card form-section">
+    <div class="field"><label class="lbl">URL de Google Apps Script</label><input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/..."></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="updateCfg()">Guardar</button>
+      <button class="btn btn-danger" onclick="resetApp()">Reiniciar app</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeMO(event)">
+  <div class="modal">
+    <button class="back-btn no-print" onclick="closeModal()" style="margin-bottom:16px">Volver</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<script>
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwadXjPzPZ_yZ8NF1OiAvjluEke5NTNPV8eQjPw0vKUyWusBCtQZXBrkHvFeOi-xd2x/exec";
+var DELETE_PWD = "Dilia123";
+
+var TEACHERS_DATA = {
+  "Adriana Romero":{"asignatura":"Lenguaje","direccion":"2A"},
+  "Maria Helena Soto":{"asignatura":"Lenguaje","direccion":"5B"},
+  "Maria De Los Angeles Barrera":{"asignatura":"Matematicas","direccion":"1A"},
+  "Ana Bolanos":{"asignatura":"Ingles","direccion":"3A"},
+  "Sofia Lesmes":{"asignatura":"Ingles","direccion":"4A"},
+  "Consuelo Ardila":{"asignatura":"Ciencias Naturales","direccion":"4B"},
+  "Mari Luz Rodriguez":{"asignatura":"Sociales","direccion":"3B"},
+  "Angela Ibanez":{"asignatura":"Informatica","direccion":"2B"},
+  "Leilys Rodriguez":{"asignatura":"Fundamentos del Ser","direccion":"1B"},
+  "Carolina Padilla":{"asignatura":"Educacion Fisica","direccion":"5A"},
+  "Omar Ballesteros":{"asignatura":"Musica","direccion":null},
+  "Camila De Castro":{"asignatura":"Artistica","direccion":null},
+  "Magda Suarez":{"asignatura":"Bilinguismo","direccion":null},
+  "Mabel Sanchez":{"asignatura":"Lenguaje","direccion":"4C"},
+  "Leidy Gonzalez":{"asignatura":"Lenguaje","direccion":"1C"},
+  "Yiseth Daza":{"asignatura":"Matematicas","direccion":"2C"},
+  "Nidia Torres":{"asignatura":"Matematicas","direccion":"4D"},
+  "Isbel Sanchez":{"asignatura":"Ingles","direccion":"2D"},
+  "Angel Gaviria":{"asignatura":"Ingles","direccion":null},
+  "Leidy Pedraos":{"asignatura":"Ciencias Naturales","direccion":"5D"},
+  "Leidy Atilua":{"asignatura":"Sociales","direccion":"3D"},
+  "Juan Duenas":{"asignatura":"Informatica","direccion":"3C"},
+  "Diana Sanchez":{"asignatura":"Fundamentos del Ser","direccion":"1D"},
+  "Mildred Corredor":{"asignatura":"Educacion Fisica","direccion":"5C"},
+  "Steve Bayona":{"asignatura":"Musica","direccion":null},
+  "Leidy Molano":{"asignatura":"Artistica","direccion":null}
+};
+
+var STUDENTS_DB = {
+  "TRIANA ACEVEDO DANIELA SOFIA": {
+    "grado": "4A",
+    "acudiente": "ACEVEDO SAAVEDRA ELIANA ANDREA",
+    "telefono": "3133298742",
+    "correo": "ajacevedo75@hotmail.com",
+    "direccion": "CR 29 17 59",
+    "documento": "1222125760"
+  },
+  "HERNANDEZ CARDENAS JUAN JOSE": {
+    "grado": "4A",
+    "acudiente": "CARDENAS RODRIGUEZ LEIDY MARITZA",
+    "telefono": "3102383544",
+    "correo": "leidy_17_cardenas@hotmail.com",
+    "direccion": "VEREDA LA VEGA",
+    "documento": "1222128635"
+  },
+  "GARCIA ECHENIQUE SAMUEL DAVID": {
+    "grado": "4A",
+    "acudiente": "GARCIA MORENO ANDRES LEONARDO",
+    "telefono": "3176956329",
+    "correo": "andresl92_garcia@hotmail.com",
+    "direccion": "CL 31 29 93",
+    "documento": "1222128383"
+  },
+  "CAVARTE HERRERA NOA ISABELLA": {
+    "grado": "4A",
+    "acudiente": "HERRERA RIVAS MARTHA LILIANA",
+    "telefono": "3144415605",
+    "correo": "maliheri@hotmail.com",
+    "direccion": "CL 37 23 87",
+    "documento": "1222128417"
+  },
+  "RODRIGUEZ JIMENEZ VICTORIA": {
+    "grado": "4A",
+    "acudiente": "JIMENEZ CAMARGO MONICA DANIELA",
+    "telefono": "3182639861",
+    "correo": "danielajc9@gmail.com",
+    "direccion": "CR 23 28 110",
+    "documento": "1057986031"
+  },
+  "MARTINEZ MONTES JOHAN SEBASTIAN": {
+    "grado": "4A",
+    "acudiente": "MARTINEZ RIANO FABIO",
+    "telefono": "3103343609",
+    "correo": "fabio11913@hotmail.com",
+    "direccion": "CL 17 32 16",
+    "documento": "1222127248"
+  },
+  "OSPINO MELLIZO MATHIAS ALFONSO": {
+    "grado": "4A",
+    "acudiente": "MELLIZO CANO LILIBETH",
+    "telefono": "3002208734",
+    "correo": "lmellizo@hotmail.com",
+    "direccion": "CR 40 37 44",
+    "documento": "1044004381"
+  },
+  "NARANJO VIANCHA DANNA ISABELLA": {
+    "grado": "4A",
+    "acudiente": "NARANJO MONTANEZ JAIRO ALBERTO",
+    "telefono": "3187160243",
+    "correo": "alber88naranjo@gmail.com",
+    "direccion": "CR 16 37 12",
+    "documento": "1222128126"
+  },
+  "BELTRAN NEIRA ISABELLA": {
+    "grado": "4A",
+    "acudiente": "NEIRA RIVAS ZEINY XIOMARA",
+    "telefono": "3142468019",
+    "correo": "ingzeinyneira@hotmail.com",
+    "direccion": "CL 45 11 127",
+    "documento": "1222126694"
+  },
+  "MEDINA PEDROZA MARTIN": {
+    "grado": "4A",
+    "acudiente": "PEDROZA PUENTES DIANA MARCELA",
+    "telefono": "3103345723",
+    "correo": "dianampp2021@gmail.com",
+    "direccion": "CR 9 23 05",
+    "documento": "1222127187"
+  },
+  "RAMIREZ CABRERA VALERY SOFIA": {
+    "grado": "4A",
+    "acudiente": "RAMIREZ HERNANDEZ NESTOR ENRIQUE",
+    "telefono": "3138259212",
+    "correo": "ramirezher@hotmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1222127919"
+  },
+  "RESTREPO CARRENO SAMUEL FELIPE": {
+    "grado": "4A",
+    "acudiente": "RESTREPO BENJUMEA DIEGO ALEXANDER",
+    "telefono": "3203265747",
+    "correo": "arb.diego@gmail.com",
+    "direccion": "CL 21 20 70",
+    "documento": "1222125703"
+  },
+  "INFANTE RODRIGUEZ JUAN ESTEBAN": {
+    "grado": "4A",
+    "acudiente": "RODRIGUEZ FORERO INGRID TATIANA",
+    "telefono": "3144403952",
+    "correo": "tatianacontable@gmail.com",
+    "direccion": "CL 64 36 20",
+    "documento": "1222126152"
+  },
+  "RODRIGUEZ SOLER SAMUEL SANTIAGO": {
+    "grado": "4A",
+    "acudiente": "RODRIGUEZ LOPEZ RAFAEL ANTONIO",
+    "telefono": "3144759801",
+    "correo": "rarabogados@hotmail.com",
+    "direccion": "CL 33 28 47",
+    "documento": "1222128793"
+  },
+  "SALGADO GARZON DANIEL ANDRES": {
+    "grado": "4A",
+    "acudiente": "SALGADO NINO DIEGO ANDRES",
+    "telefono": "3102827155",
+    "correo": "diego910616@hotmail.com",
+    "direccion": "CL 7 43 45",
+    "documento": "1222128332"
+  },
+  "ORTEGA SANCHEZ MARIANA CELESTE": {
+    "grado": "4A",
+    "acudiente": "SANCHEZ MEDINA DIANA PATRICIA",
+    "telefono": "3128308875",
+    "correo": "dinita4324@hotmail.com",
+    "direccion": "CR 23 22 18",
+    "documento": "1222125684"
+  },
+  "ORDONEZ SANDOVAL JUAN ANDRES": {
+    "grado": "4A",
+    "acudiente": "SANDOVAL DIAZ INGRID JOHANNA",
+    "telefono": "3212055226",
+    "correo": "injohanasandoval@gmail.com",
+    "direccion": "MZ 27 CASA 26",
+    "documento": "1222119656"
+  },
+  "CARDENAS SERRANO ANGEL ESTEBAN": {
+    "grado": "4A",
+    "acudiente": "SERRANO CABRERA ANA CAROLINA",
+    "telefono": "3115302090",
+    "correo": "carolinaserrano96@gmail.com",
+    "direccion": "CL 40 TV 23 37 TO 12 APTO 302",
+    "documento": "1222127123"
+  },
+  "ESPITIA SOLANO MARIA VICTORIA": {
+    "grado": "4A",
+    "acudiente": "SOLANO ROJAS FLORE EDALID",
+    "telefono": "3138594967",
+    "correo": "floresolanorojas@gmail.com",
+    "direccion": "CL 46 11 17",
+    "documento": "1222130050"
+  },
+  "PEREZ MARTINEZ MIA VALENTINA": {
+    "grado": "4A",
+    "acudiente": "MARTINEZ ZAPATA NAYDU JULIANA",
+    "telefono": "3213654853",
+    "correo": "julianamartinezzapata29@gmail.com",
+    "direccion": "CL 27 35 45",
+    "documento": "1222127213"
+  },
+  "FERNANDEZ CRUZ EMMANUEL": {
+    "grado": "4A",
+    "acudiente": "CRUZ LIZCANO ADRIANA CAROLINA",
+    "telefono": "3112057181",
+    "correo": "adrianacarolinacruz@gmail.com",
+    "direccion": "CL 25 12 24",
+    "documento": "1222124955"
+  },
+  "MARIN GONZALEZ EMMANUEL": {
+    "grado": "4A",
+    "acudiente": "LOPEZ GONZALEZ NANCY ANGELICA",
+    "telefono": "3102422893",
+    "correo": "angelicalopezg.gc@gmail.com",
+    "direccion": "KM 2.5 VIA YOPAL AGUAZUL",
+    "documento": "1222127263"
+  },
+  "PAEZ CANIZALEZ ANDRES ESTEBAN": {
+    "grado": "4A",
+    "acudiente": "PAEZ CUELLAR GUILLERMO ANDRES",
+    "telefono": "3114688051",
+    "correo": "gpaez0911@gmail.com",
+    "direccion": "K 8 15 53",
+    "documento": "1222128144"
+  },
+  "MORENO BARRETO MARIA LUCIANA": {
+    "grado": "4B",
+    "acudiente": "BARRETO HERNANDEZ LADY ZORANY",
+    "telefono": "3143213048",
+    "correo": "leidy1350@gmail.com",
+    "direccion": "CR 15 17 63",
+    "documento": "1145428082"
+  },
+  "CORREA HUERTAS KAROL SOFIA": {
+    "grado": "4B",
+    "acudiente": "CORREA JAIMES ALONSO",
+    "telefono": "3124802934",
+    "correo": "mave0921@hotmail.com",
+    "direccion": "CL 41 9 09",
+    "documento": "1222126678"
+  },
+  "CUADRA GARZON ERICK SANTIAGO": {
+    "grado": "4B",
+    "acudiente": "CUADRA TONCON RONALD DARIO",
+    "telefono": "3223296180",
+    "correo": "rodacuto@gmail.com",
+    "direccion": "CR13 26 44",
+    "documento": "1222129174"
+  },
+  "DUARTE ORREGO AVRIL VICTORIA": {
+    "grado": "4B",
+    "acudiente": "DUARTE PEREZ DIEGO ANDRES",
+    "telefono": "3176487346",
+    "correo": "diegoduarte91@outlook.com",
+    "direccion": "CR 23 28 110",
+    "documento": "1222128629"
+  },
+  "GIL GONZALEZ PAULA ANDREA": {
+    "grado": "4B",
+    "acudiente": "GIL MARTINEZ PAUL ANDRES",
+    "telefono": "3213008305",
+    "correo": "paulgilmartinez522@gmail.com",
+    "direccion": "CR 28 51 01",
+    "documento": "1222125925"
+  },
+  "GUARNIZO GONZALEZ ANA LUCIA": {
+    "grado": "4B",
+    "acudiente": "GONZALEZ MARTINEZ AURA DANIELA",
+    "telefono": "3175511338",
+    "correo": "auradaniela1712@gmail.com",
+    "direccion": "CL 28 28 03",
+    "documento": "1104552332"
+  },
+  "BARRETO HUMO MILAN JERONIMO": {
+    "grado": "4B",
+    "acudiente": "HUMO SILVA MARIA ISABEL",
+    "telefono": "3112076915",
+    "correo": "mariaisabelhumo@gmail.com",
+    "direccion": "CR 35 28 20",
+    "documento": "1222126408"
+  },
+  "NINO MASIAS MARIA LUCIANA": {
+    "grado": "4B",
+    "acudiente": "MACIAS GUTIERREZ LYDA MILENA",
+    "telefono": "3132387410",
+    "correo": "lyda.milena.masias@gmail.com",
+    "direccion": "CL 9 21 44",
+    "documento": "1118573136"
+  },
+  "PATINO MERCHAN JUAN SEBASTIAN": {
+    "grado": "4B",
+    "acudiente": "MERCHAN ROJAS ERIKA LUCIA",
+    "telefono": "3232011252",
+    "correo": "emerchanrojas@gmail.com",
+    "direccion": "CL 41 12 05",
+    "documento": "1222126765"
+  },
+  "TOJUELO MONGUA LUIS MARIO": {
+    "grado": "4B",
+    "acudiente": "MONGUA ARIAS OTILIA",
+    "telefono": "3204379463",
+    "correo": "otimongua@gmail.com",
+    "direccion": "VIA MATEPANTANO 27 215 CASA 1",
+    "documento": "1222128441"
+  },
+  "MONTAGUT RODRIGUEZ MARIANA": {
+    "grado": "4B",
+    "acudiente": "MONTAGUT FERNANDEZ MANUEL ALEJANDRO",
+    "telefono": "3134216636",
+    "correo": "manuelmontagutf1@gmail.com",
+    "direccion": "CL 36 16 14",
+    "documento": "1118572936"
+  },
+  "PARRA RUEDA SAMANTHA NICOLE": {
+    "grado": "4B",
+    "acudiente": "PARRA GAMEZ RICARDO JAVIER",
+    "telefono": "3138794409",
+    "correo": "parraalphabm@gmail.com",
+    "direccion": "CR 26 20 20",
+    "documento": "1222127110"
+  },
+  "PERALTA FLOREZ SAMUEL ALEJANDRO": {
+    "grado": "4B",
+    "acudiente": "PERALTA MARTINEZ DOLFUS ALBERTO",
+    "telefono": "3138297943",
+    "correo": "alberto.peralta@ferreaguas.com",
+    "direccion": "CL 15 21 126",
+    "documento": "1222126756"
+  },
+  "OLAYA RINCON THALIANA": {
+    "grado": "4B",
+    "acudiente": "RINCON QUINTERO NATALY",
+    "telefono": "3228836094",
+    "correo": "natarincon25@gmail.com",
+    "direccion": "CL 33 6 91",
+    "documento": "1222127348"
+  },
+  "ROBLES AVILA ISAAC": {
+    "grado": "4B",
+    "acudiente": "ROBLES ALBARRACIN WILSON MANUEL",
+    "telefono": "3152394451",
+    "correo": "wilsonrobles8@hotmail.com",
+    "direccion": "CR 19 34 37",
+    "documento": "1222127250"
+  },
+  "LOPEZ SANDOVAL YACOB JERONIMO": {
+    "grado": "4B",
+    "acudiente": "SANDOVAL LANDINEZ JEIMY CAROLINA",
+    "telefono": "3115217477",
+    "correo": "carito.sandoval10@hotmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1054289907"
+  },
+  "SANCHEZ SILVA JUAN ESTEBAN": {
+    "grado": "4B",
+    "acudiente": "SILVA JOHANA LEIDY JOHANA",
+    "telefono": "3133514641",
+    "correo": "leidy.silvas@gmail.com",
+    "direccion": "CL 37 1 34",
+    "documento": "1222126555"
+  },
+  "LARROTA TRASLAVINA EMMANUEL": {
+    "grado": "4B",
+    "acudiente": "TRASLAVINA VARGAS EDDY JOHANA",
+    "telefono": "3138176679",
+    "correo": "eddyto7@hotmail.com",
+    "direccion": "KM 7 VIA PALOMAS",
+    "documento": "1222126398"
+  },
+  "CARDENAS VARGAS DIEGO ALEJANDRO": {
+    "grado": "4B",
+    "acudiente": "VARGAS TAY HEIDI LORENA",
+    "telefono": "3102346921",
+    "correo": "asesoriaslorena@gmail.com",
+    "direccion": "CL 34 27 20",
+    "documento": "1222128229"
+  },
+  "SANCHEZ FIGUEREDO SIMON DANIEL": {
+    "grado": "4B",
+    "acudiente": "FIGUEREDO VERGARA JERIKA FERNANDA",
+    "telefono": "3102199666",
+    "correo": "fernandafigueredov@hotmail.com",
+    "direccion": "CR 22 10 08",
+    "documento": "122230137"
+  },
+  "CAMEJO CAMEJO DAVID ALEJANDRO": {
+    "grado": "4C",
+    "acudiente": "CAMEJO GOMEZ OSCAR DAVID",
+    "telefono": "3155759409",
+    "correo": "camejo80@gmail.com",
+    "direccion": "CR 26 16 28",
+    "documento": "1092545651"
+  },
+  "GOMEZ BUENO MAIA VICTORIA": {
+    "grado": "4C",
+    "acudiente": "GOMEZ GARCIA EDWARD BENILDO",
+    "telefono": "3204012660",
+    "correo": "abogado.eduard@gmail.com",
+    "direccion": "CR 19 9 34",
+    "documento": "1222128911"
+  },
+  "HURTADO FERNANDEZ SAMUEL DAVID": {
+    "grado": "4C",
+    "acudiente": "HURTADO BELLO WILFREDO",
+    "telefono": "3102037338",
+    "correo": "hurtadobello87@gmail.com",
+    "direccion": "CR 46 50 24",
+    "documento": "1222127152"
+  },
+  "MARINO MARTINEZ LUCIANA": {
+    "grado": "4C",
+    "acudiente": "MARTINEZ FONSECA MONICA PATRICIA",
+    "telefono": "3115514726",
+    "correo": "moinikita_0507@hotmail.com",
+    "direccion": "CL 26 11 94",
+    "documento": "1222128690"
+  },
+  "MONTENEGRO VALDERRAMA GABRIELA": {
+    "grado": "4C",
+    "acudiente": "MONTENEGRO HERRERA JUAN PABLO",
+    "telefono": "3102625004",
+    "correo": "jp19845@hotmail.com",
+    "direccion": "CR 6 24 43",
+    "documento": "1222127945"
+  },
+  "GONZALEZ NARANJO JUAN JOSE": {
+    "grado": "4C",
+    "acudiente": "NARANJO PUENTES LYDA CONSTANZA",
+    "telefono": "3212477940",
+    "correo": "lyda.naranjo.sgi@gmail.com",
+    "direccion": "CR 23 36 46",
+    "documento": "1222126659"
+  },
+  "CORTEZ RUBIANO ISAAC BENJAMIN": {
+    "grado": "4C",
+    "acudiente": "RUBIANO BARRERA RAQUEL BETSEY",
+    "telefono": "3103104757",
+    "correo": "ratiel.rubiano@gmail.com",
+    "direccion": "CR 27 15 33",
+    "documento": "1222130324"
+  },
+  "PORTELA SALAMANCA THIAGO FABIAN": {
+    "grado": "4C",
+    "acudiente": "SALAMANCA CHIPIAJE JENNY JULIETH",
+    "telefono": "3115925885",
+    "correo": "jennysalamanca1607@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222126448"
+  },
+  "PEREZ TORRES MARTIN FRANCISCO": {
+    "grado": "4C",
+    "acudiente": "TORRES  AYDA LUZ",
+    "telefono": "3102402195",
+    "correo": "aylutoju@gmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1222127425"
+  },
+  "TORRES CUTA SAMUEL ALEJANDRO": {
+    "grado": "4C",
+    "acudiente": "TORRES SALAMANCA OSCAR IVAN",
+    "telefono": "3214710582",
+    "correo": "osivtosa.601014@yahoo.es",
+    "direccion": "LA DECISION P 5 TO 21 APTO 504",
+    "documento": "1222125974"
+  },
+  "OLIVEROS SIMBAQUEVA EMILLY NICOL": {
+    "grado": "4C",
+    "acudiente": "OLIVEROS SIMBAQUEVA LILIANA CRISTINA",
+    "telefono": "3144653530",
+    "correo": "cris09nic3ke@gmail.com",
+    "direccion": "CR 20 23 12",
+    "documento": "1011246657"
+  },
+  "AVELLA ROMERO LAUREN ISABELLA": {
+    "grado": "4C",
+    "acudiente": "AVELLA MONTANA HENRY FERNANDO",
+    "telefono": "3124647130",
+    "correo": "ferchoavella@hotmail.com",
+    "direccion": "CR 1  64 16",
+    "documento": "1222129820"
+  },
+  "CUEVAS SANCHEZ AARON STIVEN": {
+    "grado": "4C",
+    "acudiente": "CUEVAS GALVIS RONY ANDRES",
+    "telefono": "3203741456",
+    "correo": "ronicuevas62@gmail.com",
+    "direccion": "CL 38 48 13",
+    "documento": "1090400448"
+  },
+  "BENITEZ GARCIA MARIA ALEJANDRA": {
+    "grado": "4C",
+    "acudiente": "BENITEZ MARIO FERNANDO",
+    "telefono": "3187727975",
+    "correo": "eq.ingedal.sas@gmail.com",
+    "direccion": "CL 12 27 50",
+    "documento": "1096247189"
+  },
+  "JIMENEZ MURILLO MARIA ISABEL": {
+    "grado": "4C",
+    "acudiente": "MURILLO OSUNA INGRID LILIANA",
+    "telefono": "3202476586",
+    "correo": "lilianita.19931026@gmail.com",
+    "direccion": "CR 22 8 40",
+    "documento": "1115918234"
+  },
+  "CALDERON LOPEZ DILAN BLADIMIR": {
+    "grado": "4C",
+    "acudiente": "CALDERON MOLINA BLADIMIR",
+    "telefono": "3228206366",
+    "correo": "transportesblcaldelonltda@gmail.com",
+    "direccion": "CR 23 28 100",
+    "documento": "1222127701"
+  },
+  "RINCON ALARCON SARA ISABELLA": {
+    "grado": "4C",
+    "acudiente": "ALARCON YUNADO ANGIE ROCIO",
+    "telefono": "3113966139",
+    "correo": "angiealarcon9422@gmail.com",
+    "direccion": "CL 41 8 10",
+    "documento": "1222129096"
+  },
+  "CAMACHO LOPEZ VALENTINA": {
+    "grado": "4C",
+    "acudiente": "LOPEZ MORENO JULIETH VERONICA",
+    "telefono": "3167419545",
+    "correo": "jvlm360@gmail.com",
+    "direccion": "CL 31 37 27 MZ P LOTE 5",
+    "documento": "1121955858"
+  },
+  "ALVAREZ ROJAS MARIA CAMILA": {
+    "grado": "4D",
+    "acudiente": "ALVAREZ BARRERA JOSE ALFREDO",
+    "telefono": "3214830444",
+    "correo": "alfredo2174@hotmail.com",
+    "direccion": "CR 14 43 33",
+    "documento": "1222125635"
+  },
+  "ALVAREZ PALACIOS JUAN ESTEBAN": {
+    "grado": "4D",
+    "acudiente": "ALVAREZ GALAN ELKIN RICARDO",
+    "telefono": "3138727472",
+    "correo": "ricardo_algalan@hotmail.com",
+    "direccion": "CL 30 28 46",
+    "documento": "1222124559"
+  },
+  "APOLINAR CONDE ANNY SOFIA": {
+    "grado": "4D",
+    "acudiente": "CONDE RODRIGUEZ LEIDY",
+    "telefono": "3102013728",
+    "correo": "leidy.conder16@gmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1222127731"
+  },
+  "CORREA MEDINA ASHLEY LUCIANA": {
+    "grado": "4D",
+    "acudiente": "CORREA GUATIBONZA LUIS CARLOS",
+    "telefono": "3118977903",
+    "correo": "exmedina272@gmail.com",
+    "direccion": "CR 4 53 37",
+    "documento": "1222125476"
+  },
+  "ROSAS GUAUQUE EMILY SOPHIA": {
+    "grado": "4D",
+    "acudiente": "GUAUQUE PINTO MONICA VIVIANA",
+    "telefono": "3115467765",
+    "correo": "monivivi89@hotmail.com",
+    "direccion": "CL 30 28 46",
+    "documento": "1145428334"
+  },
+  "HUERFANO NINCO AMELIA": {
+    "grado": "4D",
+    "acudiente": "HUERFANO MENDOZA EDUIN JAVIER",
+    "telefono": "3203039462",
+    "correo": "huerfaninho9@hotmail.com",
+    "direccion": "CR27 27 32",
+    "documento": "1121957222"
+  },
+  "SANCHEZ MORENO MATIAS EDUARDO": {
+    "grado": "4D",
+    "acudiente": "MORENO NIETO NURY YASMIN",
+    "telefono": "3144794347",
+    "correo": "nuryyasminmorenonieto@gmail.com",
+    "direccion": "CL 58 1 44",
+    "documento": "1222128101"
+  },
+  "PABON PASTRANA DIEGO ALEJANDRO": {
+    "grado": "4D",
+    "acudiente": "PASTRANA TINEDO YOLIMA CECILIA",
+    "telefono": "3208932334",
+    "correo": "y.c.pt@hotmail.com",
+    "direccion": "CR 29 31 15",
+    "documento": "1222126342"
+  },
+  "ROA VARGAS SARAHI NICOLL": {
+    "grado": "4D",
+    "acudiente": "ROA LOPEZ JOSE EDILBERTO",
+    "telefono": "3115137238",
+    "correo": "joseedilberto63@gmail.com",
+    "direccion": "CL 41 5 28",
+    "documento": "1222125249"
+  },
+  "JOYA RODRIGUEZ EMMA ISABELLA": {
+    "grado": "4D",
+    "acudiente": "RODRIGUEZ MARTINEZ DEISY LORENA",
+    "telefono": "3118910620",
+    "correo": "lorenarodriguez_23@hotmail.com",
+    "direccion": "CL 40 TV 23 37 TO 8 APTO 407",
+    "documento": "1222127973"
+  },
+  "CARDENAS SERRATO HANNA SOFIA": {
+    "grado": "4D",
+    "acudiente": "SERRATO MORENO DANIELA",
+    "telefono": "3113951321",
+    "correo": "danielasm280m@gmail.com",
+    "direccion": "MZ 6 CASA 31",
+    "documento": "1222126850"
+  },
+  "TORRES URCUA JUAN PABLO": {
+    "grado": "4D",
+    "acudiente": "URCUA SUAREZ VIVIANA ANDREA",
+    "telefono": "3142027955",
+    "correo": "socoldex@gmail.com",
+    "direccion": "CR 31 17 108",
+    "documento": "1222128310"
+  },
+  "CHICA GONZALEZ SALOME": {
+    "grado": "4D",
+    "acudiente": "TRUJILLO PASTRANA JHON EDINSON",
+    "telefono": "3143758925",
+    "correo": "jtrujillopastrana8412@gmail.com",
+    "direccion": "CL 7 5 50 MORICHAL",
+    "documento": "1222126846"
+  },
+  "DIAZ MILLAN THIAGO": {
+    "grado": "4D",
+    "acudiente": "ALARCON MILLAN MIRTA YANETH",
+    "telefono": "3148408911",
+    "correo": "janeth23vargas@gmail.com",
+    "direccion": "CL 38 2 40",
+    "documento": "1222128618"
+  },
+  "ALFONSO CORTES ISAAC": {
+    "grado": "1A",
+    "acudiente": "ALFONSO TORRES SERGIO DAVID",
+    "telefono": "3212121217",
+    "correo": "sergiodavid_062@hotmail.com",
+    "direccion": "CR 20 16 26",
+    "documento": "1222136264"
+  },
+  "BAYONA VARGAS MIA GABRIELA": {
+    "grado": "1A",
+    "acudiente": "BAYONA BRICENO JUAN GABRIEL",
+    "telefono": "3157279509",
+    "correo": "juanbayona0912@hotmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222134947"
+  },
+  "RUBIANO CAMARGO JHOVAN": {
+    "grado": "1A",
+    "acudiente": "CAMARGO GARCIA DIANA XIMENA",
+    "telefono": "3505690523",
+    "correo": "ximena.camargo87@gmail.com",
+    "direccion": "CR 23  9 35",
+    "documento": "1222136630"
+  },
+  "CEPEDA CELY MARTIN JERONIMO": {
+    "grado": "1A",
+    "acudiente": "CEPEDA MESA YUBER HERNANDO",
+    "telefono": "3102349681",
+    "correo": "yuher001@hotmail.com",
+    "direccion": "CL 35 13 38",
+    "documento": "1052418332"
+  },
+  "GONZALEZ MARTNEZ OLIVIA": {
+    "grado": "1A",
+    "acudiente": "GONZALEZ CORREDOR ARIEL",
+    "telefono": "3162298774",
+    "correo": "gonzalez.ari@outlook.com",
+    "direccion": "CR 25 37 68",
+    "documento": "1121974207"
+  },
+  "BARRERA GONZALEZ CELESTE": {
+    "grado": "1A",
+    "acudiente": "GONZALEZ RINCON NATHALIA",
+    "telefono": "3142344230",
+    "correo": "nathagonzalez2023@gmail.com",
+    "direccion": "CR 8 25 73",
+    "documento": "1222135701"
+  },
+  "GUERRERO PRECIADO LUCIANA": {
+    "grado": "1A",
+    "acudiente": "GUERRERO MENDOZA EDUAR ALBEIRO",
+    "telefono": "3134412317",
+    "correo": "eagmen@hotmail.com",
+    "direccion": "CL 27 11 29B",
+    "documento": "1118578856"
+  },
+  "PAEZ GUTIERREZ VIOLETA": {
+    "grado": "1C",
+    "acudiente": "PAEZ GARCIA JOSE JOAQUIN",
+    "telefono": "3123449614",
+    "correo": "jose112130@gmail.com",
+    "direccion": "CL 41 48 52",
+    "documento": "1118578899"
+  },
+  "OROS WALTEROS ERICK SAMUEL": {
+    "grado": "1A",
+    "acudiente": "OROS DE DIOS YULIER EMERSON",
+    "telefono": "3202807884",
+    "correo": "emersandedios@gmail.com",
+    "direccion": "CR 19 23 12",
+    "documento": "1222136229"
+  },
+  "PANESSO ROSAS ARIANNA ISABELLA": {
+    "grado": "1A",
+    "acudiente": "ROSAS FERNANDEZ YAJAIRA",
+    "telefono": "3102177302",
+    "correo": "yajaira.rosales18@outlook.es",
+    "direccion": "CL 42  11 39",
+    "documento": "1222136403"
+  },
+  "CRISTANCHO SANABRIA THOMAS MATIAS": {
+    "grado": "1A",
+    "acudiente": "SANABRIA CRUZ NYDIA JOHANA",
+    "telefono": "3103321875",
+    "correo": "johanita0114@hotmail.com",
+    "direccion": "CL 40 23 87 TO 3 APTO 101",
+    "documento": "1222135638"
+  },
+  "CAMARGO TORRES JUAN JOSE": {
+    "grado": "1A",
+    "acudiente": "TORRES NINO FABIOLA",
+    "telefono": "3112397766",
+    "correo": "fabioladiscapacidad@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222134346"
+  },
+  "URRUTIA MEDINA JUAN SEBASTIAN": {
+    "grado": "1A",
+    "acudiente": "URRITIA LOPEZ GEORGE SEBASTIAN",
+    "telefono": "3133551024",
+    "correo": "george.sebastian@gmail.com",
+    "direccion": "CL 43 06 02",
+    "documento": "1222136545"
+  },
+  "GARCIA PLAZAS EDWIN ESTEBAN": {
+    "grado": "1A",
+    "acudiente": "GARCIA GARCIA EDWIN YESID",
+    "telefono": "3232486273",
+    "correo": "Edwin-yesid-18@hotmail.com",
+    "direccion": "CR 15 36 03",
+    "documento": "1116876508"
+  },
+  "COLORADO VEGA LUCIANA": {
+    "grado": "1A",
+    "acudiente": "COLORADO CUTA JUAN JOSE",
+    "telefono": "3107530355",
+    "correo": "juanjosecoloradocuta@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222135903"
+  },
+  "RAMIREZ CORTES MATEO": {
+    "grado": "1A",
+    "acudiente": "RAMIREZ CRUZ DANIEL JOSUE",
+    "telefono": "3123526496",
+    "correo": "diana101011@gmail.com",
+    "direccion": "MZ 6 CASA 23 BARRIO NUEVA GRANADA",
+    "documento": "1222135276"
+  },
+  "MONTES GAVIRIA EMMY VALERIA": {
+    "grado": "1A",
+    "acudiente": "MONTES GARCIA ROGELIO EFREN",
+    "telefono": "3112769232",
+    "correo": "efren19montes@gmail.com",
+    "direccion": "CR 13 26 74",
+    "documento": "1118578422"
+  },
+  "ALVAREZ PALACIOS NICOLAS": {
+    "grado": "1B",
+    "acudiente": "ALVAREZ GALAN ELKIN RICARDO",
+    "telefono": "3138727472",
+    "correo": "ricardo_algalan@hotmail.com",
+    "direccion": "CL 30 28 46",
+    "documento": "1222136271"
+  },
+  "CHAPARRO OJEDA ISABELLA": {
+    "grado": "1B",
+    "acudiente": "CHAPARRO BOHORQUEZ EULOGIO",
+    "telefono": "3235913334",
+    "correo": "eulogiocha32@gmail.com",
+    "direccion": "CR 11 29 04",
+    "documento": "1222135282"
+  },
+  "CHAPARRO MESA ERICK JOEL": {
+    "grado": "1B",
+    "acudiente": "CHAPARRO PONGUTA WILLIAM DANIEL",
+    "telefono": "3208099019",
+    "correo": "danichaparro85@gmail.com",
+    "direccion": "CL 27 12 27",
+    "documento": "1118578854"
+  },
+  "LAVERDE GOMEZ EIMY GABRIELA": {
+    "grado": "1B",
+    "acudiente": "LAVERDE GIRALDO ELKIN HUMBERTO",
+    "telefono": "3224758340",
+    "correo": "elkingiraldo2102@gmail.com",
+    "direccion": "CR 30 CR 3",
+    "documento": "1118578865"
+  },
+  "RIOS LOPEZ LIAM SAMUEL": {
+    "grado": "1B",
+    "acudiente": "LOPEZ BUITRAGO JERALDINI",
+    "telefono": "3105676815",
+    "correo": "jeraldinilopez96@gmail.com",
+    "direccion": "MZ 100 CS 15 LA BENDICION",
+    "documento": "1222136272"
+  },
+  "HUERTAS MALDONADO JOHAN MATIAS": {
+    "grado": "1B",
+    "acudiente": "MALDONADO  ANGELA BRITHEY",
+    "telefono": "3132523923",
+    "correo": "brithey24@hotmail.com",
+    "direccion": "CR 17 29 05",
+    "documento": "1222136577"
+  },
+  "NOVA PAEZ DYLAN SMITH": {
+    "grado": "1B",
+    "acudiente": "NOVA ARBOLEDA JUAN PABLO",
+    "telefono": "3125368890",
+    "correo": "juanova_79@hotmail.com",
+    "direccion": "MZ 128 CA 20 LA BENDICION",
+    "documento": "1118578412"
+  },
+  "GONZALEZ NOVOA JACOBO ANDRES": {
+    "grado": "1B",
+    "acudiente": "NOVOA GONZALEZ YOLVY SAMANTHA",
+    "telefono": "3203793902 - 3208149770",
+    "correo": "qrq_samanthaprofile@gmail.com",
+    "direccion": "CL 42 1 127",
+    "documento": "1053617731"
+  },
+  "PATINO RAMIREZ ERICK MATHIAS": {
+    "grado": "1B",
+    "acudiente": "PATINO AVELLA FERLEY",
+    "telefono": "3173192447",
+    "correo": "ferley.patio@gmail.com",
+    "direccion": "CR 15 31 27",
+    "documento": "1222135699"
+  },
+  "CONTRERAS PEREZ URIEL ALEJANDRO": {
+    "grado": "1B",
+    "acudiente": "PEREZ SANDOVAL ELIANA",
+    "telefono": "3122914865",
+    "correo": "enfermeliana@gmail.com",
+    "direccion": "CR 37 37 69",
+    "documento": "1118578056"
+  },
+  "PEREZ RICO BRANDON ANDRES": {
+    "grado": "1B",
+    "acudiente": "RICO GUZMAN DAHIANA JASBLEIDY",
+    "telefono": "3212690584",
+    "correo": "ddahianajasbleidyrico@gmail.com",
+    "direccion": "CR 9 45 12",
+    "documento": "1118578155"
+  },
+  "CAMARGO TORRES EMANUEL": {
+    "grado": "1B",
+    "acudiente": "TORRES NINO FABIOLA",
+    "telefono": "3112397766",
+    "correo": "fabioladiscapacidad@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222134347"
+  },
+  "AGUILAR VARGAS EMILY SARAY": {
+    "grado": "1B",
+    "acudiente": "VARGAS ROJAS YANIRA MILENA",
+    "telefono": "3123144457",
+    "correo": "mayuelo18@gmail.com",
+    "direccion": "CR 26 16 08",
+    "documento": "1222134431"
+  },
+  "GONZALEZ GUZMAN LUIS JOAQUIN": {
+    "grado": "1B",
+    "acudiente": "GONZALEZ CAYAGUA DIDIER",
+    "telefono": "3124052711",
+    "correo": "gdidier302@gmail.com",
+    "direccion": "CL 24 12 79",
+    "documento": "1222135169"
+  },
+  "RIVEROS ANGEL DALET MATHEO": {
+    "grado": "1B",
+    "acudiente": "RIVEROS CARRERO ANDRES GERARDO",
+    "telefono": "3217515687",
+    "correo": "andres.riveros3327@gmail.com",
+    "direccion": "Cl 34 11 45",
+    "documento": "1222136327"
+  },
+  "CASTILLO AYA OSCAR DANIEL": {
+    "grado": "1B",
+    "acudiente": "CASTILLO SILVA OSCAR JAVIER JUNIOR",
+    "telefono": "3106763453",
+    "correo": "oscarjj_22@hotmail.com",
+    "direccion": "TV 23 37 87 TO 9 AP 501",
+    "documento": "1142115298"
+  },
+  "ALVAREZ RUEDA GABRIEL SANTIAGO": {
+    "grado": "1B",
+    "acudiente": "RUEDA PABON LIDIA",
+    "telefono": "3183929078",
+    "correo": "lr8902@gmail.com",
+    "direccion": "CL 26 28 67",
+    "documento": "1222135255"
+  },
+  "BAQUERO FORERO BIBIAN GABRIELLE": {
+    "grado": "1C",
+    "acudiente": "BAQUERO MACIAS IRVING YAMID",
+    "telefono": "3004479717",
+    "correo": "irvingbaquero@gmail.com",
+    "direccion": "CL 23 7 04",
+    "documento": "1123451358"
+  },
+  "LAZARO CAMACHO MATHIAS": {
+    "grado": "1C",
+    "acudiente": "CAMACHO MARTINEZ ANGELICA MARIA",
+    "telefono": "3204643939",
+    "correo": "angelicacamacho@gmail.com",
+    "direccion": "CR 11 31 58",
+    "documento": "1118577968"
+  },
+  "DUARTE TIBATA JOSUE DANIEL": {
+    "grado": "1C",
+    "acudiente": "DUARTE AVENDANO FABIAN ESTEBAN",
+    "telefono": "3125411767",
+    "correo": "duartetibata@gmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1222134503"
+  },
+  "FONSECA BARRERA DANIEL ALEJANDRO": {
+    "grado": "1C",
+    "acudiente": "FONSECA CASTRO JOSE DANIEL",
+    "telefono": "3123392422",
+    "correo": "jodafoca@hotmail.com",
+    "direccion": "VRD EL MORRO",
+    "documento": "1118578064"
+  },
+  "GONZALEZ MENDEZ JHOSELYN": {
+    "grado": "1C",
+    "acudiente": "MENDEZ ALVARADO YUSNEILA",
+    "telefono": "3115247077",
+    "correo": "yumeva23@gmail.com",
+    "direccion": "CORREGIMIENTO MORICHAL",
+    "documento": "1222135167"
+  },
+  "RODRIGUEZ MENDOZA ANA PAULA": {
+    "grado": "1C",
+    "acudiente": "MENDOZA PINO RANDA YANINE",
+    "telefono": "3134116354",
+    "correo": "randa.mendoza@hotmail.com",
+    "direccion": "CR 44 38 63",
+    "documento": "1118579093"
+  },
+  "NINO URNABO ANA MARIA": {
+    "grado": "1C",
+    "acudiente": "NINO PONGUTA JHON JAIRO",
+    "telefono": "3202791490",
+    "correo": "nohjjairo73@gmail.com",
+    "direccion": "CL 21 18 27",
+    "documento": "1118578728"
+  },
+  "PINTO ORTIZ VICTORIA": {
+    "grado": "1C",
+    "acudiente": "PINTO RODRIGUEZ MAURICIO  RICARDO",
+    "telefono": "3214036278",
+    "correo": "pintos74@hotmail.com",
+    "direccion": "CR 25 37 42",
+    "documento": "1222134637"
+  },
+  "PAIVA PINZON MARIA CAMILA": {
+    "grado": "1C",
+    "acudiente": "PINZON ASTROZA JENNY MIREYA",
+    "telefono": "3204155216",
+    "correo": "je.vi@hotmail.com",
+    "direccion": "CL 30 16 73",
+    "documento": "1222135215"
+  },
+  "PIRAGAUTA PEREZ MARIA CAMILA": {
+    "grado": "1C",
+    "acudiente": "PIRAGAUTA ACEVEDO CAMILO EDUARDO",
+    "telefono": "3143577937",
+    "correo": "camilopira32@gmail.com",
+    "direccion": "CR 20 16 34",
+    "documento": "1222134365"
+  },
+  "RAMIREZ OTALORA JUAN SEBASTIAN": {
+    "grado": "1C",
+    "acudiente": "RAMIREZ FONSECA RAMIRO",
+    "telefono": "3133277864",
+    "correo": "randramirez@hotmail.com",
+    "direccion": "CL 19 23 25",
+    "documento": "1118578738"
+  },
+  "SALCEDO CARRILLO SALED ALEJANDRO": {
+    "grado": "1C",
+    "acudiente": "SALCEDO MORENO DAINGER",
+    "telefono": "3155122247",
+    "correo": "daignersalcedo@gmail.com",
+    "direccion": "CL 34 1 68",
+    "documento": "1222134804"
+  },
+  "SILVA PATINO CHRISTOPHER SANTIAGO": {
+    "grado": "1C",
+    "acudiente": "SILVA PLAZAS ROBERTO",
+    "telefono": "3132905489",
+    "correo": "jib532@hotmail.com",
+    "direccion": "CR 15 35 25",
+    "documento": "1118579172"
+  },
+  "CORREA TOVAR MATIAS": {
+    "grado": "1C",
+    "acudiente": "TOVAR MARINO ALITH ARLENNY",
+    "telefono": "3118238991",
+    "correo": "arlennyta@gmail.com",
+    "direccion": "CL26 15 76",
+    "documento": "1222134915"
+  },
+  "JIMENEZ VANEGAS MARIA ELIZABETH": {
+    "grado": "1C",
+    "acudiente": "VANEGAS LOPEZ LEIDY YESENIA",
+    "telefono": "3144722338",
+    "correo": "leidy062008@gmail.com",
+    "direccion": "CL 28 17 69",
+    "documento": "1118205440"
+  },
+  "MORENO VARGAS MIGUEL ANGEL": {
+    "grado": "1C",
+    "acudiente": "VARGAS GONZALEZ MAGDA LORENA",
+    "telefono": "3106157721",
+    "correo": "lorejaco2011@hotmail.com",
+    "direccion": "Cl 33 28 47",
+    "documento": "1028729081"
+  },
+  "BECERRA VARGAS OBED": {
+    "grado": "1C",
+    "acudiente": "VARGAS RIVERA LINDA LORENA",
+    "telefono": "3123144457",
+    "correo": "lindavargasrivera@gmail.com",
+    "direccion": "CR 26 16 08",
+    "documento": "1118578948"
+  },
+  "HERNANDEZ ZEAS LIA SALOME": {
+    "grado": "1C",
+    "acudiente": "ZEAS MONTANEZ MABEL DAYANA",
+    "telefono": "3142973755",
+    "correo": "valerimabel@gmail.com",
+    "direccion": "CL 31 30 69",
+    "documento": "1222134306"
+  },
+  "GARCIA ALFONSO DARA ABIGAIL": {
+    "grado": "1D",
+    "acudiente": "ALFONSO BECERRA RUTH MAGALY",
+    "telefono": "3123016087",
+    "correo": "ruthalfonsobecerra@gmail.com",
+    "direccion": "CL 38 28 47",
+    "documento": "1222221887"
+  },
+  "AREVALO CACERES IAN SIMON": {
+    "grado": "1D",
+    "acudiente": "CACEREZ ANGEL ZULY KIMBERLEY",
+    "telefono": "3182611723",
+    "correo": "caserezzuly@gmail.com",
+    "direccion": "CL 19 13 26",
+    "documento": "1222135693"
+  },
+  "BERNAL CASTANEDA SILVIA SOFIA": {
+    "grado": "1D",
+    "acudiente": "CASTANEDA RINCON JAQUELINE",
+    "telefono": "3105734234",
+    "correo": "jaquelinecastaneda2014@gmail.com",
+    "direccion": "CL 34  20 30",
+    "documento": "1118579268"
+  },
+  "ESTUPINAN HOLGUIN ARIANA ISABELLA": {
+    "grado": "1D",
+    "acudiente": "ESTUPINAN NARANJO EDUARTH",
+    "telefono": "3108064522",
+    "correo": "enaranjocan@gmail.com",
+    "direccion": "CR 16 18 24",
+    "documento": "1145429376"
+  },
+  "FONSECA GOMEZ JUAN ESTEBAN": {
+    "grado": "1D",
+    "acudiente": "FONSECA  JUAN CARLOS",
+    "telefono": "3134207581",
+    "correo": "blue_shadow@hotmail.com",
+    "direccion": "CR 13 27 58",
+    "documento": "1222136378"
+  },
+  "PEREZ GUERRERO JOSE EMILIANO": {
+    "grado": "1D",
+    "acudiente": "GUERRERO MONTANEZ DIANA GRISELA",
+    "telefono": "3214143112",
+    "correo": "dianaguerrerom.21@gmail.com",
+    "direccion": "CL 42 1 127",
+    "documento": "1222134445"
+  },
+  "MERCADO MANTILLA MATHIAS ALEJANDRO": {
+    "grado": "1D",
+    "acudiente": "MANTILLA LOZANO CATERINE",
+    "telefono": "3115059636",
+    "correo": "mantillacaterine@gmail.com",
+    "direccion": "CL 30 TV 7C 20",
+    "documento": "1118577948"
+  },
+  "MURCIA BARBON JUANITA": {
+    "grado": "1D",
+    "acudiente": "MURCIA CONTRERAS IVAN CAMILO",
+    "telefono": "3125442055",
+    "correo": "kamilog12@gmail.com",
+    "direccion": "CL 23 26 15",
+    "documento": "1222135262"
+  },
+  "AGUDELO PANQUEVA ANNIE VICTORIA": {
+    "grado": "1D",
+    "acudiente": "PANQUEVA ESPEJO LUZ ANGELA",
+    "telefono": "3144553786",
+    "correo": "angelluz715@gmail.com",
+    "direccion": "KM 3 VIA YOPAL AGUAZUL",
+    "documento": "1222134861"
+  },
+  "CALLEJAS PEDRAZA JUAN MANUEL": {
+    "grado": "1D",
+    "acudiente": "PEDRAZA HINCAPIE LISBETH",
+    "telefono": "3003533744",
+    "correo": "lisbethph_25@hotmail.com",
+    "direccion": "CL 26 29 14",
+    "documento": "1222134582"
+  },
+  "ZARATE PEREZ LUCIA": {
+    "grado": "1D",
+    "acudiente": "PEREZ MORENO SANDRA XIMENA",
+    "telefono": "3134210044",
+    "correo": "sxpm2019@gmail.com",
+    "direccion": "CL 31 14 123",
+    "documento": "1222134797"
+  },
+  "RESTREPO SIERRA LAURA CELESTE": {
+    "grado": "1D",
+    "acudiente": "RESTREPO BENJUMEA OSCAR EDUARDO",
+    "telefono": "3133780281",
+    "correo": "oscar.restrepobj@gmail.com",
+    "direccion": "CL 21 20 70",
+    "documento": "1118579110"
+  },
+  "RINCON URREGO SHARON ELIETTE": {
+    "grado": "1D",
+    "acudiente": "RINCON ROJAS ANYER JOSUE",
+    "telefono": "3124417553",
+    "correo": "anyerrincon@gmail.com",
+    "direccion": "CL 5 18 61",
+    "documento": "1222134367"
+  },
+  "CACERES RUIZ EMILIANA": {
+    "grado": "1D",
+    "acudiente": "RUIZ ADAN SANDRA MILENA",
+    "telefono": "3102185168",
+    "correo": "milenaruiz-30@hotmail.com",
+    "direccion": "CR 20 5 19",
+    "documento": "1222134925"
+  },
+  "SALAMANCA SALCEDO EMMANUEL ANDRES": {
+    "grado": "1D",
+    "acudiente": "SALAMANCA MOJICA ROLFE ANDRES",
+    "telefono": "3123608201",
+    "correo": "andressalamanca925@gmail.com",
+    "direccion": "MZ 98 CA 34",
+    "documento": "1118578130"
+  },
+  "RICO SERRANO THOMAS ALEJANDRO": {
+    "grado": "1D",
+    "acudiente": "SERRANO SANDOVAL VIVIANA MARCELA",
+    "telefono": "3142787476",
+    "correo": "vivianamarcelaserranosandoval@gmail.com",
+    "direccion": "CL 27 33 03",
+    "documento": "1222136072"
+  },
+  "VALLEJO RUIZ SARA LUCIA": {
+    "grado": "1D",
+    "acudiente": "VALLEJO MORA CARLOS ANTONIO",
+    "telefono": "3138856987 - 3112086795",
+    "correo": "mora424@gmail.com",
+    "direccion": "CR 32 20 43",
+    "documento": "1222135446"
+  },
+  "VASQUEZ VALDES ARANZA": {
+    "grado": "1D",
+    "acudiente": "VASQUEZ MORALES ANGEL ALONSO",
+    "telefono": "3212305405",
+    "correo": "vasquezmorales@hotmail.com",
+    "direccion": "CL 23 7 107",
+    "documento": "1106639641"
+  },
+  "CALLEJAS JIMENEZ MARIA PAULA": {
+    "grado": "1D",
+    "acudiente": "MANUEL ELKIN CALLEJAS HERRERA",
+    "telefono": "3163701520",
+    "correo": "laurajimenez9406@gmail.com",
+    "direccion": "CR 37 33 02",
+    "documento": "1222135791"
+  },
+  "FERNANDEZ CRUZ IVANNA": {
+    "grado": "1D",
+    "acudiente": "CRUZ LIZCANO ADRIANA CAROLINA",
+    "telefono": "3112057181",
+    "correo": "adrianacarolinacruz@gmail.com",
+    "direccion": "CL 25 12 24",
+    "documento": "1118578276"
+  },
+  "FAJARDO GONSALEZ SAMUEL ANDRES": {
+    "grado": "4D",
+    "acudiente": "FAJARDO RESTREPO FABIO ANDRES",
+    "telefono": "3147906404",
+    "correo": "fajardoarquitectosa@gmail.com",
+    "direccion": "CL 32 43C 65",
+    "documento": "1222123023"
+  },
+  "MANRIQUE AGUILAR VICTORIA": {
+    "grado": "5A",
+    "acudiente": "AGUILAR GONZALEZ LINA PAOLA",
+    "telefono": "3103213932",
+    "correo": "linapaola0411@hotmail.com",
+    "direccion": "CL 27 14 28",
+    "documento": "1222123939"
+  },
+  "ARRIAGA MARTINEZ GABRIEL ANTONIO": {
+    "grado": "5A",
+    "acudiente": "ARRIAGA COLINA IRVING ANTONIO",
+    "telefono": "3204680517",
+    "correo": "irving7925@gmail.com",
+    "direccion": "CL 29 32 39",
+    "documento": "1222124071"
+  },
+  "FORERO AVILA DIEGO LUIS": {
+    "grado": "5A",
+    "acudiente": "AVILA MARINO MARIA CAROLINA",
+    "telefono": "3126860146",
+    "correo": "carolinavila08@hotmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222123093"
+  },
+  "REAL BEJARANO VICTORIA": {
+    "grado": "5A",
+    "acudiente": "BEJARANO PAEZ MYRIAM YAMIRA",
+    "telefono": "3212413500",
+    "correo": "yamirap@hotmail.com",
+    "direccion": "CR 7 24 16",
+    "documento": "1222118753"
+  },
+  "CARDENAS MORA CHRISTOPHER DE LEON": {
+    "grado": "5A",
+    "acudiente": "CARDENAS TORRES JORGE LUIS",
+    "telefono": "3203486424",
+    "correo": "piero696@gmail.com",
+    "direccion": "CL 14 18 36",
+    "documento": "1222124473"
+  },
+  "RUIZ CORREDOR SAMUEL JERONIMO": {
+    "grado": "5A",
+    "acudiente": "CORREDOR BUITRAGO GICELA",
+    "telefono": "3115127522",
+    "correo": "gicela800@hotmail.com",
+    "direccion": "CL 63 3 22",
+    "documento": "1050620509"
+  },
+  "VARGAS CORTES ISABELLA": {
+    "grado": "5A",
+    "acudiente": "CORTES ACEVEDO NANCY JULIETH",
+    "telefono": "3123014800",
+    "correo": "jcacontadora1@gmail.com",
+    "direccion": "VEREDA LA VEGA",
+    "documento": "1222125192"
+  },
+  "ARAQUE GUTIERREZ MARTIN FELIPE": {
+    "grado": "5A",
+    "acudiente": "GUTIERRES AVELLA MONICA LILIANA",
+    "telefono": "3115411816",
+    "correo": "monik2011@hotmail.com",
+    "direccion": "CR 23 10 26",
+    "documento": "1222126491"
+  },
+  "AMAYA GUTIERREZ ILAN DAVID": {
+    "grado": "5A",
+    "acudiente": "GUTIERREZ ALDANA NEIDY MILDRETH",
+    "telefono": "3204521845",
+    "correo": "nemigu369@gmail.com",
+    "direccion": "MZ G CASA 5",
+    "documento": "1222121762"
+  },
+  "GUTIERREZ GONZALEZ VIOLETA": {
+    "grado": "5A",
+    "acudiente": "GUTIERREZ MELENDEZ DANIEL RICARDO",
+    "telefono": "3142974996",
+    "correo": "eso.daniel.gutierrez@gmail.com",
+    "direccion": "CR 13 26 08",
+    "documento": "1222125510"
+  },
+  "GUZMAN RAIGOZA SARA LUCIANA": {
+    "grado": "5A",
+    "acudiente": "GUZMAN NIETO DIEGO FERNANDO",
+    "telefono": "3123499241",
+    "correo": "diegofergu2123@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222125023"
+  },
+  "GUZMAN TORRES MARIANA": {
+    "grado": "5A",
+    "acudiente": "GUZMAN PARALES EDIR SANTIAGO",
+    "telefono": "3133432311",
+    "correo": "edirguzpar29@gmail.com",
+    "direccion": "CL 40 TV 38",
+    "documento": "1116553960"
+  },
+  "PEREZ LEGUIZAMO VALERY GABRIELA": {
+    "grado": "5A",
+    "acudiente": "PEREZ RODRIGUEZ MAY EDISON",
+    "telefono": "3112154353",
+    "correo": "edison_20@hotmail.com",
+    "direccion": "CL 37 24 45",
+    "documento": "1222124151"
+  },
+  "MONJE LOZANO LUNA DEL MAR": {
+    "grado": "5A",
+    "acudiente": "LOZANO VALLEJO MARIBEL",
+    "telefono": "3103485959",
+    "correo": "elizitha_lozano@hotmail.com",
+    "direccion": "CL 28 32 04",
+    "documento": "1222122231"
+  },
+  "CAMARGO NINO EMANUEL JULIAN": {
+    "grado": "5A",
+    "acudiente": "NINO  MIRIAN OLIVA",
+    "telefono": "3125486435",
+    "correo": "miriamnino0577@gmail.com",
+    "direccion": "CR 17 30 30",
+    "documento": "1222123463"
+  },
+  "PIRAGAUTA PEREZ DANNA ISABELLA": {
+    "grado": "5A",
+    "acudiente": "PIRAGAUTA ACEVEDO CAMILO EDUARDO",
+    "telefono": "3143577937",
+    "correo": "camilopira32@gmail.com",
+    "direccion": "CR 20 16 34",
+    "documento": "1028726010"
+  },
+  "PINZON RODRIGUEZ LUISA FERNANDA": {
+    "grado": "5A",
+    "acudiente": "RODRIGUEZ PATINO EMILCE YANNETH",
+    "telefono": "3123508896",
+    "correo": "eyanethro@hotmail.com",
+    "direccion": "DG 49 5 04",
+    "documento": "1222122692"
+  },
+  "SIERRA SAENZ JULIETH VALENTINA": {
+    "grado": "5A",
+    "acudiente": "SAENZ NEGRO JULY MARIBEL",
+    "telefono": "3142993470",
+    "correo": "julysth@hotmail.com",
+    "direccion": "CL 58 2 106",
+    "documento": "1222118657"
+  },
+  "SANCHEZ NINO TOMAS EDUARDO": {
+    "grado": "5A",
+    "acudiente": "SANCHEZ ARIAS HECTOR JULIAN",
+    "telefono": "3115380891",
+    "correo": "directorhjringenieriasas@gmail.com",
+    "direccion": "VEREDA LA VEGA",
+    "documento": "1222122523"
+  },
+  "STAVE SARMIENTO ZARA CAMILA": {
+    "grado": "5A",
+    "acudiente": "SARMIENTO MONTANA LEIDY YOHANA",
+    "telefono": "3134046453",
+    "correo": "yohanasarmiento814@gmail.com",
+    "direccion": "CL 18 14 28",
+    "documento": "1222122280"
+  },
+  "TIQUE CONDE ANDRES FELIPE": {
+    "grado": "5A",
+    "acudiente": "TIQUE FIERRO YESID NORBERTO",
+    "telefono": "3208351107",
+    "correo": "linamarceconde@gmail.com",
+    "direccion": "CL 6 21 61",
+    "documento": "1222124194"
+  },
+  "VALDERRAMA VARGAS JERONIMO ALEJANDRO": {
+    "grado": "5A",
+    "acudiente": "VALDERRAMA GUTIERREZ JOSE ALEXANDER",
+    "telefono": "3112165694",
+    "correo": "alexandervalderrama745@gmail.com",
+    "direccion": "CL 40 23 37 TO 5 APTO 504",
+    "documento": "1222121779"
+  },
+  "DIAZ MARTINEZ JOEL": {
+    "grado": "5A",
+    "acudiente": "MARTINEZ PEREZ THIANY KATERINE",
+    "telefono": "3177317410",
+    "correo": "thianymartinezperez@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "11141525589"
+  },
+  "AVELLA GONZALEZ MARIANA": {
+    "grado": "5A",
+    "acudiente": "GONZALEZ RINCON JERLY JOHANA",
+    "telefono": "3214667020",
+    "correo": "gonzalezrinconjohana@gmail.com",
+    "direccion": "CR 8 25 62",
+    "documento": "1222124526"
+  },
+  "BECERRA POVEDA JOSUE": {
+    "grado": "5B",
+    "acudiente": "BECERRA PUERTO WILMAN RENE",
+    "telefono": "3134560019",
+    "correo": "wilmanpuerto@gmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1222123319"
+  },
+  "CASTELLANOS LEAL THIAGO ALEJANDRO": {
+    "grado": "5B",
+    "acudiente": "CASTELLANOS CASTILLO FERNANDO",
+    "telefono": "3159268724",
+    "correo": "fe2919@hotmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222123670"
+  },
+  "DUARTE TIBATA EMMANUEL ESTEBAN": {
+    "grado": "5B",
+    "acudiente": "DUARTE AVENDANO FABIAN ESTEBAN",
+    "telefono": "3125411767",
+    "correo": "duartetibata@gmail.com",
+    "direccion": "CR 30 25 65",
+    "documento": "1222126285"
+  },
+  "FLOREZ RODRIGUEZ MILAN ADRIAN": {
+    "grado": "5B",
+    "acudiente": "FLOREZ MESA JOVANY ALEXANDER",
+    "telefono": "3108739165",
+    "correo": "nanyalx24@gmail.com",
+    "direccion": "CR 16 22 65",
+    "documento": "1222123660"
+  },
+  "RUEDA GALINDO JUAN MIGUEL": {
+    "grado": "5B",
+    "acudiente": "GALINDO LEVA LINDA CAROLINA",
+    "telefono": "3174402027",
+    "correo": "linka.197@gmail.com",
+    "direccion": "CL 36 16 35",
+    "documento": "1122532631"
+  },
+  "GUIO PENA DULCE MARIA": {
+    "grado": "5B",
+    "acudiente": "GUIO JHON FREDY",
+    "telefono": "3138088577",
+    "correo": "fredyguio95@hotmail.com",
+    "direccion": "CR 27 33 32",
+    "documento": "1222121185"
+  },
+  "MENDOZA BARRERA SOFIA": {
+    "grado": "5B",
+    "acudiente": "MENDOZA HERNANDEZ MEDARDO",
+    "telefono": "3143578279",
+    "correo": "medardomen@hotmail.com",
+    "direccion": "CL 16 36 35",
+    "documento": "1222126291"
+  },
+  "AYALA MORENO PAULA ALEJANDRA": {
+    "grado": "5B",
+    "acudiente": "MORENO DAVILA ERIKA JOHANA",
+    "telefono": "3115539352",
+    "correo": "ekamd10@gmail.com",
+    "direccion": "CR 44 35 33",
+    "documento": "1222121978"
+  },
+  "OSORIO NOSA MARIA JOSE": {
+    "grado": "5B",
+    "acudiente": "OSORIO RODRIGUEZ JOSE",
+    "telefono": "3112130706",
+    "correo": "joseosoriorodriguez@gmail.com",
+    "direccion": "TV 15 38 30",
+    "documento": "1222125040"
+  },
+  "PAEZ GUTIERREZ ALEJANDRO": {
+    "grado": "5B",
+    "acudiente": "PAEZ GARCIA JOSE JOAQUIN",
+    "telefono": "3123449614",
+    "correo": "jose112130@gmail.com",
+    "direccion": "CL 41 48 52",
+    "documento": "1222124937"
+  },
+  "CORREDOR PEREZ LETIZIA MILA": {
+    "grado": "5B",
+    "acudiente": "PEREZ VARGAS LUISA FERNANDA",
+    "telefono": "3118762198",
+    "correo": "luisafperez77@gmail.com",
+    "direccion": "KM 3 VIA MORICHAL",
+    "documento": "1013040056"
+  },
+  "ARCHILA PINZON MARTIN EDUARDO": {
+    "grado": "5B",
+    "acudiente": "PINZON PATARROYO MAYRA ALEJANDRA",
+    "telefono": "3202384893",
+    "correo": "mayrapinzon.gc@gmail.com",
+    "direccion": "CL 55 34 27",
+    "documento": "1222123358"
+  },
+  "ARANGUREN PLAZAS LUCIANA": {
+    "grado": "5B",
+    "acudiente": "PLAZAS ROJAS LAURA",
+    "telefono": "3144388046",
+    "correo": "lalla.flp@gmail.com",
+    "direccion": "CL 18 15 45",
+    "documento": "1057985804"
+  },
+  "REINA CASTANO ASHLEY VALENTINA": {
+    "grado": "5B",
+    "acudiente": "REINA OSPINA CAMILO ANDRES",
+    "telefono": "3102343484",
+    "correo": "camilo_3484@hotmail.com",
+    "direccion": "CL 25 21 37",
+    "documento": "1222125827"
+  },
+  "ORTIZ ROLDAN MARIA ALEJANDRA": {
+    "grado": "5B",
+    "acudiente": "ROLDAN ORJUELA RUBY ESPERANZA",
+    "telefono": "3114595779",
+    "correo": "ruby.roldano@gmail.com",
+    "direccion": "CR 32 20 76",
+    "documento": "1230341749"
+  },
+  "SANCHEZ ROZO SHARLOTTE ZARAIH": {
+    "grado": "5B",
+    "acudiente": "SANCHEZ  MIGUEL ANGEL",
+    "telefono": "3106892873",
+    "correo": "m.a.s.sanchez1415@gmail.com",
+    "direccion": "CL 20 22 136",
+    "documento": "1222124217"
+  },
+  "CABRERA TORRES THOMAS ALEJANDRO": {
+    "grado": "5B",
+    "acudiente": "TORRES HERNANDEZ EDNA MARCELA",
+    "telefono": "3213322635",
+    "correo": "edmatohe17@gmail.com",
+    "direccion": "CL 33 28 47",
+    "documento": "1222123811"
+  },
+  "TORRES PEREZ VIVIAN DANIELA": {
+    "grado": "5B",
+    "acudiente": "TORRES TOBO CESAR ORLANDO",
+    "telefono": "3204196769",
+    "correo": "cesartorrest0305@hotmail.com",
+    "direccion": "CR 44 34 15",
+    "documento": "1222124538"
+  },
+  "JIMENEZ TRASLAVINA IAN SANTIAGO": {
+    "grado": "5B",
+    "acudiente": "TRASLAVINA VARGAS DIANA SORELLY",
+    "telefono": "3112445111",
+    "correo": "iansantiagojt@gmail.com",
+    "direccion": "CR 7 60 36",
+    "documento": "1222119411"
+  },
+  "MUNOZ ALFONSO MIGUEL ANGEL": {
+    "grado": "5B",
+    "acudiente": "MUNOZ TRIANA VICTOR ALFONSO",
+    "telefono": "3217562643",
+    "correo": "victor6902@gmail.com",
+    "direccion": "CR 18 20 10",
+    "documento": "1222122411"
+  },
+  "PEREZ PORRAS YIAN DAVID": {
+    "grado": "5B",
+    "acudiente": "PORRAS AVILA BLANCA FLOR",
+    "telefono": "3203434913",
+    "correo": "misojitos_75@hotmail.com",
+    "direccion": "CR 18 23 55",
+    "documento": "1222127554"
+  },
+  "OSORIO ABRIL MARTINA": {
+    "grado": "5B",
+    "acudiente": "ABRIL JAIME DENNIS KARINA",
+    "telefono": "3102965482",
+    "correo": "karinaabril.10@gmail.com",
+    "direccion": "CR 23 23 110",
+    "documento": "1011242222"
+  },
+  "GOMEZ LOZA SAMUEL ESTEBAN": {
+    "grado": "5B",
+    "acudiente": "LOZA ELAICA DAYS DAYANA",
+    "telefono": "3156245602",
+    "correo": "daysloza.18@gmail.com",
+    "direccion": "TV 9 13 52",
+    "documento": "1117325863"
+  },
+  "FORERO CASTRO GABRIELA": {
+    "grado": "5B",
+    "acudiente": "CASTRO BARRAGAN SANDRA ESPERANZA",
+    "telefono": "3133979118",
+    "correo": "castrosandra33@gmail.com",
+    "direccion": "CL 14 26 06",
+    "documento": "1222126216"
+  },
+  "RICAURTE BERNAL MARTIN THOMAS": {
+    "grado": "5B",
+    "acudiente": "RICAURTE AVELLA HEILER MARTIN",
+    "telefono": "3118746658",
+    "correo": "heilerr44@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222122873"
+  },
+  "ARDILA ACERO ADRIANA SALOME": {
+    "grado": "5C",
+    "acudiente": "ACERO PEREZ DURLEY",
+    "telefono": "3213592829",
+    "correo": "durleyacerop@gmail.com",
+    "direccion": "CL 48 6 62",
+    "documento": "1222122334"
+  },
+  "ACEVEDO CAMARGO EMILY GABRIELA": {
+    "grado": "5C",
+    "acudiente": "CAMARGO CACERES LIZETH TATIANA",
+    "telefono": "3202682436",
+    "correo": "tatianacacerez11@gmail.com",
+    "direccion": "CL 23 28 75",
+    "documento": "1222123496"
+  },
+  "MORENO CASTILLO JERONIMO": {
+    "grado": "5C",
+    "acudiente": "CASTILLO GUTIERREZ IRMA IDALY",
+    "telefono": "3105508615",
+    "correo": "irmaidalycastillo@hotmail.com",
+    "direccion": "CL 34 12 10",
+    "documento": "1222125500"
+  },
+  "GUERRERO FLOREZ LUCIA": {
+    "grado": "5C",
+    "acudiente": "FLOREZ VELASCO JULIETH SUSANA",
+    "telefono": "3165856017",
+    "correo": "su54n4@hotmail.com",
+    "direccion": "VEREDA TACARIMENA",
+    "documento": "1222124934"
+  },
+  "HIGUERA JIMENEZ REINALDO": {
+    "grado": "5C",
+    "acudiente": "HIGUERA RINCON REINALDO",
+    "telefono": "3133434057",
+    "correo": "rhiguerarincon@gmail.com",
+    "direccion": "CR 27 26 16",
+    "documento": "1013022845"
+  },
+  "CARDENAS LAVERDE JUAN DAVID": {
+    "grado": "5C",
+    "acudiente": "LAVERDE PAEZ LINEY",
+    "telefono": "3114970053",
+    "correo": "liney_8820@hotmail.com",
+    "direccion": "CR 2 58 85",
+    "documento": "1222122627"
+  },
+  "MONSALVE RIVEROS SAMUEL MATIAS": {
+    "grado": "5C",
+    "acudiente": "MONSALVE PARRA PEDRO MANUEL",
+    "telefono": "3215953229",
+    "correo": "monsalvemanuel41@gmail.com",
+    "direccion": "CR 2 34 48",
+    "documento": "1222122753"
+  },
+  "NORENA PATINO SANTIAGO": {
+    "grado": "5C",
+    "acudiente": "NORENA NORENA JULIAN ALBERTO",
+    "telefono": "3116424302",
+    "correo": "jinstg2801@gmail.com",
+    "direccion": "FINCA SAN JOSE",
+    "documento": "1114735140"
+  },
+  "GONZALEZ NOVOA ANDRES SIMON": {
+    "grado": "5C",
+    "acudiente": "NOVOA GONZALEZ YOLVY SAMANTHA",
+    "telefono": "3203793902",
+    "correo": "arq.samanthapofile@gmail.com",
+    "direccion": "CL 16 36 35",
+    "documento": "1051074050"
+  },
+  "TOLOZA PARRA LAURA ISABELLA": {
+    "grado": "5C",
+    "acudiente": "PARRA SUAREZ RUTH MARY",
+    "telefono": "3102503438",
+    "correo": "rukita-871@hotmail.com",
+    "direccion": "CL 54 4 45",
+    "documento": "1222124060"
+  },
+  "BARRAGAN QUISPI MARTIN ESTEBAN": {
+    "grado": "5C",
+    "acudiente": "QUISPI REMACHE ANA GLADYS",
+    "telefono": "3144138077",
+    "correo": "analady2024@gmail.com",
+    "direccion": "CL 19 23 11",
+    "documento": "1222124335"
+  },
+  "OCHOA VARGAS SARA ALEJANDRA": {
+    "grado": "5C",
+    "acudiente": "OCHOA GONZALEZ FERNANDO ANTONIO",
+    "telefono": "3204900863",
+    "correo": "saraochoa150693@gmail.com",
+    "direccion": "CL 37 TV 6 17",
+    "documento": "1222121527"
+  },
+  "GRANADOS PEREZ ZHARICK ALEJANDRA": {
+    "grado": "5C",
+    "acudiente": "GRANADOS RODRIGUEZ LUIS ALEJANDRO",
+    "telefono": "3104823438",
+    "correo": "Wjannyc82@gmail.com",
+    "direccion": "CL 18 21 102",
+    "documento": "1057985753"
+  },
+  "RODRIGUEZ LOPEZ LUCIANA": {
+    "grado": "5C",
+    "acudiente": "LOPEZ TORRES LEIDY CATHERINE",
+    "telefono": "3175121520",
+    "correo": "katelopez9202@gmail.com",
+    "direccion": "CL 38 23 61",
+    "documento": "1014741281"
+  },
+  "URIBE MARTINEZ VALERIA ALEJANDRA": {
+    "grado": "5C",
+    "acudiente": "MARTINEZ RICO AURORA",
+    "telefono": "3133108413",
+    "correo": "auris701@gmail.com",
+    "direccion": "KM 2 VIA SIRIVANA",
+    "documento": "1145427931"
+  },
+  "CHARRY RAMIREZ MELANNY GISET": {
+    "grado": "5D",
+    "acudiente": "CHARRY MEDINA ALINXON",
+    "telefono": "3116232757",
+    "correo": "alichame.0203@gmail.com",
+    "direccion": "CL 17 28 31",
+    "documento": "1222124367"
+  },
+  "BARBOSA HERRERA JUAN JOSE": {
+    "grado": "5D",
+    "acudiente": "COJO PIDIACHE EFRAIN",
+    "telefono": "3112648536",
+    "correo": "efraincojo@hotmail.com",
+    "direccion": "CL 36 6 115",
+    "documento": "1222121994"
+  },
+  "ACOSTA FONSECA SAMUEL JERONIMO": {
+    "grado": "5D",
+    "acudiente": "FONSECA BUITRAGO AYDA DORANY",
+    "telefono": "3125020102",
+    "correo": "doranyf@hotmail.com",
+    "direccion": "CL 33 28 47",
+    "documento": "1222123118"
+  },
+  "GUARNIZO MARTINEZ EMILY ANDREA": {
+    "grado": "5D",
+    "acudiente": "GUARNIZO MARTINEZ OSCAR JAVIER",
+    "telefono": "3212086935",
+    "correo": "guarna23@gmail.com",
+    "direccion": "CL 20 32 71",
+    "documento": "1222125478"
+  },
+  "RIVERO GUEVARA THOMAS DAVID": {
+    "grado": "5D",
+    "acudiente": "GUEVARA GONZALEZ NINI JOHANNA",
+    "telefono": "3125798744",
+    "correo": "niniguevarag@hotmail.com",
+    "direccion": "CR 12 46 33",
+    "documento": "1222124368"
+  },
+  "SEGURA HERRERA JUAN JOSE": {
+    "grado": "5D",
+    "acudiente": "HERRERA ALIAN PEGGY GERALDIN",
+    "telefono": "3143000103",
+    "correo": "yeraldinherreraalian@gmail.com",
+    "direccion": "CR 7 26 95",
+    "documento": "1222123339"
+  },
+  "NINO TORRES JUAN FELIPE": {
+    "grado": "5D",
+    "acudiente": "NINO ALARCON JHON ALEXANDER",
+    "telefono": "3214683620",
+    "correo": "alexander72727985@gmail.com",
+    "direccion": "CL 22 64",
+    "documento": "1222123908"
+  },
+  "PEREZ DIAZ MARIA JOSE": {
+    "grado": "5D",
+    "acudiente": "DIAZ SEGURA KAREN LORENA",
+    "telefono": "3103364588",
+    "correo": "kalods@hotmail.com",
+    "direccion": "CL 37 24 45",
+    "documento": "1222121637"
+  },
+  "SANCHEZ ARANA JULIAN DAVID": {
+    "grado": "5D",
+    "acudiente": "SANCHEZ ROJAS HERLY",
+    "telefono": "3123107089",
+    "correo": "herly1323@hotmail.com",
+    "direccion": "CL 36 25 57",
+    "documento": "1222120969"
+  },
+  "BAYONA ANDRADE SARA SOFIA": {
+    "grado": "5D",
+    "acudiente": "BAYONA BRICENO JUAN GABRIEL",
+    "telefono": "3157279509",
+    "correo": "juanbayona0912@hotmail.com",
+    "direccion": "CR 2 15 32",
+    "documento": "1051831256"
+  },
+  "GARZON BARRERA MIA ISABELLA": {
+    "grado": "5D",
+    "acudiente": "BARRERA CORONADO SHARANDY DAYANED",
+    "telefono": "3017003601",
+    "correo": "sharandybarrerac@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1222124492"
+  },
+  "HERNANDEZ TRIANA LUNA SOFIA": {
+    "grado": "5D",
+    "acudiente": "TRIANA RINCON JENNY PAOLA",
+    "telefono": "3213079764",
+    "correo": "paotrianarincon95@gmail.com",
+    "direccion": "CR 13 24 76",
+    "documento": "1222124240"
+  },
+  "VEGA LEMUS SILVANA": {
+    "grado": "5D",
+    "acudiente": "LEMUS PATINO YANETH",
+    "telefono": "3213273506",
+    "correo": "ylemuspatino@gmail.com",
+    "direccion": "CL 25 11 06",
+    "documento": "1222125423"
+  },
+  "NUNEZ JASPE SHARON MARIANA": {
+    "grado": "5D",
+    "acudiente": "JASPE FUENTES NADINED",
+    "telefono": "3183677737",
+    "correo": "Nadinjaspe040159@gmail.com",
+    "direccion": "CL 9 23 95",
+    "documento": "1222125318"
+  },
+  "RODRIGUEZ ABRIL JUAN ESTEBAN": {
+    "grado": "2D",
+    "acudiente": "RODRIGUEZ ABRIL YENNY PILAR",
+    "telefono": "3133610732",
+    "correo": "abrilpilar95@gmail.com",
+    "direccion": "CL 35 36 40",
+    "documento": "1222131246"
+  },
+  "SANCHEZ ARAQUE ABIGAIL": {
+    "grado": "2A",
+    "acudiente": "ARAQUE LOZANO ELIEZETH YERALDINE",
+    "telefono": "3108012795",
+    "correo": "yeraldinearaquelozano@gmail.com",
+    "direccion": "CR 32 20 76",
+    "documento": "1222132234"
+  },
+  "REMOLINA BARON ROBINSON DAVID": {
+    "grado": "2A",
+    "acudiente": "BARON RIVERA MONICA LILIANA",
+    "telefono": "3117587649",
+    "correo": "monicalilianabr@hotmail.com",
+    "direccion": "CL 40 24 23",
+    "documento": "1097144243"
+  },
+  "CUCAITA BARRERA ANGEL MATHIAS": {
+    "grado": "2A",
+    "acudiente": "BARRERA PATINO LAURA JAZMIN",
+    "telefono": "3214347163",
+    "correo": "jazminbarrera.201819@gmail.com",
+    "direccion": "CL 31 29 26",
+    "documento": "1029969226"
+  },
+  "GARCIA BONILLA MARIA ANTONELLA": {
+    "grado": "2A",
+    "acudiente": "BONILLA GARCIA LAURA VANNESA",
+    "telefono": "3043228021",
+    "correo": "laurabonilla.gc@gmail.com",
+    "direccion": "CL 40 44 MZ D",
+    "documento": "1033122254"
+  },
+  "GALINDO PERILLA MARIA JOSE": {
+    "grado": "2A",
+    "acudiente": "GALINDO SANCHEZ FREDY ALEXANDER",
+    "telefono": "3112804075",
+    "correo": "fredya.galindo.76@gmail.com",
+    "direccion": "CR 16 16 61",
+    "documento": "1074534161"
+  },
+  "ZAFRA GARCIA MARIA JULIANA": {
+    "grado": "2A",
+    "acudiente": "GARCIA CASTRO ERIKA MARCELA",
+    "telefono": "3148934785",
+    "correo": "erikg_93@hotmail.com",
+    "direccion": "CR 27 34 79",
+    "documento": "1222133981"
+  },
+  "ROA GUERRERO JUAN MARTIN": {
+    "grado": "2A",
+    "acudiente": "GUERRERO HERNANDEZ AUDENNY",
+    "telefono": "3212385178",
+    "correo": "audennyguerrero@gmail.com",
+    "direccion": "CR 8 46 19",
+    "documento": "1222133554"
+  },
+  "MONTANA MOLANO EMILY VALERIA": {
+    "grado": "2A",
+    "acudiente": "MOLANO GARZON ADRIANA CAROLINA",
+    "telefono": "3144212301",
+    "correo": "carolinamolanogarzon@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1123449804"
+  },
+  "CASTRO MORENO DYLAN ZAID": {
+    "grado": "2A",
+    "acudiente": "MORENO CAMARGO ZEIDA LUZMILA",
+    "telefono": "3125067848",
+    "correo": "luz-mi-02@gmail.com",
+    "direccion": "CR 33 30 10",
+    "documento": "1118578153"
+  },
+  "JOYA RODRIGUEZ JERONIMO": {
+    "grado": "2A",
+    "acudiente": "RODRIGUEZ MARTINEZ DEISY LORENA",
+    "telefono": "3118910620",
+    "correo": "lorenarodriguez-23@hotmail.com",
+    "direccion": "CL 40 TV 23 37 TO 8 APTO 407",
+    "documento": "1222134110"
+  },
+  "SANABRIA VILLADA MARIA ANTONIA": {
+    "grado": "2A",
+    "acudiente": "VILLADA CORREDOR YANITH DAYANNA",
+    "telefono": "3143982873",
+    "correo": "dayanavillada17@gmail.com",
+    "direccion": "CL 28 19 56",
+    "documento": "1222134525"
+  },
+  "NAN": {
+    "grado": "2A",
+    "acudiente": "MELGAREJO ACOSTA LAURA JULIETH",
+    "telefono": "3144500912",
+    "correo": "Lauramelgarejo.abogada@gmail.com",
+    "direccion": "CL 26 14 102",
+    "documento": "1222134179"
+  },
+  "BAEZ ALBARRACIN THIAGO ALEJANDRO": {
+    "grado": "2A",
+    "acudiente": "BAEZ DUENAS LUIS ALFREDO",
+    "telefono": "3144582641",
+    "correo": "thigobaez5633@gmail.com",
+    "direccion": "CL 54 CR 7 OESTE TORRES DE SAN MARCO TOV47 AP 501",
+    "documento": "1222132086"
+  },
+  "VALLARINO DIAZ MATEO": {
+    "grado": "2A",
+    "acudiente": "VALLARINO MANUEL ANTONIO",
+    "telefono": "3138811469",
+    "correo": "mavamu1@gmail.com",
+    "direccion": "CR 48 38 15",
+    "documento": "1019916902"
+  },
+  "ROMERO RODRIGUEZ MARIANA": {
+    "grado": "2A",
+    "acudiente": "RODRIGUEZ CARO MARIA ANA LYDIA",
+    "telefono": "3132675684",
+    "correo": "nanyta.roca@gmail.com",
+    "direccion": "CR 32 24 63",
+    "documento": "1222132225"
+  },
+  "DIAZ PIEDRAHITA MARIANA LUCIA": {
+    "grado": "2A",
+    "acudiente": "DIAZ GUEVARA JEFERSON ANDRES",
+    "telefono": "3212250502",
+    "correo": "andresdiazguevara10@gmail.com",
+    "direccion": "CR 21 17 35",
+    "documento": "1051076305"
+  },
+  "SILVA BARRAGAN JUAN FERNANDO": {
+    "grado": "2B",
+    "acudiente": "BARRAGAN CARRENO LISETH",
+    "telefono": "3105526569",
+    "correo": "liseth.barragan.c@gmail.com",
+    "direccion": "CL 32 15 30",
+    "documento": "1222131949"
+  },
+  "CARDENAS LOPEZ SAMY VALENTINA": {
+    "grado": "2B",
+    "acudiente": "CARDENAS CHAPARRO LUIS GUILLERMO",
+    "telefono": "3232182627",
+    "correo": "gillocardenas2025@gmail.com",
+    "direccion": "KM 8 VIA YOPAL -AGUAZUL",
+    "documento": "1222133669"
+  },
+  "CARRENO CLAVIJO DYLAN EMILIANO": {
+    "grado": "2B",
+    "acudiente": "CARRENO  CARLOS ANDRES",
+    "telefono": "3212718804",
+    "correo": "carlos880717@gmail.com",
+    "direccion": "CL 33 28 47",
+    "documento": "1146337945"
+  },
+  "DOMINGUEZ CASTEBLANCO MARIANA": {
+    "grado": "2B",
+    "acudiente": "DOMINGUEZ PEREZ JOSE NEHIL",
+    "telefono": "3204529136",
+    "correo": "joselph61@gmail.com",
+    "direccion": "CL 26 9 86",
+    "documento": "1222133213"
+  },
+  "TELLO GARAVITO NICOLAS MATIAS": {
+    "grado": "2B",
+    "acudiente": "GARAVITO SANCHEZ MAIRA ALEXANDRA",
+    "telefono": "3177727577",
+    "correo": "mairaalejandragaravito@gmail.com",
+    "direccion": "CR 12 35 18",
+    "documento": "1222133623"
+  },
+  "GONZALEZ GONZALEZ SAMUEL ANDRES": {
+    "grado": "2B",
+    "acudiente": "GONZALEZ GONZALEZ MARIEL ANDREA",
+    "telefono": "3113084596",
+    "correo": "mariel.gonzalez30@gmail.com",
+    "direccion": "CR 16 36 41",
+    "documento": "1118577262"
+  },
+  "CARDENAS MARTINEZ SAMUEL DAVID": {
+    "grado": "2B",
+    "acudiente": "MARTINEZ PEREZ LAURA PAOLA",
+    "telefono": "3102841551",
+    "correo": "laurizmartinez_1999@hotmail.com",
+    "direccion": "CL 47 4 47",
+    "documento": "1118577249"
+  },
+  "MESA CORDOBA ADRIAN MATHIAS": {
+    "grado": "2B",
+    "acudiente": "MESA GOMEZ PLUTARCO",
+    "telefono": "3107894094",
+    "correo": "plut_mago1984@gmail.com",
+    "direccion": "CL 18 10 51",
+    "documento": "1222131431"
+  },
+  "ORTEGA RUIZ ANGEL DAVID": {
+    "grado": "2B",
+    "acudiente": "ORTEGA PUMENE ELADIO ANTONIO",
+    "telefono": "3208924524",
+    "correo": "eladioortega@gmail.com",
+    "direccion": "CR 43 36 16",
+    "documento": "1222133084"
+  },
+  "BAEZ PEREZ MARTIN SAID": {
+    "grado": "2B",
+    "acudiente": "BAEZ GONZALEZ RUBEN DARIO",
+    "telefono": "3134129943",
+    "correo": "rdbg1985@gmail.com",
+    "direccion": "CL 40 TV 23",
+    "documento": "1222133824"
+  },
+  "MONROY PORRAS VALERY LUCIANA": {
+    "grado": "2B",
+    "acudiente": "PORRAS AVILA CLAUDIA PATRICIA",
+    "telefono": "3125205559",
+    "correo": "pati.clau47@hotmail.com",
+    "direccion": "CR 11 53 28",
+    "documento": "1222132485"
+  },
+  "RAVELO GARZON ARIANNA ISABELLA": {
+    "grado": "2B",
+    "acudiente": "GARZON RODRIGUEZ DIANA PAOLA",
+    "telefono": "3146678902",
+    "correo": "yana9326@hotmail.com",
+    "direccion": "CL 42 1 127",
+    "documento": "1052846192"
+  },
+  "CASADIEGOS MEDINA GABRIEL": {
+    "grado": "2B",
+    "acudiente": "MEDINA GOMEZ MARIA CAMILA",
+    "telefono": "3145840743",
+    "correo": "camimedinag115@gmail.com",
+    "direccion": "CL 30 28 46",
+    "documento": "1118576220"
+  },
+  "JARAMILLO RICAURTE MIA VALENTINA": {
+    "grado": "2B",
+    "acudiente": "RICAURTE ARANGO SANDRA MILENA",
+    "telefono": "3124815014",
+    "correo": "petalito1994@gmail.com",
+    "direccion": "CL 42 1 219",
+    "documento": "1222131316"
+  },
+  "CHAPARRO JERONIMO DANIEL MATHIAS": {
+    "grado": "2B",
+    "acudiente": "CHAPARRO GONZALEZ FABIO ENRIQUE",
+    "telefono": "3218256517",
+    "correo": "ido22_@hotmail.com",
+    "direccion": "CR 15 22 32",
+    "documento": "1222131608"
+  },
+  "MENESES CICERY JOEL": {
+    "grado": "2B",
+    "acudiente": "SANTAMARIA GERALDINE CICERY",
+    "telefono": "3145919866",
+    "correo": "gcicerysantamaria@gmail.com",
+    "direccion": "CL 36 23 49",
+    "documento": "1042775795"
+  },
+  "CARRENO JIMENEZ JUAN THIAGO": {
+    "grado": "2B",
+    "acudiente": "JIMENEZ MEDINA JELY ANDREA",
+    "telefono": "3175018316",
+    "correo": "contratacionj4@gmail.com",
+    "direccion": "CL 9 23 23",
+    "documento": "1118577268"
+  },
+  "BARRERA BARRERA EMMILY": {
+    "grado": "2C",
+    "acudiente": "BARRERA SIABATTO CARLOS FERNANDO",
+    "telefono": "3118491994",
+    "correo": "kfer05@hotmail.com",
+    "direccion": "CR 33 22 25",
+    "documento": "1058360618"
+  },
+  "CARTAGENA ABRIL HELLEN SAMARA": {
+    "grado": "2C",
+    "acudiente": "CARTAGENA MORENO JAIR",
+    "telefono": "3125652697",
+    "correo": "cartamore25@hotmail.com",
+    "direccion": "CL 30 28 46",
+    "documento": "1222133555"
+  },
+  "CIFUENTES ARCHILA MARIA ANTHONELLA": {
+    "grado": "2C",
+    "acudiente": "ARCHILA BERNAL GINESSA STEFFANY",
+    "telefono": "3235056299",
+    "correo": "ginessaarchila_0123@outlook.es",
+    "direccion": "CR 11 30 03",
+    "documento": "1222131075"
+  },
+  "RODRIGUEZ CORDOBA ANA VICTORIA": {
+    "grado": "2C",
+    "acudiente": "CORDOBA CARDENAS DEYSY PAOLA",
+    "telefono": "3108085824",
+    "correo": "cordobadeissy30@gmail.com",
+    "direccion": "CR 9 29 25",
+    "documento": "1118576887"
+  },
+  "GALEANO NAVARRO MARIA JOSE": {
+    "grado": "2C",
+    "acudiente": "GALEANO DIAZ CARLOS DAVID",
+    "telefono": "3112367940",
+    "correo": "daviddi91@hotmail.com",
+    "direccion": "CORREGIMIENTO MORICHAL",
+    "documento": "1145428796"
+  },
+  "GONZALEZ TOVAR LUCIA": {
+    "grado": "2C",
+    "acudiente": "GONZALEZ TOVAR GABRIELLA LUZETH",
+    "telefono": "3195700441",
+    "correo": "gabriellagontovar@icloud.com",
+    "direccion": "CL 36 27 33",
+    "documento": "1222130665"
+  },
+  "GALVIS MANCERA ARTURO ADRIANO": {
+    "grado": "2C",
+    "acudiente": "MANCERA RODRIGUEZ MAYERLY KATHERIN",
+    "telefono": "3202203635",
+    "correo": "ingmayerlymancerar@gmail.com",
+    "direccion": "CR 14 32 22",
+    "documento": "1222131531"
+  },
+  "MARIN RODRIGUEZ ANTONELLA": {
+    "grado": "2C",
+    "acudiente": "RODRIGUEZ BARRERA FLOR EDITH",
+    "telefono": "3124785873",
+    "correo": "roflor8324@gmail.com",
+    "direccion": "CR 44 38 39",
+    "documento": "1222131432"
+  },
+  "SALDANA MENDEZ LUNA GABRIELA": {
+    "grado": "2C",
+    "acudiente": "MENDEZ ARANGUREN WHITNEY PAOLA",
+    "telefono": "3115719994",
+    "correo": "whitneymendez1@gmail.com",
+    "direccion": "CR 6 46 46",
+    "documento": "1222132527"
+  },
+  "MONTAGUT RODRIGUEZ MANUELA": {
+    "grado": "2C",
+    "acudiente": "MONTAGUT FERNANDEZ MANUEL ALEJANDRO",
+    "telefono": "3134216636",
+    "correo": "manuelmontagutf1@gmail.com",
+    "direccion": "CL 36 16 40",
+    "documento": "1118577320"
+  },
+  "VARGAS NEME ANTONELLA": {
+    "grado": "2C",
+    "acudiente": "NEME BOZO KINBERLY NIHISBLEYDIS",
+    "telefono": "3223391561",
+    "correo": "kinberly1018@outlook.com",
+    "direccion": "CL 22 30 47",
+    "documento": "1222133165"
+  },
+  "PINEDA PALOMINO AELEEN SOFIA": {
+    "grado": "2C",
+    "acudiente": "PALOMINO ESTEPA DIANA SIRLEY",
+    "telefono": "3142364218",
+    "correo": "palomino.estepa@hotmail.com",
+    "direccion": "CL 34 33 64",
+    "documento": "1222132105"
+  },
+  "PASTRANA CEDENO MIA SALOME": {
+    "grado": "2C",
+    "acudiente": "PASTRANA ALVAREZ SOLMAN YAIR",
+    "telefono": "3229453744",
+    "correo": "solmanyair2828@gmail.com",
+    "direccion": "CL 17 10 50",
+    "documento": "1222133773"
+  },
+  "PEREZ PENA JULIAN JERONIMO": {
+    "grado": "2C",
+    "acudiente": "PEREZ CAMARGO EDGAR HERNANDO",
+    "telefono": "3124499063",
+    "correo": "aredgar713@hotmail.com",
+    "direccion": "CL 35 28 25",
+    "documento": "1222134370"
+  },
+  "ROCHA PLAZAS FREDERICK ALEXANDER": {
+    "grado": "2C",
+    "acudiente": "ROCHA JIMENEZ JHON FREDY",
+    "telefono": "3203402948",
+    "correo": "rocha39@hotmail.com",
+    "direccion": "CL 60 01 14",
+    "documento": "1222133451"
+  },
+  "PULIDO VELANDIA EMILIANO ANDRES": {
+    "grado": "2C",
+    "acudiente": "VELANDIA BAUTISTA GINETH LIZETH",
+    "telefono": "3204087602",
+    "correo": "gilivelandia@gmail.com",
+    "direccion": "CL 24 31 56",
+    "documento": "1222133683"
+  },
+  "VILLALOBOS CUBIDES EMMANUEL ANDRES": {
+    "grado": "2C",
+    "acudiente": "CUBIDES ZULUAGA JENNIFER LIZETH",
+    "telefono": "3005185067",
+    "correo": "jecu3756@gmail.com",
+    "direccion": "CR 16 36 46",
+    "documento": "1123817780"
+  },
+  "ROJAS VALLEJO MARIA CAMILA": {
+    "grado": "2C",
+    "acudiente": "VALLEJO PEDRAZA CLAUDIA MARGARITA",
+    "telefono": "3114907761",
+    "correo": "clamargareth27@gmail.com",
+    "direccion": "CL 33 44 21",
+    "documento": "1222133558"
+  },
+  "QUESADA HERNANDEZ NOAH EMMANUEL": {
+    "grado": "2C",
+    "acudiente": "HERNANDEZ LOPEZ VANNESSA",
+    "telefono": "3227492351",
+    "correo": "vannessa.h.lpz.29@gmail.com",
+    "direccion": "CR 23 28 110",
+    "documento": "1222133958"
+  },
+  "ZARATE ARAUJO SALLY MAITE": {
+    "grado": "2C",
+    "acudiente": "ARAUJO VELASQUEZ YEIDY CRISTINA",
+    "telefono": "3133703071",
+    "correo": "criizvelasquez22@gmail.com",
+    "direccion": "CR 46 34 04 MZ F LOTE 1",
+    "documento": "1123449775"
+  },
+  "ARRIAGA MARTINEZ SAMUEL ANTONIO": {
+    "grado": "2D",
+    "acudiente": "ARRIAGA COLINA IRVING ANTONIO",
+    "telefono": "3204680517",
+    "correo": "irving7925@gmail.com",
+    "direccion": "CL 29 32 39",
+    "documento": "1222132429"
+  },
+  "PALACIO BETANCOURT ANDRES CAMILO": {
+    "grado": "2D",
+    "acudiente": "BETANCOURT CALVACHE JENNIFER MARCELA",
+    "telefono": "3155066970",
+    "correo": "jennimar.87@gmail.com",
+    "direccion": "CR 15 39 45",
+    "documento": "1061823615"
+  },
+  "CARRENO GONZALEZ HELENA": {
+    "grado": "2D",
+    "acudiente": "CARRENO GUZMAN LUIZ GIRALDO",
+    "telefono": "3124676597",
+    "correo": "luiskarreno@hotmail.com",
+    "direccion": "CR 16 22 41",
+    "documento": "1222134227"
+  },
+  "MARINO GRISMALDO SAMUEL DAVID": {
+    "grado": "2D",
+    "acudiente": "GRISMALDO ALFONSO LEIDY YANNETH",
+    "telefono": "3204927084",
+    "correo": "leidyygrismaldo30@gmail.com",
+    "direccion": "CL 32 6 38",
+    "documento": "1222129550"
+  },
+  "CORDOBA HERNANDEZ MONTSERRAT": {
+    "grado": "2D",
+    "acudiente": "HERNANDEZ PARRADO FRANCY LORENA",
+    "telefono": "3143084649",
+    "correo": "hdezfrancy@gmail.com",
+    "direccion": "CL 27 35 63",
+    "documento": "1222133109"
+  },
+  "AVILA LOPEZ EMILY JULIANA": {
+    "grado": "2D",
+    "acudiente": "LOPEZ BUENAVENTURA EILEN AZURY",
+    "telefono": "3104807594",
+    "correo": "len_0629@hotmail.com",
+    "direccion": "CR 9 45 26",
+    "documento": "1222132787"
+  },
+  "GALVIS MANCERA JUANA GABRIELA": {
+    "grado": "2D",
+    "acudiente": "MANCERA RODRIGUEZ MAYERLY KATHERIN",
+    "telefono": "3202203635",
+    "correo": "ingmayerlymancerar@gmail.com",
+    "direccion": "CR 14 32 22",
+    "documento": "1222131532"
+  },
+  "SIERRA ACEVEDO MARTIN DAVID": {
+    "grado": "2D",
+    "acudiente": "MARIA CECILIA ACEVEDO HOLGUIN",
+    "telefono": "3504100407",
+    "correo": "maago204@hotmail.com",
+    "direccion": "CL 24 14 94",
+    "documento": "1222131860"
+  },
+  "BELTRAN GUARIN MARIA DE LOS ANGELES": {
+    "grado": "2D",
+    "acudiente": "MORALES GARZON DUMAR LIBARDO",
+    "telefono": "3202332386",
+    "correo": "dumarmoralesg@gmail.com",
+    "direccion": "TV 23 37 87 TO 9 APTO 403",
+    "documento": "1222132156"
+  },
+  "CARRENO LOPEZ EVALUNA": {
+    "grado": "2D",
+    "acudiente": "MUNOZ MARQUEZ JULIAN LEONARDO",
+    "telefono": "3108034036",
+    "correo": "julianmarquez963@gmail.com",
+    "direccion": "CR 29 29 35",
+    "documento": "1118578004"
+  },
+  "GARCIA NUNEZ ANGEL DAVID": {
+    "grado": "2D",
+    "acudiente": "NUNEZ MENDEZ ANGELICA MARIA",
+    "telefono": "3204452970",
+    "correo": "angie_bella29@hotmail.com",
+    "direccion": "CR 28 14 33",
+    "documento": "1145428820"
+  },
+  "TOBAR PATINO SAMUEL DAVID": {
+    "grado": "2D",
+    "acudiente": "PATINO MONTANA DANIELA",
+    "telefono": "3123849752",
+    "correo": "danhiela.24@hotmail.com",
+    "direccion": "CR 35 28 21",
+    "documento": "1222133798"
+  },
+  "ARANGUREN PLAZAS JERONIMO": {
+    "grado": "2D",
+    "acudiente": "PLAZAS ROJAS LAURA",
+    "telefono": "3144388046",
+    "correo": "lalla.flp@gmail.com",
+    "direccion": "CL 18 15 45",
+    "documento": "1057986986"
+  },
+  "DIAZ PRIETO THIAGO ALEXANDER": {
+    "grado": "2D",
+    "acudiente": "PRIETO RICO LIZETH XIMENA",
+    "telefono": "3204598887",
+    "correo": "lizethprieto24@gmail.com",
+    "direccion": "CR 22 16 40",
+    "documento": "1222133753"
+  },
+  "LOPEZ RODRIGUEZ EYDAN MATHIAS": {
+    "grado": "2D",
+    "acudiente": "RODRIGUEZ MARTINEZ JEIMMY MAGALY",
+    "telefono": "3102910865",
+    "correo": "magadeoz33@hotmail.com",
+    "direccion": "CL 40 40 120",
+    "documento": "1052846311"
+  },
+  "RODRIGUEZ AYALA MARIA ANTONELLA": {
+    "grado": "2D",
+    "acudiente": "RODRIGUEZ PASTRANA FINLAY",
+    "telefono": "3108688945",
+    "correo": "finropa@hotmail.com",
+    "direccion": "CL 38 24 09",
+    "documento": "1222133976"
+  },
+  "UNDA MARTINEZ MARIANGEL": {
+    "grado": "2D",
+    "acudiente": "UNDA  JUAN MAURICIO",
+    "telefono": "3214145291",
+    "correo": "manitas-12@hotmail.com",
+    "direccion": "CL 42 8 20",
+    "documento": "1222132987"
+  },
+  "CERVERA URBANO ALANA SYLVANA": {
+    "grado": "2D",
+    "acudiente": "URBANO MONTANEZ GABRIELA ALEJANDRA",
+    "telefono": "3124635358",
+    "correo": "gabrielamontañez19@gmail.com",
+    "direccion": "CR 21 20 14",
+    "documento": "1222133616"
+  },
+  "NAVARRO URBANO ANTONELLA": {
+    "grado": "2D",
+    "acudiente": "URBANO ROJAS DERLY YANETH",
+    "telefono": "3203917935",
+    "correo": "yayoorossur@hotmail.com",
+    "direccion": "CL 27 9 51",
+    "documento": "1222131812"
+  },
+  "VARGAS RAMIREZ LILIAN CAMILA": {
+    "grado": "2D",
+    "acudiente": "VARGAS BECERRA CARLOS ANDRES",
+    "telefono": "3204787270",
+    "correo": "carlosvargas960@hotmail.com",
+    "direccion": "CL 15 14 33",
+    "documento": "5697190"
+  },
+  "DIAZ MARTINEZ CALEB": {
+    "grado": "2D",
+    "acudiente": "MARTINEZ PEREZ THIANY KATERINE",
+    "telefono": "3177317410",
+    "correo": "thianymartinezperez@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "11141527319"
+  },
+  "RICAURTE BERNAL MARIA SALOME": {
+    "grado": "2D",
+    "acudiente": "RICAURTE AVELLA HEILER MARTIN",
+    "telefono": "3118746658",
+    "correo": "heilerr44@hmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1032509577"
+  },
+  "RAMOS ARMESTO ANGEL DAVID": {
+    "grado": "3A",
+    "acudiente": "ARMESTO NORIEGA DANNESSA PAOLA",
+    "telefono": "3125552275",
+    "correo": "dannessa3@hotmail.com",
+    "direccion": "CR 8 15 53 TO 1 APTO 401",
+    "documento": "1118576814"
+  },
+  "CHAPARRO AYALA HELLEN STEFHANY": {
+    "grado": "3A",
+    "acudiente": "AYALA RODRIGUEZ YEIMY TATIANA",
+    "telefono": "3102204266",
+    "correo": "ingtatianaayala@gmail.com",
+    "direccion": "CL 46 9 27",
+    "documento": "1222130953"
+  },
+  "CALDERON BOBADILLA ARIADNA ISABELLA": {
+    "grado": "3A",
+    "acudiente": "CALDERON SANCHEZ DARWIN ARBEY",
+    "telefono": "3143152176",
+    "correo": "darwin.sanchez01@hotmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1031425981"
+  },
+  "RAMIREZ CHAPARRO IVANNA": {
+    "grado": "3A",
+    "acudiente": "CHAPARRO PARRA PAULIN YESENIA",
+    "telefono": "3103076109",
+    "correo": "yesseniachaparro@gmail.com",
+    "direccion": "CR 16 26 27",
+    "documento": "1118576438"
+  },
+  "FERREIERA DOMINGUEZ SAMUEL ESTEBAN": {
+    "grado": "3A",
+    "acudiente": "FERREIRA RAMIREZ RICARDO ALBERTO",
+    "telefono": "3166981838",
+    "correo": "ferreriral1980@gmail.com",
+    "direccion": "CL 11 25 51",
+    "documento": "1222128243"
+  },
+  "GUIO DELGADILLO EMILY SOFIA": {
+    "grado": "3A",
+    "acudiente": "GUIO CHICACAUSA CRISTIAN ALEJANDRO",
+    "telefono": "3138532841",
+    "correo": "cagch-22@gmail.com",
+    "direccion": "CL 44 11 41",
+    "documento": "1222131317"
+  },
+  "HERNANDEZ GUAUQUE JUAN SEBASTIAN": {
+    "grado": "3A",
+    "acudiente": "HERNANDEZ MEDINA JERSSON ARMANDO",
+    "telefono": "3133509341",
+    "correo": "jerssonhernandez@hotmail.com",
+    "direccion": "CL 9 20 59",
+    "documento": "1222129797"
+  },
+  "HIGUERA CASTANO EMMANUEL": {
+    "grado": "3A",
+    "acudiente": "HIGUERA MARTINEZ JUAN SEBASTIAN",
+    "telefono": "3123645792",
+    "correo": "higuera2017032028@unitropico.edu.co",
+    "direccion": "CL 24 22 26",
+    "documento": "1222129066"
+  },
+  "LARA LAVERDE ZAIRA LUCIANA": {
+    "grado": "3A",
+    "acudiente": "LARA ALARCON LUIS BENIGNO",
+    "telefono": "3138834556",
+    "correo": "laraluistop@hotmail.com",
+    "direccion": "VEREDA LA VEGA",
+    "documento": "1222129450"
+  },
+  "PEDRAZA DIAZ DANNA SAMARA": {
+    "grado": "3A",
+    "acudiente": "PEDRAZA CHACON FREDY ALEXANDER",
+    "telefono": "3208538238",
+    "correo": "fredypedraza91@gmail.com",
+    "direccion": "CR 23 19 35",
+    "documento": "1222130721"
+  },
+  "PERDOMO RUIZ ERICK JULIAN": {
+    "grado": "3A",
+    "acudiente": "PERDOMO VARGAS DAVID",
+    "telefono": "3107601284",
+    "correo": "davidperdomo0609@hotmail.com",
+    "direccion": "CL 27 12 82",
+    "documento": "1118575592"
+  },
+  "MESA RIVERA JOSE DANIEL": {
+    "grado": "3A",
+    "acudiente": "RIVERA ACOSTA LEIDY NATALIA",
+    "telefono": "3228787375",
+    "correo": "lei.dy.92@hotmail.com",
+    "direccion": "CR 20 21 58",
+    "documento": "1122938556"
+  },
+  "RODRIGUEZ SANCHEZ JUAN DIEGO": {
+    "grado": "3A",
+    "acudiente": "SANCHEZ MARQUEZ ROCIO",
+    "telefono": "3142662931",
+    "correo": "sanchezmarquezrocio@gmail.com",
+    "direccion": "CL 36 13 85",
+    "documento": "1222129585"
+  },
+  "SEPULVEDA VANEGAS EDRICK ANDRES": {
+    "grado": "3A",
+    "acudiente": "SEPULVEDA VEGA ALVARO ANDRES",
+    "telefono": "3137213156",
+    "correo": "alvaroandres204@hotmail.com",
+    "direccion": "CR 37 37 89",
+    "documento": "1118577031"
+  },
+  "ESPINOSA SOCHA GOHAN EMANUEL": {
+    "grado": "3A",
+    "acudiente": "SOCHA RINCON LIZETH PAOLA",
+    "telefono": "3108802036",
+    "correo": "pa_olitamm@hotmail.com",
+    "direccion": "LOTE19 MZ XIRUMA II",
+    "documento": "1222129997"
+  },
+  "QUESADA HERNANDEZ EMILIA": {
+    "grado": "3A",
+    "acudiente": "HERNANDEZ LOPEZ VANNESSA",
+    "telefono": "3227492351",
+    "correo": "vannessa.h.lpz.29@gmail.com",
+    "direccion": "CR 23 28 110",
+    "documento": "1118575203"
+  },
+  "GARCIAS VALIENTE SAMUEL JAVIER": {
+    "grado": "3A",
+    "acudiente": "VALIENTE RAMIREZ LEYDY CATERINE",
+    "telefono": "3173772388",
+    "correo": "ivalienteramirez@gmail.com",
+    "direccion": "CR15 43 31",
+    "documento": "1051075640"
+  },
+  "GOMEZ GROSSO ELIAN JERONIMO": {
+    "grado": "3A",
+    "acudiente": "GOMEZ GASCA JOHANN EUGENIO",
+    "telefono": "3118361686",
+    "correo": "elmono2710@hotmail.com",
+    "direccion": "CL 40 12 16",
+    "documento": "1222130587"
+  },
+  "ADAME PIRACON EMANUEL ALEXANDER": {
+    "grado": "3B",
+    "acudiente": "ADAME MUNOZ JESUS ALEXANDER",
+    "telefono": "3132956132",
+    "correo": "adamealexander1@gmail.com",
+    "direccion": "CL 16 21 98",
+    "documento": "1222129159"
+  },
+  "PIRATEQUE ARAQUE MARTIN GERONIMO": {
+    "grado": "3B",
+    "acudiente": "ARAQUE LOZANO JASBEIDY ANDREA",
+    "telefono": "3127542836",
+    "correo": "andreajal87@gmail.com",
+    "direccion": "CR 21 23 43",
+    "documento": "1118577042"
+  },
+  "ARDILA MANOSALVA JERONIMO": {
+    "grado": "3B",
+    "acudiente": "ARDILA RINCON NELSON FELIPE",
+    "telefono": "3213001603",
+    "correo": "nelsonfelipeardila@gmail.com",
+    "direccion": "CR 37 3783",
+    "documento": "1014894779"
+  },
+  "BENAVIDES TORO PAULA MARIANA": {
+    "grado": "3B",
+    "acudiente": "BENAVIDES LOZANO JUVENAL",
+    "telefono": "3103364783",
+    "correo": "juvenal1975@gmail.com",
+    "direccion": "CR 16 36 35",
+    "documento": "1121967294"
+  },
+  "MONTES BUELVAS LIAM DAVID": {
+    "grado": "3B",
+    "acudiente": "BUELVAS SOLAR YESENIA PAOLA",
+    "telefono": "3102956118",
+    "correo": "vuelvayesenia07@gmail.com",
+    "direccion": "CR 9 10 45",
+    "documento": "1222129408"
+  },
+  "ROMERO CANIZALEZ MARIAM LUCIANA": {
+    "grado": "3B",
+    "acudiente": "CANIZALEZ CRUZ MARTHA CECILIA",
+    "telefono": "3102895042",
+    "correo": "mcanizalez278@gmail.com",
+    "direccion": "CL 28 2 35",
+    "documento": "1222129972"
+  },
+  "ASCENCIO CHAPARRO JOSEPH SEBASTIAN": {
+    "grado": "3B",
+    "acudiente": "CHAPARRO LAGOS CAROL YESENIA",
+    "telefono": "3202599682",
+    "correo": "carolyeseniachaparro@hotmail.com",
+    "direccion": "CR 5 56 47",
+    "documento": "1055315829"
+  },
+  "DIAZ MARTINEZ ANDRES SANTIAGO": {
+    "grado": "3B",
+    "acudiente": "MARTINEZ OLIVEROS DIANA MARITZA",
+    "telefono": "3138057583",
+    "correo": "maritza9182@hotmail.com",
+    "direccion": "CL 40 TV 23 71",
+    "documento": "1222130110"
+  },
+  "VEGA NIETO ANA VICTORIA": {
+    "grado": "3B",
+    "acudiente": "NIETO VALENCIA AMPARO",
+    "telefono": "3142957138",
+    "correo": "amparonu6@gmail.com",
+    "direccion": "CR 27 17 35",
+    "documento": "1222129916"
+  },
+  "PARRA BRICENO ISABELLA": {
+    "grado": "3B",
+    "acudiente": "PARRA BLANDON LUIS FERNEY",
+    "telefono": "3214340678",
+    "correo": "luisfparrab@icloud.com",
+    "direccion": "CR 24 12 21",
+    "documento": "1029407946"
+  },
+  "CARRILLO PUENTES ASHLEY SAMANTHA": {
+    "grado": "3B",
+    "acudiente": "PUENTES CHANCI MILDRED NATALIA",
+    "telefono": "3185160062",
+    "correo": "pmildrednatalia950@gmail.com",
+    "direccion": "VEREDA LA VEGA",
+    "documento": "1118576516"
+  },
+  "MESA RIVERA SAMUEL GABRIEL": {
+    "grado": "3B",
+    "acudiente": "RIVERA ACOSTA LEIDY NATALIA",
+    "telefono": "3228787375",
+    "correo": "lei.dy.92@hotmail.com",
+    "direccion": "CR 20 21 58",
+    "documento": "1122938557"
+  },
+  "PEREZ SANCHEZ STHIAN SAMUEL": {
+    "grado": "3B",
+    "acudiente": "SANCHEZ MARTINEZ LILIANA MARCELA",
+    "telefono": "3208861877",
+    "correo": "lilisanchez661@gmail.com",
+    "direccion": "CL 51 11 94",
+    "documento": "1222130962"
+  },
+  "TORRES BUITRAGO DEIVID MATHIAS": {
+    "grado": "3B",
+    "acudiente": "TORRES GODOY JHEFERSON ANDRES",
+    "telefono": "3212056017",
+    "correo": "jheferson.1608@gmail.com",
+    "direccion": "CL 45 6 77",
+    "documento": "1118576078"
+  },
+  "VARGAS TORO JERONIMO": {
+    "grado": "3B",
+    "acudiente": "VARGAS HURTADO HANS ALEXANDER",
+    "telefono": "3118005286",
+    "correo": "inghansvargas@outlook.com",
+    "direccion": "CL 26 15 14",
+    "documento": "1118576096"
+  },
+  "ZANGUNA OROZCO SAMUEL ANDRES": {
+    "grado": "3B",
+    "acudiente": "ZANGUNA MEDINA JHON ALEXANDER",
+    "telefono": "3102387309",
+    "correo": "alexzangu1053@hotmail.com",
+    "direccion": "CR 24 37 67",
+    "documento": "1222131076"
+  },
+  "ROJAS GALINDO AARON GERONIMO": {
+    "grado": "3B",
+    "acudiente": "ROJAS MEDINA GIOVANNY FERNANDO",
+    "telefono": "3115585500",
+    "correo": "giovannyrojas90@hotmail.com",
+    "direccion": "TRV 23 37 87",
+    "documento": "1222130490"
+  },
+  "BASTIDAS PENA MARTIN": {
+    "grado": "3B",
+    "acudiente": "BASTIDAS GUERRERO ANDRES FERNANDO",
+    "telefono": "3212409561",
+    "correo": "andresbastidas9@gmail.com",
+    "direccion": "CL 18 26 36",
+    "documento": "1118577045"
+  },
+  "DIAZ MARTINEZ FELICIA": {
+    "grado": "3B",
+    "acudiente": "MARTINEZ PEREZ THIANY KATERINE",
+    "telefono": "3177317410",
+    "correo": "thianymartinezperez@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1141526616"
+  },
+  "ACOSTA VARGAS ZOE MARIANA": {
+    "grado": "3B",
+    "acudiente": "VARGAS GOMEZ ERIKA MARIA",
+    "telefono": "3213653321",
+    "correo": "erikavargasts@gmail.com",
+    "direccion": "CL 43 8 12",
+    "documento": "1029408120"
+  },
+  "CARDENAS CAMARGO SARA ISABELLA": {
+    "grado": "3C",
+    "acudiente": "CARDENAS ROMERO LUIS FERNEY",
+    "telefono": "3114961811",
+    "correo": "feryi2009@hotmail.com",
+    "direccion": "CL 40 TV 6 67",
+    "documento": "1118575326"
+  },
+  "URBANO DELGADO EMMANUEL": {
+    "grado": "3C",
+    "acudiente": "DELGADO SANCHEZ CINDY LORENA",
+    "telefono": "3143448246",
+    "correo": "lorenadelgado30@gmail.com",
+    "direccion": "CR 21 21 66",
+    "documento": "1118575597"
+  },
+  "GOMEZ BOADA MARTIN ELIAS": {
+    "grado": "3C",
+    "acudiente": "GOMEZ MARTINEZ JAIRO",
+    "telefono": "3102530667",
+    "correo": "margboada@hotmail.com",
+    "direccion": "CR 22 24 32",
+    "documento": "1222128879"
+  },
+  "SEPULVEDA JOYA JULIETA": {
+    "grado": "3C",
+    "acudiente": "SEPULVEDA SERRANO NESTOR SEPULVEDA",
+    "telefono": "3144908618",
+    "correo": "esspentagono@gmail.com",
+    "direccion": "CR 47 34 22",
+    "documento": "1222129691"
+  },
+  "PLAZAS SUAREZ LUIS JOSE": {
+    "grado": "3C",
+    "acudiente": "SUAREZ PEREZ LUCY ESTRITH",
+    "telefono": "3114948166",
+    "correo": "lucy.suarez0714@gmail.com",
+    "direccion": "CR 8 15 53",
+    "documento": "1118576909"
+  },
+  "BENAVIDES BAUTISTA ISABELLA": {
+    "grado": "3C",
+    "acudiente": "BENAVIDES HENRY SEBASTIAN",
+    "telefono": "3003462042",
+    "correo": "sebastianbenavides07@hotmail.com",
+    "direccion": "CL 29 10 11",
+    "documento": "1222129682"
+  },
+  "CORREA PARRA SOFIA VALENTINA": {
+    "grado": "3C",
+    "acudiente": "CORREA CELY VLADIMIR",
+    "telefono": "3124792412",
+    "correo": "vladdicco_21@hotmail.com",
+    "direccion": "PAZ DE ARIPORO VD LAS GUAMAS",
+    "documento": "1058359842"
+  },
+  "LAVERDE FIAGA LAUREN SALOME": {
+    "grado": "3C",
+    "acudiente": "FIAGA BENITEZ DIANA ALEXANDRA",
+    "telefono": "3204024613",
+    "correo": "dfiaga97@gmail.com",
+    "direccion": "CL 31 1 21",
+    "documento": "1222127222"
+  },
+  "MONTANA ROJAS DIEGO ALEJANDRO": {
+    "grado": "3C",
+    "acudiente": "MONTANA PORRES JOSE NICANOR",
+    "telefono": "3208344504",
+    "correo": "jonimon0110@gmail.com",
+    "direccion": "CR 31 31 26",
+    "documento": "1118575217"
+  },
+  "ZORRO BARRERA MARIA LUCIA": {
+    "grado": "3C",
+    "acudiente": "BARRERA MONGUI LILIANA",
+    "telefono": "3175242010",
+    "correo": "lbarreramongui@gmail.com",
+    "direccion": "CL 33 28 47",
+    "documento": "1116555965"
+  },
+  "AVENDANO DIAZ LUIS JOSE": {
+    "grado": "3D",
+    "acudiente": "AVENDANO ORTIZ JOSE LUIS",
+    "telefono": "3212088088",
+    "correo": "jlao_2006@hotmail.com",
+    "direccion": "CR 25 16 54",
+    "documento": "1222129852"
+  },
+  "CASTRO ARIAS EMILIA DESIREE": {
+    "grado": "3D",
+    "acudiente": "CASTRO SOTAQUIRA DIONEL",
+    "telefono": "3203102034",
+    "correo": "dionelk83@gmail.com",
+    "direccion": "CL 40 2 81",
+    "documento": "1118576174"
+  },
+  "DOMINGUEZ CASTEBLANCO MARIA FERNANDA": {
+    "grado": "3D",
+    "acudiente": "DOMINGUEZ PEREZ JOSE NEHIL",
+    "telefono": "3204529136",
+    "correo": "joselph61@gmail.com",
+    "direccion": "CL 26 9 86",
+    "documento": "1222130472"
+  },
+  "CAMARGO GALLARDO VIVIAN LUCIA": {
+    "grado": "3D",
+    "acudiente": "GALLARDO ORTEGA MONICA VIVIANA",
+    "telefono": "3103708806",
+    "correo": "mgallardo.seyopal@gmail.com",
+    "direccion": "CL 58 1 92",
+    "documento": "1222130278"
+  },
+  "GAVIRIA AVILA DANIEL EDUARDO": {
+    "grado": "3D",
+    "acudiente": "GAVIRIA FUENTES CESAR EDUARDO",
+    "telefono": "3212030006",
+    "correo": "cegafu75@hotmail.com",
+    "direccion": "CL 23 24 21",
+    "documento": "1222129527"
+  },
+  "HUERFANO NINCO ELENA": {
+    "grado": "3D",
+    "acudiente": "HUERFANO MENDOZA EDUIN JAVIER",
+    "telefono": "3203039462",
+    "correo": "huerfaninho9@hotmail.com",
+    "direccion": "CR 27 27 32",
+    "documento": "1123817633"
+  },
+  "ROBAYO NAVAS ANA ISABELLA": {
+    "grado": "3D",
+    "acudiente": "NAVAS SANDOVAL ZAYRA YENNY",
+    "telefono": "3112712040",
+    "correo": "zayra-navas@hotmail.com",
+    "direccion": "CL 40 23 73 TO 8 APTO 209",
+    "documento": "1057986642"
+  },
+  "PATINO SANCHEZ ISABELA": {
+    "grado": "3D",
+    "acudiente": "SANCHEZ SANDRA MILENA",
+    "telefono": "3134501901",
+    "correo": "samibelapat17@gmail.com",
+    "direccion": "CR 17 35 64",
+    "documento": "1222128724"
+  },
+  "REYES MARQUEZ ISABELLA": {
+    "grado": "3D",
+    "acudiente": "REYES ALVAREZ LEINER ANDRES",
+    "telefono": "3106890974",
+    "correo": "andrereyes2187@gmail.com",
+    "direccion": "CR 28 29 41",
+    "documento": "1222129911"
+  },
+  "VERDUGO RUIZ VALERY DAHIANA": {
+    "grado": "3D",
+    "acudiente": "VERDUGO VELANDIA EDGAR ALIRIO",
+    "telefono": "3114686039",
+    "correo": "alilov2010@gmail.com",
+    "direccion": "CL 25 14 62",
+    "documento": "1222127550"
+  },
+  "DUARTE GROSSO PEDRO JOSE": {
+    "grado": "3D",
+    "acudiente": "DUARTE PORTELLA CAMILO ANDRES",
+    "telefono": "3123723315",
+    "correo": "camilo626_duarte@hotmail.com",
+    "direccion": "KM 3 VIA MORICHAL",
+    "documento": "1118576429"
+  },
+};
+
+function getStudentProfile(name) {
+  // Try exact match first
+  if (STUDENTS_DB[name]) return STUDENTS_DB[name];
+  // Try normalized match
+  var norm = name.toUpperCase().replace(/[áàäâ]/g,'A').replace(/[éèëê]/g,'E')
+    .replace(/[íìïî]/g,'I').replace(/[óòöô]/g,'O').replace(/[úùüû]/g,'U')
+    .replace(/[ñ]/g,'N').trim();
+  if (STUDENTS_DB[norm]) return STUDENTS_DB[norm];
+  // Partial match
+  var keys = Object.keys(STUDENTS_DB);
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i] === norm || keys[i].includes(norm) || norm.includes(keys[i])) {
+      return STUDENTS_DB[keys[i]];
+    }
+  }
+  return null;
+}
+
+function profileCard(name) {
+  var p = getStudentProfile(name);
+  if (!p) return '<div class="card" style="border-left:4px solid var(--gray-light)">'
+    + '<div class="slbl" style="margin-bottom:6px">Perfil del estudiante</div>'
+    + '<div style="font-size:0.85rem;color:var(--gray)">No se encontro informacion de contacto para este estudiante en la base de datos.</div>'
+    + '</div>';
+  return '<div class="card" style="border-left:4px solid var(--navy);margin-bottom:0">'
+    + '<div class="slbl" style="margin-bottom:10px">Perfil del estudiante</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px">'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    + '<div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">DOCUMENTO</div><div style="font-size:0.9rem;font-weight:600;color:var(--text)">'+(p.documento||'—')+'</div></div>'
+    + '<div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">GRADO</div><div style="font-size:0.9rem;font-weight:600;color:var(--text)">'+(p.grado||'—')+'</div></div>'
+    + '</div>'
+    + '<div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">ACUDIENTE</div><div style="font-size:0.9rem;font-weight:600;color:var(--text)">'+(p.acudiente||'—')+'</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    + '<div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">TELEFONO</div>'
+    + '<a href="tel:'+p.telefono+'" style="font-size:0.9rem;font-weight:600;color:var(--navy);text-decoration:none">'+(p.telefono||'—')+'</a></div>'
+    + '<div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">CORREO</div><div style="font-size:0.82rem;font-weight:500;color:var(--text);word-break:break-all">'+(p.correo||'—')+'</div></div>'
+    + '</div>'
+    + '<div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">DIRECCION</div><div style="font-size:0.9rem;font-weight:600;color:var(--text)">'+(p.direccion||'—')+'</div></div>'
+    + '</div></div>';
+}
+
+var STUDENTS = {
+  "Manana":{
+    "1A":["BAQUERO FORERO BIBIAN GABRIELLE","BECERRA VARGAS OBED","CORREA TOVAR MATIAS","DUARTE TIBATA JOSUE DANIEL","FONSECA BARRERA DANIEL ALEJANDRO","GONZALEZ MENDEZ JHOSELYN","HERNANDEZ ZEAS LIA SALOME","JIMENEZ VANEGAS MARIA ELIZABETH","LAZARO CAMACHO MATHIAS","MORENO VARGAS MIGUEL ANGEL","NINO URBANO ANA MARIA","PAEZ GUTIERREZ VIOLETA","PAIVA PINZON MARIA CAMILA","PINTO ORTIZ VICTORIA","PIRAGAUTA PEREZ MARIA CAMILA","RAMIREZ OTALORA JUAN SEBASTIAN","RODRIGUEZ MENDOZA ANA PAULA","SALCEDO CARRILLO SALED ALEJANDRO","SILVA PATINO CHRISTOPHER SANTIAGO"],
+    "1B":["AGUDELO PANQUEVA ANNIE VICTORIA","AREVALO CACERES IAN SIMON","BERNAL CASTANEDA SILVIA SOFIA","CACERES RUIZ EMILIANA","CALLEJAS JIMENEZ MARIA PAULA","CALLEJAS PEDRAZA JUAN MANUEL","ESTUPINA HOLGUIN ARIANA ISABELLA","FERNANDEZ CRUZ IVANNA","FONSECA GOMEZ JUAN ESTEBAN","GARCIA ALFONSO DARA ABIGAIL","MERCADO MANTILLA MATHIAS ALEJANDRO","MURCIA BARBON JUANITA","PEREZ GUERRERO JOSE EMILIANO","RESTREPO SIERRA LAURA CELESTE","RICO SERRANO THOMAS ALEJANDRO","RINCON URREGO SHARON ELIETTE","SALAMANCA SALCEDO EMMANUEL","VALLEJO RUIZ SARA LUCIA","VASQUEZ VALDES ARANZA","ZARATE PEREZ LUCIA"],
+    "2A":["CARRENO JIMENEZ JUAN THIAGO","CARTAGENA ABRIL HELLEN SAMARA","CIFUENTES ARCHILA MARIA ANTHONELLA","GALEANO NAVARRO MARIA JOSE","GALVIS MANCERA ARTURO ADRIANO","GONZALEZ TOVAR LUCIA","MARIN RODRIGUEZ ANTONELLA","MONTAGUT RODRIGUEZ MANUELA","PASTRANA CEDENO MIA SALOME","PEREZ PENA JULIAN JERONIMO","PINEDA PALOMINO AELEEN SOFIA","PULIDO VELANDIA EMILIANO ANDRES","QUESADA HERNANDEZ NOAH EMMANUEL","ROCHA PLAZAS FREDERICK ALEXANDER","RODRIGUEZ CORDOBA ANA VICTORIA","ROJAS VALLEJO MARIA CAMILA","SALDANA MENDEZ LUNA GABRIELA","SUAREZ GALVIS JOSHUA EMMANUEL","VARGAS NEME ANTONELLA","VILLALOBOS CUBIDES EMMANUEL ANDRES","ZARATE ARAUJO SALLY MAITE"],
+    "2B":["ARANGUREN PLAZAS JERONIMO","ARRIAGA MARTINEZ SAMUEL ANTONIO","AVILA LOPEZ EMILY JULIANA","BELTRAN GUARIN MARIA DE LOS ANGELES","CARRENO GONZALEZ HELENA","CERVERA URBANO ALANA SYLVANA","CORDOBA HERNANDEZ MONTSERRAT","DIAZ MARTINEZ CALEB","DIAZ PRIETO THIAGO ALEXANDER","GALVIS MANCERA JUANA GABRIELA","GARCIA NUNEZ ANGEL DAVID","LOPEZ RODRIGUEZ EYDAN MATHIAS","NAVARRO URBANO ANTONELLA","PALACIO BETANCOURT ANDRES CAMILO","RODRIGUEZ AYALA MARIA ANTONELLA","SIERRA ACEVEDO MARTIN DAVID","TOBAR PATINO SAMUEL DAVID","UNDA MARTINEZ MARIANGEL","VARGAS RAMIREZ LILIAN CAMILA","BECERRA VARGAS ANA VICTORIA","MARINO GRISMALDO SAMUEL DAVID","RICAURTE BERNAL MARIA SALOME"],
+    "3A":["CHAPARRO AYALA HELLEN STEFHANY","ESPINOSA SOCHA GOHAN EMANUEL","FERREIRA DOMINGUEZ SAMUEL ESTEBAN","GARCIA VALIENTE SAMUEL JAVIER","GOMEZ GROSSO ELIAN JERONIMO","GUIO DELGADILLO EMILY SOFIA","HERNANDEZ GUAUQUE JUAN SEBASTIAN","HIGUERA CASTANO EMMANUEL","LARA LAVERDE ZAIRA LUCIANA","MESA RIVERA JOSE DANIEL","PEDRAZA DIAZ DANNA SAMARA","PERDOMO RUIZ ERICK JULIAN","QUESADA HERNANDEZ EMILIA","RAMIREZ CHAPARRO IVANNA","RAMOS ARMESTO ANGEL DAVID","RODRIGUEZ SANCHEZ JUAN DIEGO","SEPULVEDA VANEGAS EDRICK ANDRES"],
+    "3B":["ADAME PIRACON EMANUEL ALEXANDER","ARDILA MANOSALVA JERONIMO","ASCENCIO CHAPARRO JOSEPH SEBASTIAN","BASTIDAS PENA MARTIN","BENAVIDES TORO PAULA MARIANA","CARRILLO PUENTES ASHLEY SAMANTHA","CORREA PARRA SAFIA VALENTINA","DIAZ MARTINEZ ANDRES SANTIAGO","DIAZ MARTINEZ FELICIA","MESA RIVERA SAMUEL GABRIEL","MONTES BUELVA LIAN DAVID","PARRA BRICENO ISABELLA","PEREZ SANCHEZ STHIAN SAMUEL","PIRATEQUE ARAQUE MARTIN GERONIMO","ROJAS GALINDO AARON JERONIMO","ROMERO CANIZALEZ MARIAM LUCIANA","TORRES BUITRAGO DEIVID MATHIAS","VARGAS TORO JERONIMO","VEGA NIETO ANA VICTORIA","ZANGU OROZCO SAMUEL ANDRES"],
+    "4A":["CARDENAS SERRANO ANGEL ESTEBAN","CAVARTE HERRERA NOA ISABELLA","ESPITIA SOLANO MARIA VICTORIA","FERNANDEZ CRUZ EMMANUEL","GARCIA ECHENIQUE SAMUEL DAVID","HERNANDEZ CARDENAS JUAN JOSE","INFANTE RODRIGUEZ JUAN ESTEBAN","MARTINEZ MONTES JOHAN SEBASTIAN","MEDINA PEDROZA MARTIN","NARANJO VIANCHA DANNA ISABELLA","ORDONEZ SANDOVAL JUAN ANDRES","ORTEGA SANCHEZ MARIANA CELESTE","OSPINO MELLIZO MATHIAS ALFONSO","PAEZ CANIZALES ANDRES ESTEBAN","PEREZ MARTINEZ MIA VALENTINA","RAMIREZ CABRERA VALERY SOFIA","RESTREPO CARRENO SAMUEL FELIPE","RODRIGUEZ JIMENEZ VICTORIA","RODRIGUEZ SOLER SAMUEL SANTIAGO","SALGADO GARZON DANIEL ANDRES","TRIANA ACEVEDO DANIELA SOFIA","CARDOZO MOSQUERA DYLAN","MARIN LOPEZ EMMANUEL"],
+    "4B":["BARRETO HUMO MILAN JERONIMO","CARDENAS VARGAS DIEGO ALEJANDRO","CORREA HUERTAS KAROL SOFIA","CUADRA GARZON ERICK SANTIAGO","CUEVAS SANCHEZ AARON STEVE","DUARTE ORREGO AVRIL VICTORIA","GIL GONZALEZ PAULA ANDREA","GUARNIZO GONZALEZ ANA LUCIA","LARROTA TRASLAVINA EMMANUEL","LOPEZ SANDOVAL YACOB JERONIMO","MONTAGUT RODRIGUEZ MARIANA","MORENO BARRETO MARIA LUCIANA","MORENO CORTES SEBASTIAN","NINO MASIAS MARIA LUCIANA","OLAYA RINCON THALIANA","PARRA RUEDA SAMANTHA NICOLE","PATINO MERCHAN JUAN SEBASTIAN","PERALTA FLOREZ SAMUEL ALEJANDRO","ROBLES AVILA ISAAC","SANCHEZ FIGUEROA SIMON DANIEL","SANCHEZ SILVA JUAN ESTEBAN","TOJUELO MONGUA LUIS MARIO","VIVAS RUIZ EVENLYN MAIA"],
+    "5A":["AMAYA GUTIERREZ ILAN DAVID","ARAQUE GUTIERRES MARTIN FELIPE","ARRIAGA MARTINEZ GABRIEL ANTONIO","AVELLA GONZALEZ MARIANA","CAMARGO NINO EMANUEL JULIAN","CARDENAS MORA CHRISTOPHER DE LEON","DIAZ MARTINEZ JOEL","FORERO AVILA DIEGO LUIS","GUTIERREZ GONZALEZ VIOLETA","GUZMAN RAIGOSA SARA LUCIANA","GUZMAN TORRES MARIANA","MANRIQUE AGUILAR VICTORIA","MONJE LOZANO LUNA DEL MAR","PEREZ LEGUIZAMON VALERY GABRIELA","PINZON RODRIGUEZ LUISA FERNANDA","PIRAGAUTA PEREZ DANNA ISABELLA","REAL BEJARANO VICTORIA","RUIZ CORREDOR SAMUEL JERONIMO","SANCHEZ NINO TOMAS EDUARDO","SIERRA SAENZ JULIETH VALENTINA","STAVE SARMIENTO ZARA CAMILA","TIQUE CONDE ANDRES FELIPE","VALDERRAMA VARGAS JERONIMO ALEJANDRO","VARGAS CORTES ISABELLA"],
+    "5B":["ARCHILA PINZON MARTIN EDUARDO","AYALA MORENO PAULA ALEJANDRA","BECERRA POVEDA JOSUE","CABRERA TORRES THOMAS ALEJANDRO","CASTELLANOS LEAL THIAGO ALEJANDRO","CORREDOR PEREZ MILA","DUARTE TIBATA EMMANUEL ESTEBAN","FLOREZ RODRIGUEZ MILAN ADRIAN","FORERO CASTRO GABRIELA","GOMEZ LOZA SAMUEL ESTEBAN","GUIO PENA DULCE MARIA","JIMENEZ TRASLAVINA IAN SANTIAGO","MENDOZA BARRERA SOFIA","MUNOZ ALFONSO MIGUEL ANGEL","ORTIZ ROLDAN MARIA ALEJANDRA","OSORIO ABRIL MARTINA","OSORIO NOSSA MARIA JOSE","PAEZ GUTIERREZ ALEJANDRO","PEREZ PORRAS GUIAN DAVID","REINA CASTANO ASHLEY VALENTINA","RICAURTE BERNAL MARTIN THOMAS","RUEDA GALINDO JUAN MIGUEL","SANCHEZ ROZO SHARLOTTE ZARAIH","TORRES PEREZ VIVIAN DANIELA"]
+  },
+  "Tarde":{
+    "1C":["BARRERA GONZALEZ CELESTE","BAYONA VARGAS MIA GABRIELA","CAMARGO TORRES JUAN JOSE","CEPEDA CELY MARTIN JERONIMO","COLORADO VEGA LUCIANA","CORTES MONSALVE ISAAC ALFONSO","CRISTANCHO SANABRIA THOMAS MATIAS","GARCIA PLAZAS EDWIN ESTEBAN","GONZALEZ MARTINEZ OLIVIA","GUERRERO PRECIADO LUCIANA","LAVERDE GOMEZ EIMY GABRIELA","MONTES GAVIRIA EMMY VALERIA","OROS WALTEROS ERICK SAMUEL","PANESSO ROSAS ARIANNA ISABELLA","RAMIREZ CORTES MATEO","RUBIANO CAMARGO JHOVAN","URRUTIA MEDINA JUAN SEBASTIAN"],
+    "1D":["AGUILAR VARGAS EMILY SARAY","ALVAREZ PALACIOS NICOLAS","ALVAREZ RUEDA GABRIEL SANTIAGO","CAMARGO TORRES EMANUEL","CANON MELGAREJO DAVID LUIZ","CASTILLO AYA OSCAR DANIEL","CASTRO TIRADO MONTSERRT","CHAPARRO MESA ERICK JOEL","CHAPARRO OJEDA ISABELLA","CONTRERAS PEREZ URIEL ALEJANDRO","GONZALEZ GUZMAN LUIS JOAQUIN","GONZALEZ NOVOA JACOBO ANDRES","HUERTAS MALDONADO JOHAN MATIAS","NOVA PAEZ DYLAN SMITH","PATINO RAMIREZ ERICK MATHIAS","PEREZ RICO BRANDON ANDRES","RIOS LOPEZ LIAM SAMUEL"],
+    "2C":["ALCALA CASTELLANOS MARIA VICTORIA","BAEZ ALBARRACIN THIAGO ALEJANDRO","CARRENO LOPEZ EVALUNA","CASTRO MORENO DYLAN ZAID","CUCAITA BARRERA ANGEL MATHIAS","DIAZ PIEDRAHITA MARIA LUCIANA","GALINDO PERILLA MARIA JOSE","GARCIA BONILLA MARIA ANTONELLA","HERNANDEZ SOSA MARIANGEL","JOYA RODRIGUEZ JERONIMO","MONTANA MOLANO EMILY VALERIA","REMOLINA BARON ROBINSON DAVID","ROA GUERRERO JUAN MARTIN","ROMERO RODRIGUEZ MARIANA","SANABRIA VILLADA MARIA ANTONIA","SANCHEZ ARAQUE ABIGAIL","VALLARINO DIAZ MATEO","ZAFRA GARCIA MARIA JULIANA"],
+    "2D":["BAEZ PEREZ MARTIN SAID","BARRERA BARRERA EMMILY","CARDENAS LOPEZ SAMY VALENTINA","CARDENAS MARTINEZ SAMUEL DAVID","CARRENO CLAVIJO DYLAN EMILIANO","CASADIEGOS MEDINA GABRIEL","DOMINGUEZ CASTELBLANCO MARIANA","GONZALEZ GONZALEZ SAMUEL ANDRES","JARAMILLO RICAURTE MIA VALENTINA","MANESES CICERY JOEL","MESA CORDOBA ADRIAN MATHIAS","MONROY PORRAS VALERY LUCIANA","ORTEGA RUIZ ANGEL DAVID","RAVELO GARZON ARIANNA ISABELLA","SILVA BARRAGAN JUAN FERNANDO","TELLO GARAVITO NICOLAS MATIAS","RODRIGUEZ ABRIL JUAN ESTEBAN","CHAPARRO JERONIMO DANIEL MATHIAS"],
+    "3C":["BENAVIDES BAUTISTA ISABELLA","CARDENAS CAMARGO SARA ISABELLA","GOMEZ BOADA MARTIN ELIAS","LAVERDA FIAGA LAUREN SALOME","MONTANA ROJAS DIEGO ALEJANDRO","PLAZAS SUAREZ LUIS JOSE","SEPULVEDA JOYA JULIETA","URBANO DELGADO EMMANUEL","ZORRO BARRERA MARIA LUCIA"],
+    "3D":["AVENDANO DIAZ LUIS JOSE","CAMARGO GALLARDO VIVIAN LUCIA","CASTRO ARIAS EMILIA DESIREE","DOMINGUEZ CASTELBLANCO MARIA FERNANDA","DUARTE GROSSO PEDRO JOSE","GAVIRIA AVILA DANIEL EDUARDO","HUERFANO NINCO ELENA","PATINO SANCHEZ ISABELA","REYES MARQUEZ ISABELLA","ROBAYO NAVAS ANA ISABELLA","VERDUGO RUIZ VALERY DAHIANA"],
+    "4C":["BENITEZ GARCIA MARIA ALEJANDRA","CALDERON LOPEZ DILAN BLADIMIR","CAMACHO LOPEZ VALENTINA","CAMEJO CAMEJO DAVID ALEJANDRO","CORTES RUBIANO ISAAC BENJAMIN","GOMEZ BUENO MAIA VICTORIA","GONZALEZ NARANJO JUAN JOSE","HURTADO FERNANDEZ SAMUEL DAVID","JIMENEZ MURILLO MARIA ISABEL","MARINO MARTINEZ LUCIANA","MONTENEGRO VALDERRAMA GABRIELA","OLIVEROS SIMBAQUEVA EMILY NICOL","PEREZ TORRES MARTIN FRANCISCO","PORTELA SALAMANCA THIAGO FABIAN","RINCON ALARCON SARA ISABELLA","TORRES CUTA SAMUEL ALEJANDRO"],
+    "4D":["ALVAREZ PALACIOS JUAN ESTEBAN","ALVAREZ ROJAS MARIA CAMILA","APOLINAR CONDE ANNY SOFIA","CARDENAS SERRATO HANNA SOFIA","CHICA GONZALEZ SALOME","CORREA MEDINA ASHLEY LUCIANA","DIAZ MILLAN THIAGO","FAJARDO GONZALEZ SAMUEL ANDRES","HUERFANO NINCO AMELIA","JOYA RODRIGUEZ EMMA ISABELLA","PABON PASTRANA DIEGO ALEJANDRO","ROA VARGAS SARAHI NICOLL","ROSAS GUAUQUE EMILY SOPHIA","SANCHEZ MORENO MATIAS EDUARDO","TORRES URCUA JUAN PABLO"],
+    "5C":["ACEVEDO CAMARGO EMILY GABRIELA","ARDILA ACERO ARIADNA SALOME","BARRAGAN QUISPI MARTIN ESTEBAN","CARDENAS LAVERDE JUAN DAVID","GRANADOS PEREZ ZHARICK ALEJANDRA","GUERRERO FLOREZ LUCIA","HIGUERA JIMENEZ REINALDO","MONSALVE RIVEROS SAMUEL MATIAS","MORENO CASTILLO JERONIMO","NORENA PATINO SANTIAGO","OCHOA VARGAS SARA ALEJANDRA","RODRIGUEZ LOPEZ LUCIANA","TOLOZA PARRA LAURA ISABELLA","URIBE MARTINEZ VALERIA ALEJANDRA"],
+    "5D":["ACOSTA FONSECA SAMUEL JERONIMO","BARBOSA HERRERA JUAN JOSE","BAYONA ANDRADE SARA SOFIA","CHARRY RAMIREZ MELANNY GISSET","GARZON BARRERA MIA ISABELLA","GUARNIZO MARTINEZ EMILY ANDREA","HERNANDEZ TRIANA LUNA SOFIA","NINO TORRES JUAN FELIPE","NUNEZ JASPE SHARON MARIANA","PEREZ DIAZ MARIA JOSE","RIVERO GUEVARA THOMAS DAVID","SANCHEZ ARANA JULIAN DAVID","SEGURA HERRERA JUAN JOSE","VEGA LEMUS SILVANA","GONZALEZ NOVOA ANDRES SIMON"]
+  }
+};
+
+// STATE
+var cases = [];
+var permisos = [];
+var quejas = [];
+var curType = "convivencia";
+var curTipo = "";
+var curCitacion = "";
+var curAsistencia = "";
+var curPermisoDuracion = "dia";
+var curVerbal = "";
+var curEscrito = "";
+var curDocTab = "permisos";
+var modalIndex = -1;
+
+window.onload = function() {
+  loadCases();
+};
+
+function apiCall(params) {
+  var url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
+  return fetch(url, {redirect:"follow"}).then(function(r){return r.json();});
+}
+
+function normalizeCase(c) {
+  var s = String(c.status||"").toLowerCase().trim();
+  c.status = s==="resuelto"?"resuelto":"abierto";
+  c.id=String(c.id||""); c.type=String(c.type||"").toLowerCase().trim()==="academico"?"academico":"convivencia";
+  c.studentName=String(c.studentName||""); c.grade=String(c.grade||""); c.teacher=String(c.teacher||"");
+  c.description=String(c.description||""); c.actions=String(c.actions||""); c.date=String(c.date||"");
+  c.tipologia=String(c.tipologia||""); c.jornada=String(c.jornada||""); c.citacion=String(c.citacion||"");
+  c.fechaCitacion=String(c.fechaCitacion||""); c.asistencia=String(c.asistencia||""); c.asignatura=String(c.asignatura||"");
+  return c;
+}
+
+function loadCases() {
+  loading(true);
+  apiCall({action:"list"}).then(function(data){
+    cases = Array.isArray(data)?data.map(normalizeCase):[];
+    renderAll(); toast("Sincronizado","ok");
+  }).catch(function(){toast("Error de conexion","red");}).finally(function(){loading(false);});
+}
+
+function updateCfg() {
+  var url = document.getElementById("cfg-url").value.trim();
+  if(!url) return;
+  toast("La URL esta integrada en la app","ok");
+}
+
+function resetApp() {
+  if(!confirm("Reiniciar configuracion?")) return;
+  location.reload();
+}
+
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
+  document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
+  document.getElementById("page-"+name).classList.add("visible");
+  var tabs=["dashboard","nuevo","casos","historial","director","docentes","stats","config"];
+  var idx=tabs.indexOf(name);
+  if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
+  if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
+  if(name==="historial") renderHSelect();
+  if(name==="director") renderDirector();
+  if(name==="docentes"){loadPermisos();loadQuejas();}
+  if(name==="stats") renderStats();
+  window.scrollTo(0,0);
+}
+
+var toastT;
+function toast(msg,type){
+  var el=document.getElementById("toast");
+  el.textContent=msg; el.className="toast show"+(type?" "+type:"");
+  clearTimeout(toastT); toastT=setTimeout(function(){el.classList.remove("show");},3500);
+}
+function loading(v){document.getElementById("loading").className="loading-overlay"+(v?" show":"");}
+
+function renderAll(){
+  renderDash(); renderCases(); renderHSelect();
+  var ab=cases.filter(function(c){return c.status==="abierto";}).length;
+  document.getElementById("badge").textContent=ab+" activo"+(ab!==1?"s":"");
+}
+
+function renderDash(){
+  document.getElementById("s-total").textContent=cases.length;
+  document.getElementById("s-ab").textContent=cases.filter(function(c){return c.status==="abierto";}).length;
+  document.getElementById("s-res").textContent=cases.filter(function(c){return c.status==="resuelto";}).length;
+  document.getElementById("s-conv").textContent=cases.filter(function(c){return c.type==="convivencia";}).length;
+  document.getElementById("s-acad").textContent=cases.filter(function(c){return c.type==="academico";}).length;
+  var el=document.getElementById("d-recent");
+  if(!cases.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No hay casos</p><button class="btn btn-primary" style="margin-top:16px" onclick="showPage(\'nuevo\')">Registrar primer caso</button></div>';return;}
+  el.innerHTML="";
+  cases.slice().reverse().slice(0,4).forEach(function(c){el.appendChild(buildCard(c,cases.indexOf(c)));});
+}
+
+// FORM
+function selType(t){curType=t;document.getElementById("btn-conv").className="type-btn"+(t==="convivencia"?" sel":"");document.getElementById("btn-acad").className="type-btn"+(t==="academico"?" sel":"");}
+function selTipo(t){curTipo=curTipo===t?"":t;["I","II","III"].forEach(function(v){document.getElementById("tbtn-"+v).className="tipo-btn"+(curTipo===v?" tipo-"+v:"");});document.getElementById("e-tipo").textContent="";}
+function selCitacion(v){curCitacion=v;document.getElementById("btn-cit-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("btn-cit-no").className="type-btn"+(v==="no"?" sel":"");var show=v==="si";document.getElementById("campo-fecha-cit").style.display=show?"flex":"none";document.getElementById("campo-asistencia").style.display=show?"flex":"none";if(!show){curAsistencia="";document.getElementById("btn-asist-si").className="type-btn";document.getElementById("btn-asist-no").className="type-btn";}}
+function selAsistencia(v){curAsistencia=v;document.getElementById("btn-asist-si").className="type-btn"+(v==="asistio"?" sel":"");document.getElementById("btn-asist-no").className="type-btn"+(v==="no_asistio"?" sel":"");}
+
+function updateGrades(){
+  var j=document.getElementById("f-jornada").value;
+  var ge=document.getElementById("f-grade"); var se=document.getElementById("f-student");
+  ge.innerHTML='<option value="">Seleccionar grado...</option>'; se.innerHTML='<option value="">Primero selecciona grado...</option>';
+  ge.disabled=true; se.disabled=true;
+  if(!j) return;
+  Object.keys(STUDENTS[j]||{}).forEach(function(g){var o=document.createElement("option");o.value=g;o.textContent=g;ge.appendChild(o);});
+  ge.disabled=false; document.getElementById("e-jornada").textContent="";
+}
+function updateStudents(){
+  var j=document.getElementById("f-jornada").value; var g=document.getElementById("f-grade").value;
+  var se=document.getElementById("f-student"); se.innerHTML='<option value="">Seleccionar estudiante...</option>'; se.disabled=true;
+  if(!g||!j) return;
+  ((STUDENTS[j]||{})[g]||[]).slice().sort().forEach(function(s){var o=document.createElement("option");o.value=s;o.textContent=s;se.appendChild(o);});
+  se.disabled=false; document.getElementById("e-grade").textContent="";
+}
+function onTeacherChange(){
+  var t=document.getElementById("f-teacher").value; var isO=t==="Otro docente"; var info=TEACHERS_DATA[t];
+  document.getElementById("f-teacher-other").style.display=isO?"block":"none";
+  document.getElementById("campo-asignatura").style.display=(!isO&&info)?"flex":"none";
+  document.getElementById("campo-asignatura-otro").style.display=isO?"flex":"none";
+  if(!isO&&info) document.getElementById("f-asignatura").value=info.asignatura;
+  document.getElementById("e-teacher").textContent="";
+}
+
+function clearForm(){
+  document.getElementById("f-jornada").value=""; updateGrades();
+  document.getElementById("f-teacher").value=""; document.getElementById("f-teacher-other").value=""; document.getElementById("f-teacher-other").style.display="none";
+  document.getElementById("campo-asignatura").style.display="none"; document.getElementById("campo-asignatura-otro").style.display="none";
+  document.getElementById("f-asignatura").value=""; document.getElementById("f-asignatura-otro").value="";
+  document.getElementById("f-desc").value=""; document.getElementById("f-actions").value=""; document.getElementById("f-fecha-cit").value="";
+  document.getElementById("campo-fecha-cit").style.display="none"; document.getElementById("campo-asistencia").style.display="none";
+  curType="convivencia"; curTipo=""; curCitacion=""; curAsistencia="";
+  document.getElementById("btn-conv").className="type-btn sel"; document.getElementById("btn-acad").className="type-btn";
+  ["I","II","III"].forEach(function(v){document.getElementById("tbtn-"+v).className="tipo-btn";});
+  document.getElementById("btn-cit-si").className="type-btn"; document.getElementById("btn-cit-no").className="type-btn";
+  document.getElementById("btn-asist-si").className="type-btn"; document.getElementById("btn-asist-no").className="type-btn";
+  ["jornada","grade","student","teacher","desc","tipo"].forEach(function(k){var el=document.getElementById("e-"+k);if(el)el.textContent="";});
+}
+
+function validate(){
+  var ok=true;
+  var checks=[["jornada",document.getElementById("f-jornada").value,"Selecciona la jornada"],["grade",document.getElementById("f-grade").value,"Selecciona el grado"],["student",document.getElementById("f-student").value,"Selecciona el estudiante"],["teacher",document.getElementById("f-teacher").value,"Selecciona el docente"],["desc",document.getElementById("f-desc").value.trim(),"Describe el caso"]];
+  checks.forEach(function(c){var has=!!c[1];document.getElementById("e-"+c[0]).textContent=has?"":c[2];if(!has)ok=false;});
+  if(!curTipo){document.getElementById("e-tipo").textContent="Selecciona la tipologia";ok=false;}
+  return ok;
+}
+
+function submitCase(){
+  if(!validate()) return;
+  var tRaw=document.getElementById("f-teacher").value; var teacher=tRaw==="Otro docente"?(document.getElementById("f-teacher-other").value.trim()||"Otro docente"):tRaw;
+  var info=TEACHERS_DATA[tRaw]; var asignatura=tRaw==="Otro docente"?document.getElementById("f-asignatura-otro").value.trim():(info?info.asignatura:"");
+  var c=normalizeCase({id:Date.now().toString(36)+Math.random().toString(36).slice(2),type:curType,studentName:document.getElementById("f-student").value,grade:document.getElementById("f-grade").value,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:new Date().toISOString()});
+  var btn=document.getElementById("btn-submit"); btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Guardando...';
+  loading(true);
+  apiCall(Object.assign({action:"add"},c)).then(function(){cases.push(c);renderAll();clearForm();toast("Caso registrado","ok");showPage("casos");}).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar caso";loading(false);});
+}
+
+// CASES LIST
+function getFiltered(){
+  var name=document.getElementById("s-name").value.trim().toLowerCase();
+  var grade=document.getElementById("f-fgrade").value; var type=document.getElementById("f-ftype").value;
+  var status=document.getElementById("f-fstatus").value; var jornada=document.getElementById("f-fjornada").value; var tipo=document.getElementById("f-ftipo").value;
+  return cases.slice().reverse().map(function(c,i){return{c:c,idx:cases.length-1-i};}).filter(function(item){var c=item.c;return(!name||c.studentName.toLowerCase().includes(name))&&(!grade||c.grade===grade)&&(!type||c.type===type)&&(!status||c.status===status)&&(!jornada||c.jornada===jornada)&&(!tipo||c.tipologia===tipo);});
+}
+function clearFilters(){["s-name","f-fgrade","f-ftype","f-fstatus","f-fjornada","f-ftipo"].forEach(function(id){document.getElementById(id).value="";});renderCases();}
+function renderCases(){
+  var filtered=getFiltered(); var hasF=["s-name","f-fgrade","f-ftype","f-fstatus","f-fjornada","f-ftipo"].some(function(id){return document.getElementById(id).value;});
+  var btn=document.getElementById("btn-clf"); btn.style.display=hasF?"block":"none";
+  if(hasF) btn.textContent="Limpiar filtros - "+filtered.length+" resultado(s)";
+  var list=document.getElementById("cases-list");
+  if(!filtered.length){list.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>No se encontraron casos</p></div>';return;}
+  list.innerHTML=""; filtered.forEach(function(item){list.appendChild(buildCard(item.c,item.idx));});
+}
+
+function buildCard(c,idx){
+  var div=document.createElement("div"); div.className="case-card "+c.type;
+  var sn=c.description.length>90?c.description.slice(0,90)+"...":c.description;
+  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy);font-size:1rem">'+c.studentName+"</div>"+stag(c.status)+"</div>"+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.grade+"</span>"+(c.jornada?'<span class="tag tag-gray">'+c.jornada+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:8px">'+fmtD(c.date)+(c.teacher?" - "+c.teacher:"")+(c.asignatura?" - "+c.asignatura:"")+"</div>"+'<div style="font-size:0.85rem;color:#475569;margin-top:6px;line-height:1.5">'+sn+"</div>";
+  div.addEventListener("click",function(){openModal(idx);}); return div;
+}
+function fmtD(iso){try{return new Date(iso).toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return iso;}}
+function stag(s){return s==="resuelto"?'<span class="tag tag-green"><span class="dot" style="background:#10B981"></span> resuelto</span>':'<span class="tag tag-amber"><span class="dot" style="background:#F59E0B"></span> abierto</span>';}
+function ttag(t){return t==="convivencia"?'<span class="tag tag-red">Convivencia</span>':'<span class="tag tag-blue">Academico</span>';}
+function tipotag(t){if(!t)return"";var colors={I:"#F59E0B",II:"#EF4444",III:"#7C3AED"};var bgs={I:"#FFF3CD",II:"#FEE2E2",III:"#EDE9FE"};return'<span class="tag" style="background:'+(bgs[t]||"#F1F5F9")+";color:"+(colors[t]||"#64748B")+'">Tipo '+t+"</span>";}
+
+// MODAL
+function openModal(idx){
+  modalIndex=idx; var c=cases[idx]; if(!c) return;
+  var bc=c.type==="convivencia"?"var(--red)":"var(--blue)";
+  var citHtml="";
+  if(c.citacion){citHtml='<div><div class="slbl">Citacion al acudiente</div><div class="detail-block">'+(c.citacion==="si"?"Si fue citado":"No fue citado")+(c.citacion==="si"&&c.fechaCitacion?"<br>Fecha: "+c.fechaCitacion:"")+(c.citacion==="si"&&c.asistencia?"<br>"+(c.asistencia==="asistio"?"Asistio":"No asistio"):"")+"</div></div>";}
+  document.getElementById("modal-body").innerHTML='<div style="border-top:4px solid '+bc+';border-radius:8px;padding-top:16px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">'+c.studentName+"</div>"+'<div style="color:var(--gray);font-size:0.85rem;margin-top:3px">'+c.grade+(c.jornada?" - "+c.jornada:"")+" - "+fmtD(c.date)+"</div></div>"+stag(c.status)+"</div>"+'<div class="tags" style="margin-top:14px;margin-bottom:20px">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.teacher+"</span>"+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="display:flex;flex-direction:column;gap:16px"><div><div class="slbl">Descripcion</div><div class="detail-block">'+c.description+"</div></div>"+(c.actions?'<div><div class="slbl">Acciones</div><div class="detail-block gr">'+c.actions+"</div></div>":"")+citHtml+"</div>"+'<div class="btn-row" style="margin-top:24px"><button class="btn '+(c.status==="abierto"?"btn-green":"btn-amber")+'" id="m-status-btn" onclick="toggleStatus()">'+(c.status==="abierto"?"Marcar resuelto":"Reabrir caso")+"</button>"+'<button class="btn btn-ghost" onclick="openEditModal('+idx+')">Editar</button></div>'+(c.acta?'<a href="'+c.acta+'" target="_blank" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:white;border-radius:10px;padding:12px;font-weight:700;font-size:0.92rem;text-decoration:none">Ver acta</a>':'')+"</div>";
+  document.getElementById("modal-overlay").classList.add("open"); document.body.style.overflow="hidden";
+}
+function closeMO(e){if(e.target===document.getElementById("modal-overlay"))closeModal();}
+function closeModal(){document.getElementById("modal-overlay").classList.remove("open");document.body.style.overflow="";}
+function toggleStatus(){
+  var c=cases[modalIndex]; if(!c) return; var newS=c.status==="abierto"?"resuelto":"abierto";
+  var btn=document.getElementById("m-status-btn"); if(btn)btn.disabled=true; loading(true);
+  apiCall({action:"updateStatus",id:c.id,status:newS}).then(function(){cases[modalIndex].status=newS;renderAll();openModal(modalIndex);toast("Estado actualizado","ok");}).catch(function(){toast("Error","red");}).finally(function(){loading(false);});
+}
+
+// CONTRASENA
+function openPwd(){document.getElementById("pwd-input").value="";document.getElementById("pwd-err").classList.remove("show");document.getElementById("pwd-overlay").classList.add("open");setTimeout(function(){document.getElementById("pwd-input").focus();},100);}
+function closePwd(){document.getElementById("pwd-overlay").classList.remove("open");}
+function togglePwd(){var i=document.getElementById("pwd-input");i.type=i.type==="password"?"text":"password";}
+function confirmDelete(){
+  var pwd=document.getElementById("pwd-input").value;
+  if(pwd!==DELETE_PWD){document.getElementById("pwd-err").classList.add("show");document.getElementById("pwd-input").value="";document.getElementById("pwd-input").focus();return;}
+  document.getElementById("pwd-err").classList.remove("show"); closePwd();
+  var c=cases[modalIndex]; if(!c) return; loading(true);
+  apiCall({action:"delete",id:c.id}).then(function(){cases.splice(modalIndex,1);closeModal();renderAll();toast("Caso eliminado","red");}).catch(function(){toast("Error","red");}).finally(function(){loading(false);});
+}
+
+// DIRECTOR
+function renderDirector(){
+  var grade=document.getElementById("dir-grade").value; var el=document.getElementById("dir-content");
+  if(!grade){el.innerHTML="";return;}
+  var gc=cases.filter(function(c){return c.grade===grade;});
+  if(!gc.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No hay casos para el grado '+grade+"</p></div>";return;}
+  var total=gc.length; var abiertos=gc.filter(function(c){return c.status==="abierto";}).length; var conv=gc.filter(function(c){return c.type==="convivencia";}).length;
+  var countMap={};gc.forEach(function(c){countMap[c.studentName]=(countMap[c.studentName]||0)+1;});
+  var reincidentes=Object.entries(countMap).filter(function(e){return e[1]>1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  var asgMap={};gc.forEach(function(c){var a=c.asignatura||"Sin asignatura";asgMap[a]=(asgMap[a]||0)+1;});
+  var asgList=Object.entries(asgMap).sort(function(a,b){return b[1]-a[1];});
+  var citados=gc.filter(function(c){return c.citacion==="si";}).length;
+  var asistieron=gc.filter(function(c){return c.asistencia==="asistio";}).length;
+  var noAsistieron=gc.filter(function(c){return c.asistencia==="no_asistio";}).length;
+  var html='<div class="card" style="background:var(--navy);color:white"><div class="serif" style="font-size:1.2rem;margin-bottom:12px;font-weight:700">Grado '+grade+' - Resumen</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center"><div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800">'+total+'</div><div style="font-size:0.72rem;color:#94A3B8">Total</div></div><div style="background:rgba(245,158,11,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#F59E0B">'+abiertos+'</div><div style="font-size:0.72rem;color:#94A3B8">Abiertos</div></div><div style="background:rgba(239,68,68,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#EF4444">'+conv+'</div><div style="font-size:0.72rem;color:#94A3B8">Convivencia</div></div></div></div>';
+  if(reincidentes.length){html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Estudiantes reincidentes</div>';reincidentes.forEach(function(e){html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-light)"><div style="font-weight:600;color:var(--navy)">'+e[0]+'</div><span class="tag tag-red">'+e[1]+" caso"+(e[1]>1?"s":"")+"</span></div>";});html+="</div>";}
+  html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Casos por asignatura</div>';asgList.forEach(function(e){html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-light)"><div>'+e[0]+'</div><span class="tag tag-blue">'+e[1]+"</span></div>";});html+="</div>";
+  html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Citaciones a acudientes</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center"><div style="background:var(--gray-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--navy)">'+citados+'</div><div style="font-size:0.72rem;color:var(--gray)">Citados</div></div><div style="background:var(--green-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--green-dark)">'+asistieron+'</div><div style="font-size:0.72rem;color:var(--green-dark)">Asistieron</div></div><div style="background:var(--red-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--red-dark)">'+noAsistieron+'</div><div style="font-size:0.72rem;color:var(--red-dark)">No asistieron</div></div></div></div>';
+  html+='<div><div class="slbl" style="margin-bottom:12px">Todos los casos</div><div style="display:flex;flex-direction:column;gap:10px">';
+  gc.forEach(function(c){var idx=cases.indexOf(c);var sn=c.description.length>80?c.description.slice(0,80)+"...":c.description;html+='<div class="case-card '+c.type+'" onclick="openModal('+idx+')"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+c.studentName+"</div>"+stag(c.status)+"</div>"+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">'+fmtD(c.date)+" - "+c.teacher+"</div>"+'<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">'+sn+"</div></div>";});
+  html+="</div></div>"; el.innerHTML=html;
+}
+
+// HISTORIAL
+function renderHSelect(){
+  var names=cases.map(function(c){return c.studentName;}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
+  var sel=document.getElementById("h-select"); var cur=sel.value;
+  sel.innerHTML='<option value="">Elegir estudiante...</option>'+names.map(function(n){return'<option'+(n===cur?" selected":"")+">"+ n+"</option>";}).join("");
+  renderHistorial();
+}
+function renderHistorial(){
+  var name=document.getElementById("h-select").value; var sum=document.getElementById("h-summary"); var list=document.getElementById("h-list");
+  if(!name){sum.innerHTML="";list.innerHTML="";return;}
+  var sc=cases.map(function(c,i){return{c:c,i:i};}).filter(function(item){return item.c.studentName===name;});
+  var ab=sc.filter(function(item){return item.c.status==="abierto";}).length;
+  sum.innerHTML='<div class="card" style="background:var(--navy);color:white"><div class="serif" style="font-size:1.2rem;font-weight:700">'+name+'</div><div style="font-size:0.82rem;color:#94A3B8;margin-top:4px">'+sc.length+" caso(s) - "+ab+" abierto(s)</div></div>";
+  list.innerHTML=""; sc.forEach(function(item){list.appendChild(buildCard(item.c,item.i));});
+}
+
+// DOCENTES
+function selDocTab(tab){
+  curDocTab=tab;
+  ["permisos","quejas","panel"].forEach(function(t){
+    document.getElementById("dtab-"+t).className="type-btn"+(tab===t?" sel":"");
+    document.getElementById("dpanel-"+t).style.display=tab===t?"flex":"none";
+  });
+  if(tab==="panel") renderPanelDocente();
+}
+
+function loadPermisos(){
+  apiCall({action:"listPermisos"}).then(function(data){
+    permisos=Array.isArray(data)?data.map(function(p){return{id:String(p.id||""),teacher:String(p.teacher||""),fecha:String(p.fecha||""),duracion:String(p.duracion||""),horas:String(p.horas||""),motivo:String(p.motivo||""),date:String(p.date||"")};}):[]; renderPermisos();
+  }).catch(function(){toast("Error cargando permisos","red");});
+}
+function loadQuejas(){
+  apiCall({action:"listQuejas"}).then(function(data){
+    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],date:String(q.date||"")};}):[]; renderQuejas();
+  }).catch(function(){toast("Error cargando quejas","red");});
+}
+
+function selPermisoDuracion(v){curPermisoDuracion=v;document.getElementById("dp-btn-dia").className="type-btn"+(v==="dia"?" sel":"");document.getElementById("dp-btn-horas").className="type-btn"+(v==="horas"?" sel":"");document.getElementById("dp-campo-horas").style.display=v==="horas"?"flex":"none";}
+function selVerbal(v){curVerbal=v;document.getElementById("dq-btn-verbal-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("dq-btn-verbal-no").className="type-btn"+(v==="no"?" sel":"");}
+function selEscrito(v){curEscrito=v;document.getElementById("dq-btn-escrito-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("dq-btn-escrito-no").className="type-btn"+(v==="no"?" sel":"");}
+var notifSelected = {rectoria:false, convivencia:false, academica:false, otro:false};
+function toggleNotif(key){
+  notifSelected[key]=!notifSelected[key];
+  document.getElementById("notif-"+key).className="notif-btn"+(notifSelected[key]?" active":"");
+}
+function toggleNotifOtro(){
+  notifSelected.otro=!notifSelected.otro;
+  document.getElementById("notif-otro").className="notif-btn"+(notifSelected.otro?" active":"");
+  document.getElementById("dq-not-otro-texto").style.display=notifSelected.otro?"block":"none";
+}
+function chkPermisoOther(){document.getElementById("dp-teacher-other").style.display=document.getElementById("dp-teacher").value==="Otro docente"?"block":"none";}
+function chkQuejaOther(){document.getElementById("dq-teacher-other").style.display=document.getElementById("dq-teacher").value==="Otro docente"?"block":"none";}
+
+function clearPermisoForm(){
+  document.getElementById("dp-teacher").value=""; document.getElementById("dp-teacher-other").value=""; document.getElementById("dp-teacher-other").style.display="none";
+  document.getElementById("dp-fecha").value=""; document.getElementById("dp-motivo").value=""; document.getElementById("dp-horas").value="";
+  curPermisoDuracion="dia"; document.getElementById("dp-btn-dia").className="type-btn sel"; document.getElementById("dp-btn-horas").className="type-btn"; document.getElementById("dp-campo-horas").style.display="none";
+  ["ep-teacher","ep-fecha","ep-motivo"].forEach(function(id){document.getElementById(id).textContent="";});
+}
+
+function submitPermiso(){
+  var teacher=document.getElementById("dp-teacher").value; var fecha=document.getElementById("dp-fecha").value; var motivo=document.getElementById("dp-motivo").value.trim();
+  var ok=true;
+  if(!teacher){document.getElementById("ep-teacher").textContent="Selecciona el docente";ok=false;}
+  if(!fecha){document.getElementById("ep-fecha").textContent="Selecciona la fecha";ok=false;}
+  if(!motivo){document.getElementById("ep-motivo").textContent="Escribe el motivo";ok=false;}
+  if(!ok) return;
+  if(teacher==="Otro docente") teacher=document.getElementById("dp-teacher-other").value.trim()||"Otro docente";
+  var p={id:Date.now().toString(36),teacher:teacher,fecha:fecha,duracion:curPermisoDuracion,horas:curPermisoDuracion==="horas"?document.getElementById("dp-horas").value:"",motivo:motivo,date:new Date().toISOString()};
+  var btn=document.getElementById("dp-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
+  apiCall(Object.assign({action:"addPermiso"},p)).then(function(){permisos.unshift(p);clearPermisoForm();renderPermisos();toast("Permiso registrado","ok");}).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar permiso";});
+}
+
+function renderPermisos(){
+  var list=document.getElementById("permisos-list");
+  if(!permisos.length){list.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>No hay permisos registrados</p></div>';return;}
+  list.innerHTML="";
+  permisos.forEach(function(p,idx){
+    var div=document.createElement("div"); div.className="doc-card";
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+p.teacher+'</div><span class="tag tag-amber">'+p.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag tag-gray">'+(p.duracion==="dia"?"Todo el dia":p.horas+" hora(s)")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+p.motivo+"</div>"+'<button onclick="deletePermiso('+idx+')" style="margin-top:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button>';
+    list.appendChild(div);
+  });
+}
+
+function deletePermiso(idx){
+  var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
+  var p=permisos[idx];
+  apiCall({action:"deletePermiso",id:p.id}).then(function(){permisos.splice(idx,1);renderPermisos();toast("Permiso eliminado","red");}).catch(function(){toast("Error al eliminar","red");});
+}
+
+function clearQuejaForm(){
+  document.getElementById("dq-teacher").value=""; document.getElementById("dq-teacher-other").value=""; document.getElementById("dq-teacher-other").style.display="none";
+  document.getElementById("dq-fecha").value=""; document.getElementById("dq-desc").value="";
+  notifSelected={rectoria:false,convivencia:false,academica:false,otro:false};
+  ["notif-rectoria","notif-convivencia","notif-academica","notif-otro"].forEach(function(id){var el=document.getElementById(id);if(el)el.className="notif-btn";});
+  document.getElementById("dq-not-otro-texto").style.display="none"; document.getElementById("dq-not-otro-texto").value="";
+  curVerbal=""; curEscrito="";
+  document.getElementById("dq-btn-verbal-si").className="type-btn"; document.getElementById("dq-btn-verbal-no").className="type-btn";
+  document.getElementById("dq-btn-escrito-si").className="type-btn"; document.getElementById("dq-btn-escrito-no").className="type-btn";
+  ["eq-teacher","eq-fecha","eq-desc"].forEach(function(id){document.getElementById(id).textContent="";});
+}
+
+function submitQueja(){
+  var teacher=document.getElementById("dq-teacher").value; var fecha=document.getElementById("dq-fecha").value; var desc=document.getElementById("dq-desc").value.trim();
+  var ok=true;
+  if(!teacher){document.getElementById("eq-teacher").textContent="Selecciona el docente";ok=false;}
+  if(!fecha){document.getElementById("eq-fecha").textContent="Selecciona la fecha";ok=false;}
+  if(!desc){document.getElementById("eq-desc").textContent="Describe la queja";ok=false;}
+  if(!ok) return;
+  if(teacher==="Otro docente") teacher=document.getElementById("dq-teacher-other").value.trim()||"Otro docente";
+  var notificados=[];
+  if(notifSelected.rectoria) notificados.push("Rectoria");
+  if(notifSelected.convivencia) notificados.push("Coord. Convivencia");
+  if(notifSelected.academica) notificados.push("Coord. Academica");
+  if(notifSelected.otro){var ot=document.getElementById("dq-not-otro-texto").value.trim();if(ot)notificados.push(ot);}
+  var q={id:Date.now().toString(36),teacher:teacher,fecha:fecha,desc:desc,verbal:curVerbal,escrito:curEscrito,notificados:notificados,date:new Date().toISOString()};
+  var btn=document.getElementById("dq-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
+  apiCall(Object.assign({action:"addQueja"},q,{notificados:notificados.join(",")})).then(function(){quejas.unshift(q);clearQuejaForm();renderQuejas();toast("Queja registrada","ok");}).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar queja";});
+}
+
+function renderQuejas(){
+  var list=document.getElementById("quejas-list");
+  if(!quejas.length){list.innerHTML='<div class="empty"><div class="empty-icon">📢</div><p>No hay quejas registradas</p></div>';return;}
+  list.innerHTML="";
+  quejas.forEach(function(q,idx){
+    var div=document.createElement("div"); div.className="doc-card queja";
+    var notHtml=q.notificados&&q.notificados.length?q.notificados.map(function(n){return'<span class="tag tag-gray">'+n+"</span>";}).join(""):"";
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+q.teacher+'</div><span class="tag tag-amber">'+q.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag '+(q.verbal==="si"?"tag-green":"tag-red")+'">Verbal: '+(q.verbal==="si"?"Si":q.verbal==="no"?"No":"—")+"</span>"+'<span class="tag '+(q.escrito==="si"?"tag-green":"tag-red")+'">Escrito: '+(q.escrito==="si"?"Si":q.escrito==="no"?"No":"—")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+q.desc+"</div>"+(notHtml?'<div class="tags" style="margin-top:8px"><span style="font-size:0.78rem;color:var(--gray);font-weight:600">Notificado a:</span>'+notHtml+"</div>":"")+'<button onclick="deleteQueja('+idx+')" style="margin-top:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button>';
+    list.appendChild(div);
+  });
+}
+
+function renderPanelDocente(){
+  var teacher = document.getElementById("panel-teacher").value;
+  var el = document.getElementById("panel-docente-content");
+  if(!teacher){el.innerHTML="";return;}
+
+  var tQuejas = quejas.filter(function(q){return q.teacher===teacher;});
+  var tPermisos = permisos.filter(function(p){return p.teacher===teacher;});
+
+  var html = '<div class="card" style="background:var(--navy);color:white">'
+    +'<div class="serif" style="font-size:1.2rem;margin-bottom:12px;font-weight:700">'+teacher+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">'
+    +'<div style="background:rgba(239,68,68,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#FCA5A5">'+tQuejas.length+'</div><div style="font-size:0.72rem;color:#94A3B8">Quejas</div></div>'
+    +'<div style="background:rgba(245,158,11,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#FCD34D">'+tPermisos.length+'</div><div style="font-size:0.72rem;color:#94A3B8">Permisos</div></div>'
+    +'</div></div>';
+
+  // Quejas detail
+  if(tQuejas.length){
+    var conEscrito = tQuejas.filter(function(q){return q.escrito==="si";}).length;
+    var conVerbal = tQuejas.filter(function(q){return q.verbal==="si";}).length;
+    html += '<div class="card"><div class="slbl" style="margin-bottom:12px">Resumen de quejas</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center;margin-bottom:16px">'
+      +'<div style="background:var(--gray-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--navy)">'+conVerbal+'</div><div style="font-size:0.72rem;color:var(--gray)">Llamado verbal</div></div>'
+      +'<div style="background:var(--red-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--red-dark)">'+conEscrito+'</div><div style="font-size:0.72rem;color:var(--red-dark)">Llamado escrito</div></div>'
+      +'</div>';
+    tQuejas.forEach(function(q){
+      var notHtml = q.notificados&&q.notificados.length ? q.notificados.map(function(n){return'<span class="tag tag-gray">'+n+'</span>';}).join("") : "";
+      html += '<div style="padding:12px 0;border-bottom:1px solid var(--gray-light)">'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:0.82rem;color:var(--gray)">'+q.fecha+'</span>'
+        +'<div style="display:flex;gap:4px"><span class="tag '+(q.verbal==="si"?"tag-green":"tag-red")+'" style="font-size:0.65rem">V:'+(q.verbal==="si"?"Si":"No")+'</span>'
+        +'<span class="tag '+(q.escrito==="si"?"tag-green":"tag-red")+'" style="font-size:0.65rem">E:'+(q.escrito==="si"?"Si":"No")+'</span></div></div>'
+        +'<div style="font-size:0.88rem;color:#475569;margin-top:6px;line-height:1.5">'+q.desc+'</div>'
+        +(notHtml?'<div class="tags" style="margin-top:6px">'+notHtml+'</div>':'')
+        +'</div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="card"><div class="empty" style="padding:24px"><div class="empty-icon" style="font-size:2rem">📢</div><p>Sin quejas registradas</p></div></div>';
+  }
+
+  // Permisos detail
+  if(tPermisos.length){
+    var diasCompletos = tPermisos.filter(function(p){return p.duracion==="dia";}).length;
+    var parciales = tPermisos.filter(function(p){return p.duracion==="horas";}).length;
+    html += '<div class="card"><div class="slbl" style="margin-bottom:12px">Resumen de permisos</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center;margin-bottom:16px">'
+      +'<div style="background:var(--gray-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--navy)">'+diasCompletos+'</div><div style="font-size:0.72rem;color:var(--gray)">Dias completos</div></div>'
+      +'<div style="background:#FFF3CD;border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--amber-dark)">'+parciales+'</div><div style="font-size:0.72rem;color:var(--amber-dark)">Parciales</div></div>'
+      +'</div>';
+    tPermisos.forEach(function(p){
+      html += '<div style="padding:12px 0;border-bottom:1px solid var(--gray-light)">'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:0.82rem;color:var(--gray)">'+p.fecha+'</span>'
+        +'<span class="tag tag-amber">'+(p.duracion==="dia"?"Dia completo":p.horas+" hora(s)")+'</span></div>'
+        +'<div style="font-size:0.88rem;color:#475569;margin-top:6px;line-height:1.5">'+p.motivo+'</div>'
+        +'</div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="card"><div class="empty" style="padding:24px"><div class="empty-icon" style="font-size:2rem">📅</div><p>Sin permisos registrados</p></div></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ============================================================
+// EDIT CASE
+// ============================================================
+var editIndex = -1;
+var editType = "";
+var editTipo = "";
+var editStatus = "";
+var editCitacion = "";
+var editAsistencia = "";
+
+function openEditModal(idx) {
+  editIndex = idx;
+  var c = cases[idx];
+  if (!c) return;
+  closeModal();
+  editType = c.type;
+  editTipo = c.tipologia;
+  editStatus = c.status;
+  editCitacion = c.citacion;
+  editAsistencia = c.asistencia;
+
+  document.getElementById("edit-desc").value = c.description;
+  document.getElementById("edit-actions").value = c.actions;
+  document.getElementById("edit-fecha-cit").value = c.fechaCitacion;
+  document.getElementById("edit-acta").value = c.acta || "";
+
+  selEditType(editType);
+  selEditTipo(editTipo);
+  selEditStatus(editStatus);
+  selEditCitacion(editCitacion);
+  if (editCitacion === "si") selEditAsistencia(editAsistencia);
+
+  document.getElementById("edit-overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeEditMO(e) { if (e.target === document.getElementById("edit-overlay")) closeEdit(); }
+function closeEdit() { document.getElementById("edit-overlay").classList.remove("open"); document.body.style.overflow = ""; }
+
+function selEditType(t) {
+  editType = t;
+  document.getElementById("edit-btn-conv").className = "type-btn" + (t === "convivencia" ? " sel" : "");
+  document.getElementById("edit-btn-acad").className = "type-btn" + (t === "academico" ? " sel" : "");
+}
+function selEditTipo(t) {
+  editTipo = t;
+  ["I","II","III"].forEach(function(v) { document.getElementById("edit-tbtn-"+v).className = "tipo-btn" + (t === v ? " tipo-"+v : ""); });
+}
+function selEditStatus(s) {
+  editStatus = s;
+  document.getElementById("edit-btn-abierto").className = "type-btn" + (s === "abierto" ? " sel" : "");
+  document.getElementById("edit-btn-resuelto").className = "type-btn" + (s === "resuelto" ? " sel" : "");
+}
+function selEditCitacion(v) {
+  editCitacion = v;
+  document.getElementById("edit-btn-cit-si").className = "type-btn" + (v === "si" ? " sel" : "");
+  document.getElementById("edit-btn-cit-no").className = "type-btn" + (v === "no" ? " sel" : "");
+  var show = v === "si";
+  document.getElementById("edit-campo-fecha-cit").style.display = show ? "flex" : "none";
+  document.getElementById("edit-campo-asistencia").style.display = show ? "flex" : "none";
+  if (!show) { editAsistencia = ""; document.getElementById("edit-btn-asist-si").className = "type-btn"; document.getElementById("edit-btn-asist-no").className = "type-btn"; }
+}
+function selEditAsistencia(v) {
+  editAsistencia = v;
+  document.getElementById("edit-btn-asist-si").className = "type-btn" + (v === "asistio" ? " sel" : "");
+  document.getElementById("edit-btn-asist-no").className = "type-btn" + (v === "no_asistio" ? " sel" : "");
+}
+
+function saveEdit() {
+  var c = cases[editIndex];
+  if (!c) return;
+  var btn = document.getElementById("edit-btn-save");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  var updated = Object.assign({}, c, {
+    type: editType,
+    tipologia: editTipo,
+    status: editStatus,
+    description: document.getElementById("edit-desc").value.trim(),
+    actions: document.getElementById("edit-actions").value.trim(),
+    acta: document.getElementById("edit-acta").value.trim(),
+    citacion: editCitacion,
+    fechaCitacion: editCitacion === "si" ? document.getElementById("edit-fecha-cit").value : "",
+    asistencia: editCitacion === "si" ? editAsistencia : ""
+  });
+  apiCall(Object.assign({ action: "updateCase" }, updated)).then(function() {
+    cases[editIndex] = normalizeCase(updated);
+    renderAll();
+    closeEdit();
+    toast("Caso actualizado", "ok");
+  }).catch(function() {
+    toast("Error al guardar", "red");
+  }).finally(function() {
+    btn.disabled = false; btn.textContent = "Guardar cambios";
+  });
+}
+
+// ============================================================
+// ESTADÍSTICAS
+// ============================================================
+function renderStats() {
+  if (!cases.length) {
+    ["stats-summary","stats-mes","stats-grado","stats-tipo","stats-jornada","stats-reincidentes","stats-docentes"].forEach(function(id) {
+      document.getElementById(id).innerHTML = '<div class="empty"><div class="empty-icon">📊</div><p>No hay datos aun</p></div>';
+    });
+    return;
+  }
+
+  var total = cases.length;
+  var abiertos = cases.filter(function(c) { return c.status === "abierto"; }).length;
+  var conv = cases.filter(function(c) { return c.type === "convivencia"; }).length;
+  var acad = cases.filter(function(c) { return c.type === "academico"; }).length;
+
+  // Resumen
+  document.getElementById("stats-summary").innerHTML =
+    statCard(total, "Total casos", "var(--navy)") +
+    statCard(abiertos, "Abiertos", "var(--amber)") +
+    statCard(conv, "Convivencia", "var(--red)") +
+    statCard(acad, "Academicos", "var(--blue)");
+
+  // Por mes
+  var mesMap = {};
+  cases.forEach(function(c) {
+    try {
+      var d = new Date(c.date);
+      var key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+      var label = d.toLocaleDateString("es-CO", {month:"short", year:"numeric"});
+      if (!mesMap[key]) mesMap[key] = { label: label, count: 0 };
+      mesMap[key].count++;
+    } catch(e) {}
+  });
+  var mesList = Object.keys(mesMap).sort().map(function(k) { return mesMap[k]; });
+  document.getElementById("stats-mes").innerHTML = barChart(mesList, "label", "count", "var(--blue)");
+
+  // Por grado
+  var gradoMap = {};
+  cases.forEach(function(c) { gradoMap[c.grade] = (gradoMap[c.grade]||0)+1; });
+  var gradoList = Object.entries(gradoMap).sort(function(a,b){return b[1]-a[1];}).map(function(e){return{label:e[0],count:e[1]};});
+  document.getElementById("stats-grado").innerHTML = barChart(gradoList, "label", "count", "var(--navy)");
+
+  // Por tipología
+  var tipoMap = { "I": 0, "II": 0, "III": 0, "Sin tipologia": 0 };
+  cases.forEach(function(c) {
+    var t = c.tipologia;
+    if (t === "I" || t === "II" || t === "III") tipoMap[t]++;
+    else tipoMap["Sin tipologia"]++;
+  });
+  var tipoList = Object.entries(tipoMap).filter(function(e){return e[1]>0;}).map(function(e){return{label:"Tipo "+e[0],count:e[1]};});
+  var tipoColors = ["#F59E0B","#EF4444","#7C3AED","#94A3B8"];
+  document.getElementById("stats-tipo").innerHTML = barChartColors(tipoList, tipoColors);
+
+  // Por jornada
+  var jorMap = {};
+  cases.forEach(function(c) { var j = c.jornada || "Sin jornada"; jorMap[j] = (jorMap[j]||0)+1; });
+  var jorList = Object.entries(jorMap).sort(function(a,b){return b[1]-a[1];}).map(function(e){return{label:e[0],count:e[1]};});
+  document.getElementById("stats-jornada").innerHTML = barChart(jorList, "label", "count", "var(--green)");
+
+  // Reincidentes top 10
+  var reinMap = {};
+  cases.forEach(function(c) { reinMap[c.studentName] = (reinMap[c.studentName]||0)+1; });
+  var reinList = Object.entries(reinMap).filter(function(e){return e[1]>1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,10).map(function(e){return{label:e[0],count:e[1]};});
+  document.getElementById("stats-reincidentes").innerHTML = reinList.length
+    ? barChart(reinList, "label", "count", "var(--red)")
+    : '<p style="color:var(--gray);font-size:0.9rem">No hay estudiantes reincidentes aun.</p>';
+
+  // Docentes que más reportan
+  var docMap = {};
+  cases.forEach(function(c) { if(c.teacher) docMap[c.teacher] = (docMap[c.teacher]||0)+1; });
+  var docList = Object.entries(docMap).sort(function(a,b){return b[1]-a[1];}).slice(0,10).map(function(e){return{label:e[0],count:e[1]};});
+  document.getElementById("stats-docentes").innerHTML = barChart(docList, "label", "count", "var(--amber)");
+}
+
+function statCard(num, label, color) {
+  return '<div class="stat-card" style="border-top-color:'+color+'"><div class="stat-num" style="color:'+color+'">'+num+'</div><div class="stat-label">'+label+'</div></div>';
+}
+
+function barChart(list, labelKey, countKey, color) {
+  if (!list.length) return '<p style="color:var(--gray);font-size:0.9rem">Sin datos.</p>';
+  var max = Math.max.apply(null, list.map(function(i){return i[countKey];}));
+  return list.map(function(item) {
+    var pct = max > 0 ? Math.round((item[countKey]/max)*100) : 0;
+    return '<div style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      +'<div style="font-size:0.85rem;font-weight:600;color:var(--text)">'+item[labelKey]+'</div>'
+      +'<div style="font-size:0.85rem;font-weight:700;color:'+color+'">'+item[countKey]+'</div>'
+      +'</div>'
+      +'<div style="background:var(--gray-bg);border-radius:20px;height:10px;overflow:hidden">'
+      +'<div style="width:'+pct+'%;height:100%;background:'+color+';border-radius:20px;transition:width 0.5s ease"></div>'
+      +'</div></div>';
+  }).join("");
+}
+
+function barChartColors(list, colors) {
+  if (!list.length) return '<p style="color:var(--gray);font-size:0.9rem">Sin datos.</p>';
+  var max = Math.max.apply(null, list.map(function(i){return i.count;}));
+  return list.map(function(item, idx) {
+    var pct = max > 0 ? Math.round((item.count/max)*100) : 0;
+    var color = colors[idx % colors.length];
+    return '<div style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      +'<div style="font-size:0.85rem;font-weight:600;color:var(--text)">'+item.label+'</div>'
+      +'<div style="font-size:0.85rem;font-weight:700;color:'+color+'">'+item.count+'</div>'
+      +'</div>'
+      +'<div style="background:var(--gray-bg);border-radius:20px;height:10px;overflow:hidden">'
+      +'<div style="width:'+pct+'%;height:100%;background:'+color+';border-radius:20px"></div>'
+      +'</div></div>';
+  }).join("");
+}
+
+function deleteQueja(idx){
+  var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
+  var q=quejas[idx];
+  apiCall({action:"deleteQueja",id:q.id}).then(function(){quejas.splice(idx,1);renderQuejas();toast("Queja eliminada","red");}).catch(function(){toast("Error al eliminar","red");});
+}
+
+</script>
+</body>
+</html>
