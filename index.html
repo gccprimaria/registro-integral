@@ -706,6 +706,12 @@ textarea{resize:vertical;min-height:90px;}
 </div>
 <script>
 var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Y7dUEiYspaemzH99QdMlwR7DzrjZgQnr6_-IFK-Mxxoy83pDgEkbsZ4juwyfOMmK/exec";
+var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
+var SUPABASE_KEY = "sb_publishable_GX0BAqdjxcdqebXZ0TFJQg_to6gSA_t";
+var SUPABASE_BUCKET = "documentos";
+var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
+var SUPABASE_KEY = "sb_publishable_GX0BAqdjxcdqebXZ0TFJQg_to6gSA_t";
+var SUPABASE_BUCKET = "documentos";
 var DELETE_PWD = "Dilia123";
 
 var TEACHERS_DATA = {
@@ -5128,11 +5134,7 @@ function openEstModal(s) {
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
   histHTML += '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">'
     + '<input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%">'
-    + '<input type="text" id="est-doc-url" placeholder="Pega aqui el enlace de Google Drive..." style="padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%">'
-    + '<div style="font-size:0.75rem;color:var(--gray)">En Google Drive: abre el archivo → Compartir → Cualquier persona con el enlace → Copiar enlace</div>'
-    + '<button class="upload-btn" onclick="saveEstDoc()">💾 Guardar documento</button>'
-    + '<div class="upload-progress" id="est-doc-progress">Guardando...</div>'
-    + '</div>';
+  histHTML += '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%"><input type="file" id="est-doc-file" accept=".pdf,image/*" style="padding:8px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;width:100%;background:white"><div style="font-size:0.75rem;color:var(--gray)">PDF o imagen, maximo 10MB</div><button class="upload-btn" onclick="saveEstDoc()">📎 Subir documento</button><div class="upload-progress" id="est-doc-progress">Subiendo...</div></div>';
 
   document.getElementById('est-modal-historial').innerHTML = histHTML;
   loadEstDocs(s.nombre);
@@ -5343,32 +5345,31 @@ function loadEstDocs(nombre) {
 function saveEstDoc() {
   var nombre = currentEstNombre;
   var docNombre = document.getElementById('est-doc-nombre').value.trim();
-  var docUrl = document.getElementById('est-doc-url').value.trim();
+  var fileInput = document.getElementById('est-doc-file');
   var progress = document.getElementById('est-doc-progress');
-
   if (!docNombre) { toast('Escribe el nombre del documento', 'red'); return; }
-  if (!docUrl || !docUrl.startsWith('http')) { toast('Pega un enlace valido de Google Drive', 'red'); return; }
-
-  if (progress) { progress.textContent = 'Guardando...'; progress.classList.add('show'); }
-
-  apiCall({
-    action: 'saveDocumento',
-    nombre: nombre,
-    docNombre: docNombre,
-    url: docUrl,
-    fecha: new Date().toLocaleDateString('es-CO')
+  if (!fileInput || !fileInput.files.length) { toast('Selecciona un archivo', 'red'); return; }
+  var file = fileInput.files[0];
+  if (file.size > 10 * 1024 * 1024) { toast('El archivo no puede superar 10MB', 'red'); return; }
+  if (progress) { progress.textContent = 'Subiendo ' + file.name + '...'; progress.classList.add('show'); }
+  var fileName = nombre.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now() + '.' + file.name.split('.').pop();
+  var uploadUrl = SUPABASE_URL + '/storage/v1/object/' + SUPABASE_BUCKET + '/' + encodeURIComponent(fileName);
+  fetch(uploadUrl, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': file.type || 'application/pdf', 'x-upsert': 'true' },
+    body: file
+  }).then(function(r) {
+    if (!r.ok) throw new Error('Error ' + r.status);
+    var publicUrl = SUPABASE_URL + '/storage/v1/object/public/' + SUPABASE_BUCKET + '/' + encodeURIComponent(fileName);
+    return apiCall({ action:'saveDocumento', nombre:nombre, docNombre:docNombre, url:publicUrl, fecha:new Date().toLocaleDateString('es-CO') });
   }).then(function() {
     document.getElementById('est-doc-nombre').value = '';
-    document.getElementById('est-doc-url').value = '';
+    fileInput.value = '';
     if (progress) progress.classList.remove('show');
-    toast('Documento guardado', 'ok');
+    toast('Documento subido', 'ok');
     loadEstDocs(nombre);
-  }).catch(function() {
-    if (progress) progress.classList.remove('show');
-    toast('Error al guardar', 'red');
+  }).catch(function(err) {
+    if (progress) { progress.textContent = ''; progress.classList.remove('show'); }
+    toast('Error: ' + err.message, 'red');
   });
-
-}
-</script>
-</body>
-</html>
+}>
