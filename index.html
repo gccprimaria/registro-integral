@@ -705,7 +705,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDU5JcSNcR5FqlGWxU5_EIJHafHxhfAmF4NepxBAqK5xl0Tm5EndPhCzAk8kurulZ9/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Y7dUEiYspaemzH99QdMlwR7DzrjZgQnr6_-IFK-Mxxoy83pDgEkbsZ4juwyfOMmK/exec";
 var DELETE_PWD = "Dilia123";
 
 var TEACHERS_DATA = {
@@ -5362,15 +5362,15 @@ function uploadEstDoc(nombre) {
   fileToBase64(file).then(function(base64) {
     return fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         action: 'uploadEstDoc',
         fileData: base64,
         fileName: file.name,
         nombre: nombre,
         docNombre: docNombre,
         fecha: new Date().toLocaleDateString('es-CO')
-      }).toString()
+      })
     });
   }).then(function(r) { return r.json(); })
   .then(function(data) {
