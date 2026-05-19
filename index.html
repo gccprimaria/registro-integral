@@ -705,7 +705,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXZHfdZl5cNO-5ZvZtYibcO4fCupZ7Jlt_LnnwhdKN8cFvoglwcJe4Eh08JufcMmcf/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDU5JcSNcR5FqlGWxU5_EIJHafHxhfAmF4NepxBAqK5xl0Tm5EndPhCzAk8kurulZ9/exec";
 var DELETE_PWD = "Dilia123";
 
 var TEACHERS_DATA = {
@@ -1091,6 +1091,277 @@ var BASE_STUDENTS = [
   {"nombre":"ZAFRA GARCIA MARIA JULIANA","grado":"2C","jornada":"Tarde","acudiente":"GARCIA CASTRO ERIKA MARCELA","telefono":"3148934785","correo":"erikg_93@hotmail.com","direccion":"CR 27 34 79","documento":"1222133981"},
   {"nombre":"CHAPARRO JEROMINO DANIEL MATHIAS","grado":"2D","jornada":"Tarde","acudiente":"","telefono":"","correo":"","direccion":"","documento":""},
 ];
+
+var ACADEMIC_DB = {
+  "OBED BECERRA VARGAS": {
+    "grado": "1A",
+    "materias": {"Lenguaje": {"I": 29}}
+  },
+  "MARIA ELIZABETH JIMENEZ VANEGAS": {
+    "grado": "1A",
+    "materias": {"Lenguaje": {"I": 31}, "Comp. Lectora": {"I": 33}, "Artistica": {"I": 33}}
+  },
+  "VICTORIA PINTO ORTIZ": {
+    "grado": "1A",
+    "materias": {"Lenguaje": {"I": 29}, "Comp. Lectora": {"I": 30}}
+  },
+  "SALED ALEJANDRO SALCEDO CARRILLO": {
+    "grado": "1A",
+    "materias": {"Lenguaje": {"I": 30}}
+  },
+  "HERNANDEZ ZEAS LIA SALOME": {
+    "grado": "1A",
+    "materias": {"Informatica": {"I": 34}}
+  },
+  "JUAN ESTEBAN FONSECA GOMEZ": {
+    "grado": "1B",
+    "materias": {"Lenguaje": {"I": 33}}
+  },
+  "MATHIAS ALEJANDRO MERCADO MANTILLA": {
+    "grado": "1B",
+    "materias": {"Lenguaje": {"I": 31}}
+  },
+  "EMMANUEL ANDRES SALAMANCA SALCEDO": {
+    "grado": "1B",
+    "materias": {"Lenguaje": {"I": 30}}
+  },
+  "NOAH EMMANUEL QUESADA": {
+    "grado": "2A",
+    "materias": {"Matematicas": {"I": 3.4}}
+  },
+  "MANUELA MONTAGUT RODRIGUEZ": {
+    "grado": "2A",
+    "materias": {"Matematicas": {"I": 3.4}}
+  },
+  "ALANA SYLVANA CERVERA URBANO": {
+    "grado": "2B",
+    "materias": {"Lenguaje": {"I": 34}}
+  },
+  "SIERRA ACEVEDO MARTIN DAVID": {
+    "grado": "2B",
+    "materias": {"Comp. Lectora": {"I": 34}, "Matematicas": {"I": 3.3}}
+  },
+  "SAMUEL JAVIER GARCIAS VALIENTE": {
+    "grado": "3A",
+    "materias": {"Lenguaje": {"I": 33}, "Comp. Lectora": {"I": 30}}
+  },
+  "ERICK JULIAN PERDOMO RUIZ": {
+    "grado": "3A",
+    "materias": {"Comp. Lectora": {"I": 26}}
+  },
+  "MESA RIVERA JOSE DANIEL": {
+    "grado": "3A",
+    "materias": {"Comp. Lectora": {"I": 30}}
+  },
+  "BASTIDAS PENA MARTIN": {
+    "grado": "3B",
+    "materias": {"Artistica": {"I": 33}}
+  },
+  "EMANUEL ADAME": {
+    "grado": "3B",
+    "materias": {"Artistica": {"I": 33}}
+  },
+  "ISABELLA PARRA": {
+    "grado": "3B",
+    "materias": {"Artistica": {"I": 34}}
+  },
+  "ANDRES PAEZ": {
+    "grado": "4A",
+    "materias": {"Comp. Lectora": {"I": 28}}
+  },
+  "VICTORIA RODRIGUEZ": {
+    "grado": "4A",
+    "materias": {"Artistica": {"I": 34}}
+  },
+  "DYLAN MOSQUERA": {
+    "grado": "4A",
+    "materias": {"Lenguaje": {"I": 31}}
+  },
+  "SALGADO GARZON DANIEL ANDRES": {
+    "grado": "4A",
+    "materias": {"Ingles": {"I": 32}}
+  },
+  "DYLAN JOSUE CARDOZO": {
+    "grado": "4A",
+    "materias": {"Lenguaje": {"I": 33}, "Ingles": {"I": 34}, "Matematicas": {"I": 34}}
+  },
+  "ISAAC ROBLES": {
+    "grado": "4B",
+    "materias": {"Artistica": {"I": 29}}
+  },
+  "LUCIANA NINO": {
+    "grado": "4B",
+    "materias": {"Artistica": {"I": 33}}
+  },
+  "SANCHEZ FIGUEREDO SIMON DANIEL": {
+    "grado": "4B",
+    "materias": {"Ingles": {"I": 32}, "Matematicas": {"I": 29}, "Artistica": {"I": 29}}
+  },
+  "JUAN SEBASTIAN PATINO": {
+    "grado": "4B",
+    "materias": {"Lenguaje": {"I": 33}}
+  },
+  "EVELYN VIVAS": {
+    "grado": "4B",
+    "materias": {"Lenguaje": {"I": 25}, "Ingles": {"I": 32}, "Sociales": {"I": 32}}
+  },
+  "JUAN ESTEBAN SANCHEZ": {
+    "grado": "4B",
+    "materias": {"Lenguaje": {"I": 34}}
+  },
+  "FORERO AVILA DIEGO LUIS": {
+    "grado": "5A",
+    "materias": {"Matematicas": {"I": 33}, "Sociales": {"I": 33}}
+  },
+  "VALDERRAMA JERONIMO": {
+    "grado": "5A",
+    "materias": {"Lenguaje": {"I": 33}, "Comp. Lectora": {"I": 28}, "Ingles": {"I": 33}, "Matematicas": {"I": 32}}
+  },
+  "MANRIQUE AGUILAR VICTORIA": {
+    "grado": "5A",
+    "materias": {"Ingles": {"I": 31}, "Matematicas": {"I": 30}}
+  },
+  "ARRIAGA MARTINEZGABRIEL ANTONIO": {
+    "grado": "5A",
+    "materias": {"Matematicas": {"I": 33}}
+  },
+  "GUZMAN RAIGOZA SARA LUCIANA": {
+    "grado": "5A",
+    "materias": {"Matematicas": {"I": 34}}
+  },
+  "SANCHEZ NINO TOMAS EDUARDO": {
+    "grado": "5A",
+    "materias": {"Lenguaje": {"I": 27}, "Matematicas": {"I": 31}}
+  },
+  "CABRERA TORRES THOMAS ALEJANDRO": {
+    "grado": "5B",
+    "materias": {"Comp. Lectora": {"I": 31}, "Matematicas": {"I": 32}}
+  },
+  "GUIO PENA DULCE MARIA": {
+    "grado": "5B",
+    "materias": {"Matematicas": {"I": 30}, "Artistica": {"I": 33}}
+  },
+  "OSORIO NOSA MARIA JOSE": {
+    "grado": "5B",
+    "materias": {"Matematicas": {"I": 33}}
+  },
+  "JIMENEZ TRASLAVINA IAN": {
+    "grado": "5B",
+    "materias": {"Matematicas": {"I": 34}}
+  },
+  "TORRES PEREZ VIVIAN DANIELA": {
+    "grado": "5B",
+    "materias": {"Matematicas": {"I": 33}}
+  },
+  "54": {
+    "grado": "TOTAL",
+    "materias": {"Lenguaje": {"I": 16}, "Comp. Lectora": {"I": 9}, "Ingles": {"I": 6}, "Matematicas": {"I": 16}, "Sociales": {"I": 2}, "Informatica": {"I": 1}, "Artistica": {"I": 13}}
+  },
+  "NOVA PAEZ DYLAN SMITH": {
+    "grado": "1D",
+    "materias": {"Lenguaje": {"I": 33}}
+  },
+  "DIAZ PIEDRAHITA MARIA LUCIANA": {
+    "grado": "2C",
+    "materias": {"Matematicas": {"I": 30}}
+  },
+  "ZAFRA GARCIA MARIA JULIANA": {
+    "grado": "2C",
+    "materias": {"Matematicas": {"I": 32}}
+  },
+  "EVALUNA LOPEZ CARRENO": {
+    "grado": "2C",
+    "materias": {"Comp. Lectora": {"I": 32}}
+  },
+  "ABIGAIL SANCHEZ ARAQUE": {
+    "grado": "2C",
+    "materias": {"Comp. Lectora": {"I": 34}}
+  },
+  "MATEO VALLARINO DIAZ": {
+    "grado": "2C",
+    "materias": {"Comp. Lectora": {"I": 29}}
+  },
+  "CASADIEGOS MEDINA GABRIEL": {
+    "grado": "2D",
+    "materias": {"Matematicas": {"I": 27}, "Sociales": {"I": 30}, "Ed. Financiera": {"I": 32}}
+  },
+  "CALDERON LOPEZ DILAN BLADIMIR": {
+    "grado": "4C",
+    "materias": {"Ingles": {"I": 33}, "Ed. Financiera": {"I": 33}}
+  },
+  "CORTEZ RUBIANO ISAAC BENJAMIN": {
+    "grado": "4C",
+    "materias": {"Ingles": {"I": 31}}
+  },
+  "JIMENEZ MURILLO MARIA ISABEL": {
+    "grado": "4C",
+    "materias": {"Ingles": {"I": 30}, "Matematicas": {"I": 32}}
+  },
+  "SANCHEZ MORENO MATIAS EDUARDO": {
+    "grado": "4D",
+    "materias": {"Comp. Lectora": {"I": 34}}
+  },
+  "PABON PASTRANA DIEGO ALEJANDRO": {
+    "grado": "4D",
+    "materias": {"Comp. Lectora": {"I": 31}}
+  },
+  "ALVAREZ PALACIOS JUAN ESTEBAN": {
+    "grado": "4D",
+    "materias": {"Lenguaje": {"I": 30}}
+  },
+  "JOYA RODRIGUEZ EMMA": {
+    "grado": "4D",
+    "materias": {"Comp. Lectora": {"I": 34}}
+  },
+  "ROA VARGAS SARAHI NICOL": {
+    "grado": "4D",
+    "materias": {"Comp. Lectora": {"I": 33}}
+  },
+  "CARDENAS LAVERDE JUAN DAVID": {
+    "grado": "5C",
+    "materias": {"Lenguaje": {"I": 33}, "Ingles": {"I": 32}, "Ed. Financiera": {"I": 33}}
+  },
+  "HIGUERA JIMENEZ REINALDO": {
+    "grado": "5C",
+    "materias": {"Lenguaje": {"I": 33}, "Matematicas": {"I": 34}, "Ciencias": {"I": 34}}
+  },
+  "MORENO CASTILLO JERONIMO": {
+    "grado": "5C",
+    "materias": {"Ciencias": {"I": 32}}
+  },
+  "TOLOZA PARRA LAURA ISABELLA": {
+    "grado": "5C",
+    "materias": {"Matematicas": {"I": 33}}
+  },
+  "OCHOA VARGAS SARA": {
+    "grado": "5C",
+    "materias": {"Ed. Financiera": {"I": 33}}
+  },
+  "BARRAGAN QUISPI MARTIN ESTEBAN": {
+    "grado": "5C",
+    "materias": {"Ingles": {"I": 33}}
+  },
+  "PEREZ DIAZ MARIA JOSE": {
+    "grado": "5D",
+    "materias": {"Lenguaje": {"I": 30}, "Comp. Lectora": {"I": 31}, "Ingles": {"I": 30}, "Matematicas": {"I": 31}, "Ed. Financiera": {"I": 34}}
+  },
+  "SANCHEZ ARANA JULIAN DAVID": {
+    "grado": "5D",
+    "materias": {"Lenguaje": {"I": 34}, "Ingles": {"I": 33}}
+  },
+  "HERNANDEZ TRIANA LUNA SOFIA": {
+    "grado": "5D",
+    "materias": {"Lenguaje": {"I": 32}, "Ed. Financiera": {"I": 34}}
+  },
+  "GARZON BARRERA MIA ISABELLA": {
+    "grado": "5D",
+    "materias": {"Matematicas": {"I": 34}}
+  },
+  "29": {
+    "grado": "TOTAL",
+    "materias": {"Lenguaje": {"I": 7}, "Comp. Lectora": {"I": 8}, "Ingles": {"I": 7}, "Matematicas": {"I": 8}, "Ciencias": {"I": 2}, "Sociales": {"I": 1}, "Ed. Financiera": {"I": 7}}
+  },
+};
 
 var STUDENTS_DB = {
   "TRIANA ACEVEDO DANIELA SOFIA": {
@@ -4246,8 +4517,6 @@ function openModal(idx){
   var citHtml="";
   if(c.citacion){citHtml='<div><div class="slbl">Citacion al acudiente</div><div class="detail-block">'+(c.citacion==="si"?"Si fue citado":"No fue citado")+(c.citacion==="si"&&c.fechaCitacion?"<br>Fecha: "+c.fechaCitacion:"")+(c.citacion==="si"&&c.asistencia?"<br>"+(c.asistencia==="asistio"?"Asistio":"No asistio"):"")+"</div></div>";}
   document.getElementById("modal-body").innerHTML='<div style="border-top:4px solid '+bc+';border-radius:8px;padding-top:16px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">'+c.studentName+"</div>"+'<div style="color:var(--gray);font-size:0.85rem;margin-top:3px">'+c.grade+(c.jornada?" - "+c.jornada:"")+" - "+fmtD(c.date)+"</div></div>"+stag(c.status)+"</div>"+'<div class="tags" style="margin-top:14px;margin-bottom:20px">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.teacher+"</span>"+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="display:flex;flex-direction:column;gap:16px"><div><div class="slbl">Descripcion</div><div class="detail-block">'+c.description+"</div></div>"+(c.actions?'<div><div class="slbl">Acciones</div><div class="detail-block gr">'+c.actions+"</div></div>":"")+citHtml+"</div>"+'<div class="btn-row" style="margin-top:24px"><button class="btn '+(c.status==="abierto"?"btn-green":"btn-amber")+'" id="m-status-btn" onclick="toggleStatus()">'+(c.status==="abierto"?"Marcar resuelto":"Reabrir caso")+"</button>"+'<button class="btn btn-ghost" onclick="openEditModal('+idx+')">Editar</button></div>'
-    +(c.acta?'<a href="'+c.acta+'" target="_blank" class="doc-link"><span>📄</span> Ver documento adjunto</a>':'')
-    +'<div style="margin-top:12px"><label style="display:block;font-size:0.78rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:7px">Adjuntar documento</label><input type="file" id="caso-file-input" accept=".pdf,image/*" style="display:none" onchange="uploadCasoFile()"><button class="upload-btn" onclick="document.getElementById(&quot;caso-file-input&quot;).click()">📎 Seleccionar PDF o imagen</button><div class="upload-progress" id="caso-upload-progress">Subiendo archivo...</div></div>'
     +'</div>';
   document.getElementById("modal-overlay").classList.add("open"); document.body.style.overflow="hidden";
 }
@@ -4815,12 +5084,11 @@ function openEstModal(s) {
   document.getElementById('est-edit-direccion').value = s.direccion || '';
   document.getElementById('est-edit-documento').value = s.documento || '';
 
-  // Show disciplinary history
+  // Disciplinary history
   var studentCases = cases.filter(function(c) { return c.studentName === s.nombre; });
-  var histHTML = '';
+  var histHTML = '<div class="slbl" style="margin-bottom:8px">Historial disciplinario</div>';
   if (studentCases.length) {
-    histHTML = '<div class="card" style="background:var(--gray-bg);margin-bottom:0">' +
-      '<div class="slbl" style="margin-bottom:10px">Historial disciplinario (' + studentCases.length + ' caso(s))</div>';
+    histHTML += '<div class="card" style="background:var(--gray-bg);padding:12px">';
     studentCases.forEach(function(c) {
       histHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--gray-light)">' +
         '<div style="display:flex;justify-content:space-between">' +
@@ -4833,9 +5101,35 @@ function openEstModal(s) {
     });
     histHTML += '</div>';
   } else {
-    histHTML = '<div style="font-size:0.85rem;color:var(--gray);padding:8px 0">Sin casos disciplinarios registrados.</div>';
+    histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin casos disciplinarios.</div>';
   }
+
+  // Academic history
+  var normName = s.nombre.toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N');
+  var acadData = ACADEMIC_DB[normName] || ACADEMIC_DB[s.nombre] || null;
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Historial academico (materias con dificultad)</div>';
+  if (acadData && Object.keys(acadData.materias).length) {
+    histHTML += '<div class="card" style="background:var(--blue-bg);padding:12px">';
+    Object.entries(acadData.materias).forEach(function(entry) {
+      var subj = entry[0]; var periods = entry[1];
+      var periodoStr = Object.entries(periods).map(function(p) { return 'Periodo ' + p[0] + ': ' + p[1]; }).join(' · ');
+      histHTML += '<div style="padding:6px 0;border-bottom:1px solid rgba(59,130,246,0.2)">' +
+        '<div style="font-weight:600;color:var(--blue-dark);font-size:0.88rem">' + subj + '</div>' +
+        '<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:2px">' + periodoStr + '</div>' +
+      '</div>';
+    });
+    histHTML += '</div>';
+  } else {
+    histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>';
+  }
+
+  // Documents section
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
+  histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
+  histHTML += '<div style="margin-top:8px"><input type="file" id="est-doc-input" accept=".pdf,image/*" style="display:none" onchange="uploadEstDoc()"><input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="margin-bottom:8px;padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%"><button class="upload-btn" onclick="document.getElementById('est-doc-input').click()">📎 Subir documento</button><div class="upload-progress" id="est-doc-progress">Subiendo...</div></div>';
+
   document.getElementById('est-modal-historial').innerHTML = histHTML;
+  loadEstDocs(s.nombre);
 
   document.getElementById('est-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -5012,6 +5306,80 @@ function uploadDocFile(recordId, folderType, progressId) {
     progress.classList.remove('show');
   }).catch(function() {
     progress.classList.remove('show');
+    toast('Error de conexion', 'red');
+  });
+}
+// ============================================================
+// DOCUMENTOS DE ESTUDIANTES
+// ============================================================
+var currentEstNombre = '';
+
+function loadEstDocs(nombre) {
+  currentEstNombre = nombre;
+  var listEl = document.getElementById('est-docs-list');
+  if (!listEl) return;
+  apiCall({ action: 'listDocumentos', nombre: nombre }).then(function(data) {
+    if (!Array.isArray(data) || !data.length) {
+      listEl.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin documentos adjuntos.</div>';
+      return;
+    }
+    listEl.innerHTML = data.map(function(doc) {
+      return '<a href="' + doc.url + '" target="_blank" class="doc-link" style="margin-bottom:6px">' +
+        '<span>📄</span> <span>' + (doc.docNombre || 'Documento') + '</span>' +
+        '<span style="font-size:0.72rem;color:var(--green-dark);margin-left:auto">' + (doc.fecha || '') + '</span>' +
+        '</a>';
+    }).join('');
+  }).catch(function() {
+    if (listEl) listEl.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin documentos.</div>';
+  });
+}
+
+function uploadEstDoc(nombre) {
+  nombre = nombre || currentEstNombre;
+  var input = document.getElementById('est-doc-input');
+  var progress = document.getElementById('est-doc-progress');
+  var docNombre = document.getElementById('est-doc-nombre').value.trim();
+  if (!input || !input.files.length) return;
+  var file = input.files[0];
+
+  if (file.size > 10 * 1024 * 1024) {
+    toast('El archivo no puede superar 10MB', 'red');
+    return;
+  }
+  if (!docNombre) {
+    document.getElementById('est-doc-nombre').style.borderColor = 'var(--red)';
+    toast('Escribe un nombre para el documento', 'red');
+    return;
+  }
+  document.getElementById('est-doc-nombre').style.borderColor = '';
+
+  if (progress) { progress.textContent = 'Subiendo ' + file.name + '...'; progress.classList.add('show'); }
+
+  fileToBase64(file).then(function(base64) {
+    return fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'uploadEstDoc',
+        fileData: base64,
+        fileName: file.name,
+        nombre: nombre,
+        docNombre: docNombre,
+        fecha: new Date().toLocaleDateString('es-CO')
+      }).toString()
+    });
+  }).then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      document.getElementById('est-doc-nombre').value = '';
+      toast('Documento subido correctamente', 'ok');
+      loadEstDocs(nombre);
+    } else {
+      toast('Error al subir el documento', 'red');
+    }
+    if (progress) progress.classList.remove('show');
+  }).catch(function() {
+    if (progress) progress.classList.remove('show');
     toast('Error de conexion', 'red');
   });
 }
