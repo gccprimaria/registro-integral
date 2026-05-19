@@ -705,7 +705,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Y7dUEiYspaemzH99QdMlwR7DzrjZgQnr6_-IFK-Mxxoy83pDgEkbsZ4juwyfOMmK/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMnANURpVcvNJNUdDgPMIPuZz5mC1xQ6m2Df69lSwD8DKBCv2m-UCujNqNRtQbjfAU/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5132,10 +5132,7 @@ function openEstModal(s) {
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
-  histHTML += '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">'
-    + '<input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%">'
-  histHTML += '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%"><input type="file" id="est-doc-file" accept=".pdf,image/*" style="padding:8px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;width:100%;background:white"><div style="font-size:0.75rem;color:var(--gray)">PDF o imagen, maximo 10MB</div><button class="upload-btn" onclick="saveEstDoc()">📎 Subir documento</button><div class="upload-progress" id="est-doc-progress">Subiendo...</div></div>';
-
+  
   document.getElementById('est-modal-historial').innerHTML = histHTML;
   loadEstDocs(s.nombre);
 
