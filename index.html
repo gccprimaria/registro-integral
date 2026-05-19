@@ -5126,7 +5126,7 @@ function openEstModal(s) {
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
-  histHTML += '<div style="margin-top:8px"><input type="file" id="est-doc-input" accept=".pdf,image/*" style="display:none" onchange="uploadEstDoc()"><input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="margin-bottom:8px;padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%"><button class="upload-btn" onclick="document.getElementById('est-doc-input').click()">📎 Subir documento</button><div class="upload-progress" id="est-doc-progress">Subiendo...</div></div>';
+  histHTML += '<div style="margin-top:8px"><input type="file" id="est-doc-input" accept=".pdf,image/*" style="display:none" onchange="uploadEstDoc()"><input type="text" id="est-doc-nombre" placeholder="Nombre del documento (ej: Acta compromiso mayo)" style="margin-bottom:8px;padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:10px;font-size:0.88rem;font-family:DM Sans,sans-serif;width:100%"><button class="upload-btn" onclick="triggerDocInput()">📎 Subir documento</button><div class="upload-progress" id="est-doc-progress">Subiendo...</div></div>';
 
   document.getElementById('est-modal-historial').innerHTML = histHTML;
   loadEstDocs(s.nombre);
@@ -5332,6 +5332,10 @@ function loadEstDocs(nombre) {
   }).catch(function() {
     if (listEl) listEl.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin documentos.</div>';
   });
+}
+
+function triggerDocInput() {
+  document.getElementById('est-doc-input').click();
 }
 
 function uploadEstDoc(nombre) {
