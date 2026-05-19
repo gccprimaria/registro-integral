@@ -5362,7 +5362,7 @@ function uploadEstDoc(nombre) {
   fileToBase64(file).then(function(base64) {
     return fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'uploadEstDoc',
         fileData: base64,
