@@ -4356,7 +4356,7 @@ function normalizeCase(c) {
   var s = String(c.status||"").toLowerCase().trim();
   c.status = s==="resuelto"?"resuelto":"abierto";
   c.id=String(c.id||""); c.type=String(c.type||"").toLowerCase().trim()==="academico"?"academico":"convivencia";
-  c.studentName=String(c.studentName||""); c.grade=String(c.grade||""); c.teacher=String(c.teacher||"");
+  c.studentName=String(c.studentName||""); c.grade=String(c.grade||"").trim(); c.teacher=String(c.teacher||"");
   c.description=String(c.description||""); c.actions=String(c.actions||""); c.date=String(c.date||"");
   c.tipologia=String(c.tipologia||""); c.jornada=String(c.jornada||""); c.citacion=String(c.citacion||"");
   c.fechaCitacion=String(c.fechaCitacion||""); c.asistencia=String(c.asistencia||""); c.asignatura=String(c.asignatura||"");
@@ -4548,9 +4548,10 @@ function confirmDelete(){
 
 // DIRECTOR
 function renderDirector(){
+  if(!cases.length){loadCases();return;}
   var grade=document.getElementById("dir-grade").value; var el=document.getElementById("dir-content");
   if(!grade){el.innerHTML="";return;}
-  var gc=cases.filter(function(c){return c.grade===grade;});
+  var gc=cases.filter(function(c){return String(c.grade||'').trim()===String(grade).trim();});
   if(!gc.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No hay casos para el grado '+grade+"</p></div>";return;}
   var total=gc.length; var abiertos=gc.filter(function(c){return c.status==="abierto";}).length; var conv=gc.filter(function(c){return c.type==="convivencia";}).length;
   var countMap={};gc.forEach(function(c){countMap[c.studentName]=(countMap[c.studentName]||0)+1;});
