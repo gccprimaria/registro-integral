@@ -685,6 +685,39 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 
+<!-- MODAL COMPROMISO -->
+<div class="modal-overlay" id="comp-modal-overlay" onclick="closeCompModal(event)">
+  <div class="modal">
+    <button class="back-btn" onclick="closeCompModalDirect()" style="margin-bottom:16px">← Volver</button>
+    <div class="serif" id="comp-modal-title" style="font-size:1.1rem;color:var(--navy);font-weight:700;margin-bottom:16px">Registrar compromiso</div>
+    <div class="form-section">
+      <div class="field">
+        <label class="lbl">Fecha del compromiso</label>
+        <input type="date" id="comp-fecha">
+        <div class="ferr" id="comp-ferr-fecha"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Descripcion del compromiso</label>
+        <textarea id="comp-desc" placeholder="Describe el compromiso adquirido..." rows="4"></textarea>
+        <div class="ferr" id="comp-ferr-desc"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Docente o persona responsable</label>
+        <input type="text" id="comp-docente" placeholder="Nombre del docente o responsable">
+        <div class="ferr" id="comp-ferr-doc"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Firmado por el acudiente</label>
+        <div class="type-grid">
+          <button class="type-btn" id="comp-btn-si" onclick="selCompFirma('si')">Si firmo</button>
+          <button class="type-btn" id="comp-btn-no" onclick="selCompFirma('no')">No firmo</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="comp-save-btn" onclick="saveCompromiso()" style="width:100%;padding:14px">Guardar compromiso</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIG -->
 <div class="page" id="page-config">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Configuracion</div>
@@ -705,7 +738,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMnANURpVcvNJNUdDgPMIPuZz5mC1xQ6m2Df69lSwD8DKBCv2m-UCujNqNRtQbjfAU/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYQ8TsC3lZW61ZETbiJdl3SBJHE1m3eNnllwAzuaGj_6kfA2VteNSR1IDOy0EKyogA/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5116,19 +5149,46 @@ function openEstModal(s) {
   var acadData = ACADEMIC_DB[normName] || ACADEMIC_DB[s.nombre] || null;
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Historial academico (materias con dificultad)</div>';
   if (acadData && Object.keys(acadData.materias).length) {
+    // Count by period
+    var byPeriod = {I:[], II:[], III:[]};
+    Object.entries(acadData.materias).forEach(function(entry) {
+      var subj = entry[0]; var periods = entry[1];
+      Object.entries(periods).forEach(function(p) { if(byPeriod[p[0]]) byPeriod[p[0]].push(subj); });
+    });
+    // Period summary cards
+    histHTML += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">';
+    ['I','II','III'].forEach(function(per) {
+      var cnt = byPeriod[per].length;
+      var color = cnt === 0 ? 'var(--green)' : cnt <= 2 ? 'var(--amber)' : 'var(--red)';
+      histHTML += '<div style="background:white;border:2px solid '+color+';border-radius:10px;padding:10px;text-align:center">' +
+        '<div style="font-size:1.4rem;font-weight:800;color:'+color+'">'+cnt+'</div>' +
+        '<div style="font-size:0.7rem;color:var(--gray);font-weight:600">Periodo '+per+'</div>' +
+        '</div>';
+    });
+    histHTML += '</div>';
+    // Detail by subject
     histHTML += '<div class="card" style="background:var(--blue-bg);padding:12px">';
     Object.entries(acadData.materias).forEach(function(entry) {
       var subj = entry[0]; var periods = entry[1];
-      var periodoStr = Object.entries(periods).map(function(p) { return 'Periodo ' + p[0] + ': ' + p[1]; }).join(' · ');
-      histHTML += '<div style="padding:6px 0;border-bottom:1px solid rgba(59,130,246,0.2)">' +
-        '<div style="font-weight:600;color:var(--blue-dark);font-size:0.88rem">' + subj + '</div>' +
-        '<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:2px">' + periodoStr + '</div>' +
-      '</div>';
+      var periodoStr = Object.entries(periods).map(function(p) { return 'P.'+p[0]; }).join(' · ');
+      histHTML += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(59,130,246,0.2)">' +
+        '<div style="font-weight:600;color:var(--blue-dark);font-size:0.85rem">'+subj+'</div>' +
+        '<div style="font-size:0.75rem;color:var(--blue-dark);font-weight:700">'+periodoStr+'</div>' +
+        '</div>';
     });
     histHTML += '</div>';
   } else {
     histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>';
   }
+
+  // Compromisos
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Compromisos academicos</div>';
+  histHTML += '<div id="est-comp-acad-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '<button onclick="openCompModal(\'academico\')" style="margin-top:8px;background:var(--navy);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso academico</button>';
+  
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Compromisos disciplinarios</div>';
+  histHTML += '<div id="est-comp-disc-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '<button onclick="openCompModal(\'disciplinario\')" style="margin-top:8px;background:var(--red);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso disciplinario</button>';
 
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
@@ -5136,6 +5196,7 @@ function openEstModal(s) {
   
   document.getElementById('est-modal-historial').innerHTML = histHTML;
   loadEstDocs(s.nombre);
+  loadCompromisos(s.nombre);
 
   document.getElementById('est-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -5370,6 +5431,93 @@ function saveEstDoc() {
     if (progress) { progress.textContent = ''; progress.classList.remove('show'); }
     toast('Error: ' + err.message, 'red');
   });
+}
+// ============================================================
+// COMPROMISOS
+// ============================================================
+var curCompTipo = '';
+var curCompFirma = '';
+
+function openCompModal(tipo) {
+  curCompTipo = tipo;
+  curCompFirma = '';
+  document.getElementById('comp-modal-title').textContent = tipo === 'academico' ? 'Compromiso academico' : 'Compromiso disciplinario';
+  document.getElementById('comp-fecha').value = '';
+  document.getElementById('comp-desc').value = '';
+  document.getElementById('comp-docente').value = '';
+  document.getElementById('comp-btn-si').className = 'type-btn';
+  document.getElementById('comp-btn-no').className = 'type-btn';
+  ['comp-ferr-fecha','comp-ferr-desc','comp-ferr-doc'].forEach(function(id){ document.getElementById(id).textContent=''; });
+  document.getElementById('comp-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCompModal(e) { if(e.target === document.getElementById('comp-modal-overlay')) closeCompModalDirect(); }
+function closeCompModalDirect() { document.getElementById('comp-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
+
+function selCompFirma(v) {
+  curCompFirma = v;
+  document.getElementById('comp-btn-si').className = 'type-btn' + (v==='si'?' sel':'');
+  document.getElementById('comp-btn-no').className = 'type-btn' + (v==='no'?' sel':'');
+}
+
+function saveCompromiso() {
+  var fecha = document.getElementById('comp-fecha').value;
+  var desc = document.getElementById('comp-desc').value.trim();
+  var docente = document.getElementById('comp-docente').value.trim();
+  var ok = true;
+  if(!fecha){ document.getElementById('comp-ferr-fecha').textContent='Selecciona la fecha'; ok=false; }
+  if(!desc){ document.getElementById('comp-ferr-desc').textContent='Describe el compromiso'; ok=false; }
+  if(!docente){ document.getElementById('comp-ferr-doc').textContent='Escribe el responsable'; ok=false; }
+  if(!ok) return;
+  var btn = document.getElementById('comp-save-btn');
+  btn.disabled=true; btn.textContent='Guardando...';
+  apiCall({
+    action: 'saveCompromiso',
+    nombre: currentEstNombre,
+    tipo: curCompTipo,
+    fecha: fecha,
+    desc: desc,
+    docente: docente,
+    firma: curCompFirma,
+    date: new Date().toISOString()
+  }).then(function() {
+    closeCompModalDirect();
+    toast('Compromiso registrado', 'ok');
+    loadCompromisos(currentEstNombre);
+  }).catch(function() {
+    toast('Error al guardar', 'red');
+  }).finally(function() { btn.disabled=false; btn.textContent='Guardar compromiso'; });
+}
+
+function loadCompromisos(nombre) {
+  var acadEl = document.getElementById('est-comp-acad-list');
+  var discEl = document.getElementById('est-comp-disc-list');
+  apiCall({ action: 'listCompromisos', nombre: nombre }).then(function(data) {
+    if(!Array.isArray(data)) data=[];
+    var acad = data.filter(function(c){return c.tipo==='academico';});
+    var disc = data.filter(function(c){return c.tipo==='disciplinario';});
+    renderCompList(acadEl, acad, 'var(--blue)');
+    renderCompList(discEl, disc, 'var(--red)');
+  }).catch(function() {
+    if(acadEl) acadEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
+    if(discEl) discEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
+  });
+}
+
+function renderCompList(el, list, color) {
+  if(!el) return;
+  if(!list.length){ el.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos registrados.</div>'; return; }
+  el.innerHTML = list.map(function(c) {
+    return '<div style="padding:10px;background:white;border-left:3px solid '+color+';border-radius:8px;margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<div style="font-size:0.78rem;color:var(--gray)">' + (c.fecha||'') + '</div>' +
+        '<span class="tag ' + (c.firma==='si'?'tag-green':'tag-red') + '" style="font-size:0.65rem">' + (c.firma==='si'?'Firmado':'Sin firma') + '</span>' +
+      '</div>' +
+      '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (c.desc||'') + '</div>' +
+      '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Responsable: ' + (c.docente||'') + '</div>' +
+    '</div>';
+  }).join('');
 }
 </script>
 </body>
