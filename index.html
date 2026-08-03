@@ -718,6 +718,15 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 
+<!-- MODAL REGISTRO (citacion/reparacion/suspension) -->
+<div class="modal-overlay" id="registro-modal-overlay" onclick="closeRegistroModal(event)">
+  <div class="modal">
+    <button class="back-btn" onclick="closeRegistroModalDirect()" style="margin-bottom:16px">← Volver</button>
+    <div class="serif" id="registro-modal-title" style="font-size:1.1rem;color:var(--navy);font-weight:700;margin-bottom:16px"></div>
+    <div class="form-section" id="registro-form-body"></div>
+  </div>
+</div>
+
 <!-- CONFIG -->
 <div class="page" id="page-config">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Configuracion</div>
@@ -738,7 +747,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRHLnwkKeyepfuAx5vxkhnsNMsSZepBI9XmxeZitsBN9P3mz2XkI8-yf_QUMiZJ-P5/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfXhoEvZQAblyChlkn9lGFRbHoeK2Rm2Kd3ENtF_IwYJ-8zTfPKZL64QDjxupBmlN/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5194,6 +5203,21 @@ function openEstModal(s) {
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Llegadas tarde</div>';
   histHTML += '<div id="est-llegadas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
 
+  // Citaciones
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Citaciones a acudiente</div>';
+  histHTML += '<div id="est-citaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '<button onclick="openRegistroModal(\'citacion\')" style="margin-top:8px;background:#7C3AED;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar citacion</button>';
+
+  // Actividades de reparacion
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Actividades de reparacion</div>';
+  histHTML += '<div id="est-reparaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '<button onclick="openRegistroModal(\'reparacion\')" style="margin-top:8px;background:#0891B2;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar actividad de reparacion</button>';
+
+  // Suspensiones
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Suspensiones</div>';
+  histHTML += '<div id="est-suspensiones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '<button onclick="openRegistroModal(\'suspension\')" style="margin-top:8px;background:#DC2626;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar suspension</button>';
+
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
@@ -5202,6 +5226,9 @@ function openEstModal(s) {
   loadEstDocs(s.nombre);
   loadCompromisos(s.nombre);
   loadLlegadasTarde(s.nombre);
+  loadRegistros('citacion', s.nombre, 'est-citaciones-list');
+  loadRegistros('reparacion', s.nombre, 'est-reparaciones-list');
+  loadRegistros('suspension', s.nombre, 'est-suspensiones-list');
 
   document.getElementById('est-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -5553,6 +5580,133 @@ function loadLlegadasTarde(nombre) {
     el.innerHTML = html;
   }).catch(function() {
     if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde.</div>';
+  });
+}
+// ============================================================
+// REGISTROS: CITACIONES, REPARACIONES, SUSPENSIONES
+// ============================================================
+var curRegistroTipo = '';
+
+function openRegistroModal(tipo) {
+  curRegistroTipo = tipo;
+  rgBools = {};
+  var titles = {citacion:'Citacion a acudiente', reparacion:'Actividad de reparacion', suspension:'Suspension'};
+  document.getElementById('registro-modal-title').textContent = titles[tipo] || tipo;
+  var body = buildRegistroForm(tipo);
+  document.getElementById('registro-form-body').innerHTML = body;
+  document.getElementById('registro-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function buildRegistroForm(tipo) {
+  var campoFecha = '<div class="field"><label class="lbl">Fecha</label><input type="date" id="rg-fecha"><div class="ferr" id="rg-ferr-fecha"></div></div>';
+  var campoMotivo = '<div class="field"><label class="lbl">Motivo</label><textarea id="rg-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="rg-ferr-motivo"></div></div>';
+  var campoDesc = '<div class="field"><label class="lbl">Descripcion</label><textarea id="rg-desc" placeholder="Describe la actividad..." rows="3"></textarea></div>';
+  var btnGuardar = '<button class="btn btn-primary" id="rg-save-btn" onclick="saveRegistro()" style="width:100%;padding:14px;margin-top:8px">Guardar</button>';
+
+  if (tipo === 'citacion') {
+    return campoFecha
+      + campoMotivo
+      + '<div class="field"><label class="lbl">Quien brindo la atencion</label><input type="text" id="rg-atencion" placeholder="Nombre del docente o coordinador"><div class="ferr" id="rg-ferr-atencion"></div></div>'
+      + '<div class="field"><label class="lbl">Asistio el acudiente?</label><div class="type-grid"><button class="type-btn" id="rg-btn-si" onclick="selRgBool2(this,true)">Si asistio</button><button class="type-btn" id="rg-btn-no" onclick="selRgBool2(this,false)">No asistio</button></div></div>'
+      + btnGuardar;
+  } else if (tipo === 'reparacion') {
+    return campoFecha
+      + '<div class="field"><label class="lbl">Motivo de la actividad</label><textarea id="rg-motivo" placeholder="Por que se asigna esta actividad..." rows="2"></textarea><div class="ferr" id="rg-ferr-motivo"></div></div>'
+      + campoDesc
+      + '<div class="field"><label class="lbl">Docente que asigna</label><input type="text" id="rg-atencion" placeholder="Nombre del docente"><div class="ferr" id="rg-ferr-atencion"></div></div>'
+      + '<div class="field"><label class="lbl">La cumplio el estudiante?</label><div class="type-grid"><button class="type-btn" id="rg-btn-si" onclick="selRgBool2(this,true)">Si cumplio</button><button class="type-btn" id="rg-btn-no" onclick="selRgBool2(this,false)">No cumplio</button></div></div>'
+      + btnGuardar;
+  } else if (tipo === 'suspension') {
+    return campoFecha
+      + '<div class="field"><label class="lbl">Numero de dias</label><input type="number" id="rg-dias" placeholder="Ej: 2" min="1" max="30"><div class="ferr" id="rg-ferr-dias"></div></div>'
+      + campoMotivo
+      + '<div class="field"><label class="lbl">Actividades asignadas</label><textarea id="rg-desc" placeholder="Que actividades debe realizar..." rows="3"></textarea></div>'
+      + '<div class="field"><label class="lbl">Fue completada?</label><div class="type-grid"><button class="type-btn" id="rg-btn-si" onclick="selRgBool2(this,true)">Si termino</button><button class="type-btn" id="rg-btn-no" onclick="selRgBool2(this,false)">No termino</button></div></div>'
+      + btnGuardar;
+  }
+  return '';
+}
+
+function selRgBool2(btn, val) {
+  rgBools['bool1'] = val ? 'si' : 'no';
+  document.getElementById('rg-btn-si').className = 'type-btn' + (val ? ' sel' : '');
+  document.getElementById('rg-btn-no').className = 'type-btn' + (!val ? ' sel' : '');
+}
+
+function closeRegistroModal(e) { if (e.target === document.getElementById('registro-modal-overlay')) closeRegistroModalDirect(); }
+function closeRegistroModalDirect() { document.getElementById('registro-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
+
+function saveRegistro() {
+  var fecha = document.getElementById('rg-fecha') ? document.getElementById('rg-fecha').value : '';
+  var motivo = document.getElementById('rg-motivo') ? document.getElementById('rg-motivo').value.trim() : '';
+  var desc = document.getElementById('rg-desc') ? document.getElementById('rg-desc').value.trim() : '';
+  var atencion = document.getElementById('rg-atencion') ? document.getElementById('rg-atencion').value.trim() : '';
+  var dias = document.getElementById('rg-dias') ? document.getElementById('rg-dias').value : '';
+  var ok = true;
+  if (!fecha) { var fe = document.getElementById('rg-ferr-fecha'); if(fe) fe.textContent = 'Selecciona la fecha'; ok = false; }
+  if (!motivo) { var fm = document.getElementById('rg-ferr-motivo'); if(fm) fm.textContent = 'Escribe el motivo'; ok = false; }
+  if (curRegistroTipo === 'citacion' && !atencion) { var fa = document.getElementById('rg-ferr-atencion'); if(fa) fa.textContent = 'Escribe quien atendio'; ok = false; }
+  if (curRegistroTipo === 'reparacion' && !atencion) { var fa2 = document.getElementById('rg-ferr-atencion'); if(fa2) fa2.textContent = 'Escribe el docente'; ok = false; }
+  if (curRegistroTipo === 'suspension' && !dias) { var fd = document.getElementById('rg-ferr-dias'); if(fd) fd.textContent = 'Ingresa los dias'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('rg-save-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveRegistro',
+    nombre: currentEstNombre,
+    tipo: curRegistroTipo,
+    fecha: fecha,
+    motivo: motivo,
+    desc: desc,
+    atencion: atencion,
+    dias: dias,
+    bool1: rgBools[Object.keys(rgBools)[0]] || '',
+    date: new Date().toISOString()
+  }).then(function() {
+    closeRegistroModalDirect();
+    toast('Registro guardado', 'ok');
+    rgBools = {};
+    var listIds = { citacion: 'est-citaciones-list', reparacion: 'est-reparaciones-list', suspension: 'est-suspensiones-list' };
+    loadRegistros(curRegistroTipo, currentEstNombre, listIds[curRegistroTipo]);
+  }).catch(function() {
+    toast('Error al guardar', 'red');
+  }).finally(function() { btn.disabled = false; btn.textContent = 'Guardar'; });
+}
+
+function loadRegistros(tipo, nombre, elId) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  apiCall({ action: 'listRegistros', tipo: tipo, nombre: nombre }).then(function(data) {
+    if (!Array.isArray(data) || !data.length) {
+      el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
+      return;
+    }
+    var colors = { citacion: '#7C3AED', reparacion: '#0891B2', suspension: '#DC2626' };
+    var color = colors[tipo] || 'var(--navy)';
+    // Counter
+    var html = '<div style="background:' + color + ';color:white;border-radius:10px;padding:10px;text-align:center;margin-bottom:8px">'
+      + '<span style="font-size:1.6rem;font-weight:800">' + data.length + '</span>'
+      + '<span style="font-size:0.78rem;font-weight:600;margin-left:8px">registro(s)</span></div>';
+    data.forEach(function(r) {
+      var fecha = r.fecha || '';
+      var bool1Label = '';
+      if (tipo === 'citacion') bool1Label = r.bool1 === 'si' ? 'Asistio' : r.bool1 === 'no' ? 'No asistio' : '';
+      if (tipo === 'reparacion') bool1Label = r.bool1 === 'si' ? 'Cumplio' : r.bool1 === 'no' ? 'No cumplio' : '';
+      if (tipo === 'suspension') bool1Label = r.bool1 === 'si' ? 'Termino' : r.bool1 === 'no' ? 'No termino' : '';
+      html += '<div style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center">'
+        + '<div style="font-size:0.8rem;color:var(--gray)">' + fecha + (tipo === 'suspension' && r.dias ? ' (' + r.dias + ' dias)' : '') + '</div>'
+        + (bool1Label ? '<span class="tag ' + (r.bool1 === 'si' ? 'tag-green' : 'tag-red') + '" style="font-size:0.65rem">' + bool1Label + '</span>' : '')
+        + '</div>'
+        + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px">' + (r.motivo || '') + '</div>'
+        + (r.desc ? '<div style="font-size:0.8rem;color:var(--gray);margin-top:3px">' + r.desc + '</div>' : '')
+        + (r.atencion ? '<div style="font-size:0.78rem;color:var(--gray);margin-top:3px">Responsable: ' + r.atencion + '</div>' : '')
+        + '</div>';
+    });
+    el.innerHTML = html;
+  }).catch(function() {
+    if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
   });
 }
 </script>
