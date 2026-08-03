@@ -738,7 +738,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYQ8TsC3lZW61ZETbiJdl3SBJHE1m3eNnllwAzuaGj_6kfA2VteNSR1IDOy0EKyogA/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRHLnwkKeyepfuAx5vxkhnsNMsSZepBI9XmxeZitsBN9P3mz2XkI8-yf_QUMiZJ-P5/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5190,6 +5190,10 @@ function openEstModal(s) {
   histHTML += '<div id="est-comp-disc-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '<button onclick="openCompModal(\'disciplinario\')" style="margin-top:8px;background:var(--red);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso disciplinario</button>';
 
+  // Llegadas tarde
+  histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Llegadas tarde</div>';
+  histHTML += '<div id="est-llegadas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
@@ -5197,6 +5201,7 @@ function openEstModal(s) {
   document.getElementById('est-modal-historial').innerHTML = histHTML;
   loadEstDocs(s.nombre);
   loadCompromisos(s.nombre);
+  loadLlegadasTarde(s.nombre);
 
   document.getElementById('est-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -5518,6 +5523,37 @@ function renderCompList(el, list, color) {
       '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Responsable: ' + (c.docente||'') + '</div>' +
     '</div>';
   }).join('');
+}
+// ============================================================
+// LLEGADAS TARDE
+// ============================================================
+function loadLlegadasTarde(nombre) {
+  var el = document.getElementById('est-llegadas-list');
+  if (!el) return;
+  apiCall({ action: 'listLlegadasTarde', nombre: nombre }).then(function(data) {
+    if (!Array.isArray(data) || !data.length) {
+      el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde registradas.</div>';
+      return;
+    }
+    // Counter card
+    var total = data.length;
+    var html = '<div style="background:var(--amber-dark);color:white;border-radius:10px;padding:12px;text-align:center;margin-bottom:10px">'
+      + '<div style="font-size:2rem;font-weight:800">' + total + '</div>'
+      + '<div style="font-size:0.78rem;font-weight:600">llegada(s) tarde registrada(s)</div>'
+      + '</div>';
+    // List
+    html += data.map(function(lt) {
+      var fecha = lt.fecha ? new Date(lt.fecha).toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'}) : lt.fecha;
+      return '<div style="padding:8px 0;border-bottom:1px solid var(--gray-light)">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center">'
+        + '<div style="font-size:0.82rem;font-weight:600;color:var(--text)">' + fecha + '</div>'
+        + '<span class="tag tag-amber">' + (lt.motivo || 'Sin excusa') + '</span>'
+        + '</div></div>';
+    }).join('');
+    el.innerHTML = html;
+  }).catch(function() {
+    if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde.</div>';
+  });
 }
 </script>
 </body>
