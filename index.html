@@ -5190,39 +5190,41 @@ function openEstModal(s) {
     histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>';
   }
 
-  // Compromisos
+  // Compromisos y registros
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Compromisos academicos</div>';
   histHTML += '<div id="est-comp-acad-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button onclick="openCompModal(\'academico\')" style="margin-top:8px;background:var(--navy);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso academico</button>';
-  
+  histHTML += '<button id="btn-comp-acad" style="margin-top:8px;background:var(--navy);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso academico</button>';
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Compromisos disciplinarios</div>';
   histHTML += '<div id="est-comp-disc-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button onclick="openCompModal(\'disciplinario\')" style="margin-top:8px;background:var(--red);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso disciplinario</button>';
-
-  // Llegadas tarde
+  histHTML += '<button id="btn-comp-disc" style="margin-top:8px;background:var(--red);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso disciplinario</button>';
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Llegadas tarde</div>';
   histHTML += '<div id="est-llegadas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-
-  // Citaciones
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Citaciones a acudiente</div>';
   histHTML += '<div id="est-citaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button onclick="openRegistroModal(\'citacion\')" style="margin-top:8px;background:#7C3AED;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar citacion</button>';
-
-  // Actividades de reparacion
+  histHTML += '<button id="btn-reg-citacion" style="margin-top:8px;background:#7C3AED;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar citacion</button>';
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Actividades de reparacion</div>';
   histHTML += '<div id="est-reparaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button onclick="openRegistroModal(\'reparacion\')" style="margin-top:8px;background:#0891B2;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar actividad de reparacion</button>';
-
-  // Suspensiones
+  histHTML += '<button id="btn-reg-reparacion" style="margin-top:8px;background:#0891B2;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar actividad de reparacion</button>';
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Suspensiones</div>';
   histHTML += '<div id="est-suspensiones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button onclick="openRegistroModal(\'suspension\')" style="margin-top:8px;background:#DC2626;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar suspension</button>';
+  histHTML += '<button id="btn-reg-suspension" style="margin-top:8px;background:#DC2626;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar suspension</button>';
 
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
   
   document.getElementById('est-modal-historial').innerHTML = histHTML;
+  // Add event listeners to buttons (avoids inline onclick quote issues)
+  var btnCompAcad = document.getElementById('btn-comp-acad');
+  if(btnCompAcad) btnCompAcad.addEventListener('click', function(){ openCompModal('academico'); });
+  var btnCompDisc = document.getElementById('btn-comp-disc');
+  if(btnCompDisc) btnCompDisc.addEventListener('click', function(){ openCompModal('disciplinario'); });
+  var btnCitacion = document.getElementById('btn-reg-citacion');
+  if(btnCitacion) btnCitacion.addEventListener('click', function(){ openRegistroModal('citacion'); });
+  var btnReparacion = document.getElementById('btn-reg-reparacion');
+  if(btnReparacion) btnReparacion.addEventListener('click', function(){ openRegistroModal('reparacion'); });
+  var btnSuspension = document.getElementById('btn-reg-suspension');
+  if(btnSuspension) btnSuspension.addEventListener('click', function(){ openRegistroModal('suspension'); });
   loadEstDocs(s.nombre);
   loadCompromisos(s.nombre);
   loadLlegadasTarde(s.nombre);
