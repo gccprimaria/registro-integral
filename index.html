@@ -859,7 +859,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfXhoEvZQAblyChlkn9lGFRbHoeK2Rm2Kd3ENtF_IwYJ-8zTfPKZL64QDjxupBmlN/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE9dP99IDgqo3e-9lGqnY-CXic2uGuZw6tmk5SrZxvyXgu3Q54Z1eK9sy_aD-MG5OP/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5659,6 +5659,41 @@ function renderCompList(el, list, color) {
 // ============================================================
 // LLEGADAS TARDE
 // ============================================================
+function normalizarNombre(n) {
+  return String(n||'').toUpperCase()
+    .replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E')
+    .replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O')
+    .replace(/[ÚÙÜÛ]/g,'U').replace(/[Ñ]/g,'N')
+    .replace(/[^A-Z0-9 ]/g,'').trim();
+}
+
+function nombreCoincide(nombreApp, nombreForm) {
+  var nApp = normalizarNombre(nombreApp);
+  var nForm = normalizarNombre(nombreForm);
+  if (!nForm || nForm.length < 3) return false;
+  // Exact match
+  if (nApp === nForm) return true;
+  // New format: "1A - NOMBRE APELLIDO" → extract after " - "
+  if (nForm.indexOf(' - ') !== -1) {
+    var partes = nForm.split(' - ');
+    nForm = partes[partes.length - 1].trim();
+  }
+  if (nApp === nForm) return true;
+  // Check if all words in nForm appear in nApp
+  var wordsForm = nForm.split(' ').filter(function(w){ return w.length > 2; });
+  if (wordsForm.length > 0) {
+    var matches = wordsForm.filter(function(w){ return nApp.indexOf(w) !== -1; });
+    if (matches.length >= Math.min(2, wordsForm.length)) return true;
+  }
+  // Check if any significant word from nApp appears in nForm
+  var wordsApp = nApp.split(' ').filter(function(w){ return w.length > 3; });
+  if (wordsApp.length > 0) {
+    var appMatches = wordsApp.filter(function(w){ return nForm.indexOf(w) !== -1; });
+    if (appMatches.length >= 2) return true;
+  }
+  return false;
+}
+
 function loadLlegadasTarde(nombre) {
   var el = document.getElementById('est-llegadas-list');
   if (!el) return;
@@ -5667,15 +5702,14 @@ function loadLlegadasTarde(nombre) {
       el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde registradas.</div>';
       return;
     }
-    // Counter card
     var total = data.length;
     var html = '<div style="background:var(--amber-dark);color:white;border-radius:10px;padding:12px;text-align:center;margin-bottom:10px">'
       + '<div style="font-size:2rem;font-weight:800">' + total + '</div>'
       + '<div style="font-size:0.78rem;font-weight:600">llegada(s) tarde registrada(s)</div>'
       + '</div>';
-    // List
     html += data.map(function(lt) {
-      var fecha = lt.fecha ? new Date(lt.fecha).toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'}) : lt.fecha;
+      var fecha = '';
+      try { fecha = new Date(lt.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){ fecha = lt.fecha; }
       return '<div style="padding:8px 0;border-bottom:1px solid var(--gray-light)">'
         + '<div style="display:flex;justify-content:space-between;align-items:center">'
         + '<div style="font-size:0.82rem;font-weight:600;color:var(--text)">' + fecha + '</div>'
