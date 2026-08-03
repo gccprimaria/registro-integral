@@ -5684,6 +5684,169 @@ function eliminarRegistro(tipo, dateKey, elId) {
       loadRegistros(tipo, currentEstNombre, elId);
     }).catch(function() { toast('Error al eliminar', 'red'); });
 }
+
+// ============================================================
+// NUEVO REGISTRO TAB
+// ============================================================
+var nrCurrentStudent = null;
+var nrTipo = 'citacion';
+var nrBools = {};
+
+function initNuevoRegistro() {
+  nrCurrentStudent = null;
+  nrBools = {};
+  var srch = document.getElementById('nr-search');
+  if(srch) srch.value = '';
+  var sw = document.getElementById('nr-select-wrap');
+  if(sw) sw.style.display = 'none';
+  var si = document.getElementById('nr-student-info');
+  if(si) si.style.display = 'none';
+  var ts = document.getElementById('nr-tipo-section');
+  if(ts) ts.style.display = 'none';
+  selNRTipo('citacion');
+}
+
+function filtrarEstNR() {
+  var q = document.getElementById('nr-search').value.trim().toLowerCase();
+  if (q.length < 2) {
+    document.getElementById('nr-select-wrap').style.display = 'none';
+    return;
+  }
+  var matches = studentsData.filter(function(s) {
+    return s.nombre.toLowerCase().includes(q);
+  }).slice(0, 25);
+  var sel = document.getElementById('nr-student-select');
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  matches.forEach(function(s) {
+    var opt = document.createElement('option');
+    var globalIdx = studentsData.indexOf(s);
+    opt.value = globalIdx;
+    opt.textContent = s.nombre + ' (' + s.grado + ' ' + s.jornada + ')';
+    sel.appendChild(opt);
+  });
+  document.getElementById('nr-select-wrap').style.display = 'flex';
+}
+
+function selEstNR() {
+  var sel = document.getElementById('nr-student-select');
+  var val = sel.value;
+  if (!val) {
+    document.getElementById('nr-student-info').style.display = 'none';
+    document.getElementById('nr-tipo-section').style.display = 'none';
+    nrCurrentStudent = null;
+    return;
+  }
+  var idx = parseInt(val);
+  nrCurrentStudent = studentsData[idx];
+  if (!nrCurrentStudent) return;
+  document.getElementById('nr-student-name').textContent = nrCurrentStudent.nombre;
+  document.getElementById('nr-student-grade').textContent = nrCurrentStudent.grado + ' · ' + nrCurrentStudent.jornada;
+  document.getElementById('nr-student-info').style.display = 'block';
+  document.getElementById('nr-tipo-section').style.display = 'block';
+  nrBools = {};
+}
+
+function selNRTipo(tipo) {
+  nrTipo = tipo;
+  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc'];
+  tipos.forEach(function(t) {
+    var tab = document.getElementById('nr-tab-' + t);
+    var form = document.getElementById('nr-form-' + t);
+    if(tab) tab.className = 'type-btn' + (t === tipo ? ' sel' : '');
+    if(form) form.style.display = t === tipo ? 'flex' : 'none';
+  });
+  nrBools = {};
+}
+
+function selNRBool(prefix, val) {
+  nrBools[prefix] = val;
+  var si = document.getElementById('nr-' + prefix + '-si');
+  var no = document.getElementById('nr-' + prefix + '-no');
+  if(si) si.className = 'type-btn' + (val === 'si' ? ' sel' : '');
+  if(no) no.className = 'type-btn' + (val === 'no' ? ' sel' : '');
+}
+
+function clearNRFerr(prefix, fields) {
+  fields.forEach(function(f) {
+    var el = document.getElementById('nr-' + prefix + '-ferr-' + f);
+    if(el) el.textContent = '';
+  });
+}
+
+function saveNRRegistro(tipo) {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
+  var pf = prefixMap[tipo];
+  clearNRFerr(pf, ['fecha','motivo','atencion','dias']);
+  var fecha = document.getElementById('nr-' + pf + '-fecha').value;
+  var motivo = document.getElementById('nr-' + pf + '-motivo').value.trim();
+  var descEl = document.getElementById('nr-' + pf + '-desc');
+  var desc = descEl ? descEl.value.trim() : '';
+  var atencionEl = document.getElementById('nr-' + pf + '-atencion');
+  var atencion = atencionEl ? atencionEl.value.trim() : '';
+  var diasEl = document.getElementById('nr-' + pf + '-dias');
+  var dias = diasEl ? diasEl.value : '';
+  var ok = true;
+  if (!fecha) { document.getElementById('nr-' + pf + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!motivo) { document.getElementById('nr-' + pf + '-ferr-motivo').textContent = 'Escribe el motivo'; ok = false; }
+  if ((tipo === 'citacion' || tipo === 'reparacion') && atencionEl && !atencion) {
+    document.getElementById('nr-' + pf + '-ferr-atencion').textContent = 'Escribe el responsable'; ok = false;
+  }
+  if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + pf + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('nr-' + pf + '-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  var labels = {citacion:'Guardar citacion', reparacion:'Guardar actividad', suspension:'Guardar suspension'};
+  apiCall({
+    action: 'saveRegistro',
+    nombre: nrCurrentStudent.nombre,
+    tipo: tipo, fecha: fecha, motivo: motivo,
+    desc: desc, atencion: atencion, dias: dias,
+    bool1: nrBools[pf] || '',
+    date: new Date().toISOString()
+  }).then(function() {
+    document.getElementById('nr-' + pf + '-fecha').value = '';
+    document.getElementById('nr-' + pf + '-motivo').value = '';
+    if(descEl) descEl.value = '';
+    if(atencionEl) atencionEl.value = '';
+    if(diasEl) diasEl.value = '';
+    nrBools[pf] = '';
+    selNRBool(pf, '');
+    toast('Registro guardado', 'ok');
+  }).catch(function() { toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = labels[tipo]; });
+}
+
+function saveNRCompromiso(tipo) {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  var pf = tipo === 'academico' ? 'ca' : 'cd';
+  clearNRFerr(pf, ['fecha','desc','doc']);
+  var fecha = document.getElementById('nr-' + pf + '-fecha').value;
+  var desc = document.getElementById('nr-' + pf + '-desc').value.trim();
+  var docente = document.getElementById('nr-' + pf + '-docente').value.trim();
+  var ok = true;
+  if (!fecha) { document.getElementById('nr-' + pf + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!desc) { document.getElementById('nr-' + pf + '-ferr-desc').textContent = 'Describe el compromiso'; ok = false; }
+  if (!docente) { document.getElementById('nr-' + pf + '-ferr-doc').textContent = 'Escribe el responsable'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('nr-' + pf + '-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveCompromiso',
+    nombre: nrCurrentStudent.nombre,
+    tipo: tipo, fecha: fecha, desc: desc,
+    docente: docente, firma: nrBools[pf] || '',
+    date: new Date().toISOString()
+  }).then(function() {
+    document.getElementById('nr-' + pf + '-fecha').value = '';
+    document.getElementById('nr-' + pf + '-desc').value = '';
+    document.getElementById('nr-' + pf + '-docente').value = '';
+    nrBools[pf] = '';
+    selNRBool(pf, '');
+    toast('Compromiso guardado', 'ok');
+  }).catch(function() { toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar compromiso'; });
+}
 </script>
 </body>
 </html>
