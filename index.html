@@ -5231,7 +5231,9 @@ function renderEstudiantes() {
         '<div style="font-size:0.85rem;color:var(--navy);margin-top:6px;font-weight:600">📞 ' + s.telefono + '</div>'
         : '<div style="font-size:0.82rem;color:var(--gray);margin-top:6px">Sin datos de contacto</div>') +
       '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Toca para ver perfil y editar</div>';
-    div.addEventListener('click', function() { openEstModal(s); });
+    var estIdx = studentsData.indexOf(s);
+    div.setAttribute('data-est-idx', estIdx);
+    div.onclick = function() { var i = parseInt(this.getAttribute('data-est-idx')); openEstModal(studentsData[i]); };
     list.appendChild(div);
   });
 }
