@@ -859,7 +859,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE9dP99IDgqo3e-9lGqnY-CXic2uGuZw6tmk5SrZxvyXgu3Q54Z1eK9sy_aD-MG5OP/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0ua3BCPcV03uiSvozl_AQAyx6OKQ4q9sN06o_2z600Z5OZf6InFxLYx1vhCHLVSPr/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5634,376 +5634,55 @@ function loadCompromisos(nombre) {
     if(!Array.isArray(data)) data=[];
     var acad = data.filter(function(c){return c.tipo==='academico';});
     var disc = data.filter(function(c){return c.tipo==='disciplinario';});
-    renderCompList(acadEl, acad, 'var(--blue)');
-    renderCompList(discEl, disc, 'var(--red)');
+    renderCompList(acadEl, acad, 'var(--blue)', 'academico');
+    renderCompList(discEl, disc, 'var(--red)', 'disciplinario');
   }).catch(function() {
     if(acadEl) acadEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
     if(discEl) discEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
   });
 }
 
-function renderCompList(el, list, color) {
+function renderCompList(el, list, color, tipo) {
   if(!el) return;
   if(!list.length){ el.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos registrados.</div>'; return; }
-  el.innerHTML = list.map(function(c) {
-    return '<div style="padding:10px;background:white;border-left:3px solid '+color+';border-radius:8px;margin-bottom:8px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center">' +
-        '<div style="font-size:0.78rem;color:var(--gray)">' + (c.fecha||'') + '</div>' +
-        '<span class="tag ' + (c.firma==='si'?'tag-green':'tag-red') + '" style="font-size:0.65rem">' + (c.firma==='si'?'Firmado':'Sin firma') + '</span>' +
-      '</div>' +
-      '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (c.desc||'') + '</div>' +
-      '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Responsable: ' + (c.docente||'') + '</div>' +
-    '</div>';
+  el.innerHTML = list.map(function(c, idx) {
+    var dateKey = encodeURIComponent(String(c.date||c.fecha||idx));
+    var firmaTag = c.firma==='si'
+      ? '<span class="tag tag-green" style="font-size:0.65rem">Firmado</span>'
+      : '<span class="tag tag-red" style="font-size:0.65rem">Sin firma</span>';
+    return '<div style="padding:10px;background:white;border-left:3px solid '+color+';border-radius:8px;margin-bottom:8px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center">'
+      + '<div style="font-size:0.78rem;color:var(--gray)">' + (c.fecha||'') + '</div>'
+      + firmaTag
+      + '</div>'
+      + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (c.desc||'') + '</div>'
+      + '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Responsable: ' + (c.docente||'') + '</div>'
+      + '<button data-tipo="'+tipo+'" data-date="'+dateKey+'" onclick="eliminarCompromiso(this)" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
+      + '</div>';
   }).join('');
 }
-// ============================================================
-// LLEGADAS TARDE
-// ============================================================
-function normalizarNombre(n) {
-  return String(n||'').toUpperCase()
-    .replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E')
-    .replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O')
-    .replace(/[ÚÙÜÛ]/g,'U').replace(/[Ñ]/g,'N')
-    .replace(/[^A-Z0-9 ]/g,'').trim();
+
+function eliminarCompromiso(btn) {
+  var pwd = prompt('Contrasena para eliminar:');
+  if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
+  var tipo = btn.dataset.tipo;
+  var dateKey = decodeURIComponent(btn.dataset.date);
+  btn.textContent = 'Eliminando...'; btn.disabled = true;
+  apiCall({ action: 'deleteCompromiso', nombre: currentEstNombre, tipo: tipo, date: dateKey })
+    .then(function() {
+      toast('Compromiso eliminado', 'red');
+      loadCompromisos(currentEstNombre);
+    }).catch(function() { toast('Error al eliminar', 'red'); btn.disabled = false; btn.textContent = 'Eliminar'; });
 }
 
-function nombreCoincide(nombreApp, nombreForm) {
-  var nApp = normalizarNombre(nombreApp);
-  var nForm = normalizarNombre(nombreForm);
-  if (!nForm || nForm.length < 3) return false;
-  // Exact match
-  if (nApp === nForm) return true;
-  // New format: "1A - NOMBRE APELLIDO" → extract after " - "
-  if (nForm.indexOf(' - ') !== -1) {
-    var partes = nForm.split(' - ');
-    nForm = partes[partes.length - 1].trim();
-  }
-  if (nApp === nForm) return true;
-  // Check if all words in nForm appear in nApp
-  var wordsForm = nForm.split(' ').filter(function(w){ return w.length > 2; });
-  if (wordsForm.length > 0) {
-    var matches = wordsForm.filter(function(w){ return nApp.indexOf(w) !== -1; });
-    if (matches.length >= Math.min(2, wordsForm.length)) return true;
-  }
-  // Check if any significant word from nApp appears in nForm
-  var wordsApp = nApp.split(' ').filter(function(w){ return w.length > 3; });
-  if (wordsApp.length > 0) {
-    var appMatches = wordsApp.filter(function(w){ return nForm.indexOf(w) !== -1; });
-    if (appMatches.length >= 2) return true;
-  }
-  return false;
-}
-
-function loadLlegadasTarde(nombre) {
-  var el = document.getElementById('est-llegadas-list');
-  if (!el) return;
-  apiCall({ action: 'listLlegadasTarde', nombre: nombre }).then(function(data) {
-    if (!Array.isArray(data) || !data.length) {
-      el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde registradas.</div>';
-      return;
-    }
-    var total = data.length;
-    var html = '<div style="background:var(--amber-dark);color:white;border-radius:10px;padding:12px;text-align:center;margin-bottom:10px">'
-      + '<div style="font-size:2rem;font-weight:800">' + total + '</div>'
-      + '<div style="font-size:0.78rem;font-weight:600">llegada(s) tarde registrada(s)</div>'
-      + '</div>';
-    html += data.map(function(lt) {
-      var fecha = '';
-      try { fecha = new Date(lt.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){ fecha = lt.fecha; }
-      return '<div style="padding:8px 0;border-bottom:1px solid var(--gray-light)">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center">'
-        + '<div style="font-size:0.82rem;font-weight:600;color:var(--text)">' + fecha + '</div>'
-        + '<span class="tag tag-amber">' + (lt.motivo || 'Sin excusa') + '</span>'
-        + '</div></div>';
-    }).join('');
-    el.innerHTML = html;
-  }).catch(function() {
-    if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde.</div>';
-  });
-}
-// ============================================================
-// REGISTROS: CITACIONES, REPARACIONES, SUSPENSIONES
-// ============================================================
-var curRegistroTipo = '';
-
-function openRegistroModal(tipo) {
-  curRegistroTipo = tipo;
-  rgBools = {};
-  var titles = {citacion:'Citacion a acudiente', reparacion:'Actividad de reparacion', suspension:'Suspension'};
-  document.getElementById('registro-modal-title').textContent = titles[tipo] || tipo;
-  var body = buildRegistroForm(tipo);
-  document.getElementById('registro-form-body').innerHTML = body;
-  document.getElementById('registro-modal-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function buildRegistroForm(tipo) {
-  var campoFecha = '<div class="field"><label class="lbl">Fecha</label><input type="date" id="rg-fecha"><div class="ferr" id="rg-ferr-fecha"></div></div>';
-  var campoMotivo = '<div class="field"><label class="lbl">Motivo</label><textarea id="rg-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="rg-ferr-motivo"></div></div>';
-  var campoDesc = '<div class="field"><label class="lbl">Descripcion</label><textarea id="rg-desc" placeholder="Describe la actividad..." rows="3"></textarea></div>';
-  var btnGuardar = '<button class="btn btn-primary" id="rg-save-btn" onclick="saveRegistro()" style="width:100%;padding:14px;margin-top:8px">Guardar</button>';
-
-  if (tipo === 'citacion') {
-    return campoFecha
-      + campoMotivo
-      + '<div class="field"><label class="lbl">Quien brindo la atencion</label><input type="text" id="rg-atencion" placeholder="Nombre del docente o coordinador"><div class="ferr" id="rg-ferr-atencion"></div></div>'
-      + '<div class="field"><label class="lbl">Asistio el acudiente?</label><div class="type-grid"><button class="type-btn" id="rg-btn-si" onclick="selRgBool2(this,true)">Si asistio</button><button class="type-btn" id="rg-btn-no" onclick="selRgBool2(this,false)">No asistio</button></div></div>'
-      + btnGuardar;
-  } else if (tipo === 'reparacion') {
-    return campoFecha
-      + '<div class="field"><label class="lbl">Motivo de la actividad</label><textarea id="rg-motivo" placeholder="Por que se asigna esta actividad..." rows="2"></textarea><div class="ferr" id="rg-ferr-motivo"></div></div>'
-      + campoDesc
-      + '<div class="field"><label class="lbl">Docente que asigna</label><input type="text" id="rg-atencion" placeholder="Nombre del docente"><div class="ferr" id="rg-ferr-atencion"></div></div>'
-      + '<div class="field"><label class="lbl">La cumplio el estudiante?</label><div class="type-grid"><button class="type-btn" id="rg-btn-si" onclick="selRgBool2(this,true)">Si cumplio</button><button class="type-btn" id="rg-btn-no" onclick="selRgBool2(this,false)">No cumplio</button></div></div>'
-      + btnGuardar;
-  } else if (tipo === 'suspension') {
-    return campoFecha
-      + '<div class="field"><label class="lbl">Numero de dias</label><input type="number" id="rg-dias" placeholder="Ej: 2" min="1" max="30"><div class="ferr" id="rg-ferr-dias"></div></div>'
-      + campoMotivo
-      + '<div class="field"><label class="lbl">Actividades asignadas</label><textarea id="rg-desc" placeholder="Que actividades debe realizar..." rows="3"></textarea></div>'
-      + '<div class="field"><label class="lbl">Fue completada?</label><div class="type-grid"><button class="type-btn" id="rg-btn-si" onclick="selRgBool2(this,true)">Si termino</button><button class="type-btn" id="rg-btn-no" onclick="selRgBool2(this,false)">No termino</button></div></div>'
-      + btnGuardar;
-  }
-  return '';
-}
-
-function selRgBool2(btn, val) {
-  rgBools['bool1'] = val ? 'si' : 'no';
-  document.getElementById('rg-btn-si').className = 'type-btn' + (val ? ' sel' : '');
-  document.getElementById('rg-btn-no').className = 'type-btn' + (!val ? ' sel' : '');
-}
-
-function closeRegistroModal(e) { if (e.target === document.getElementById('registro-modal-overlay')) closeRegistroModalDirect(); }
-function closeRegistroModalDirect() { document.getElementById('registro-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
-
-function saveRegistro() {
-  var fecha = document.getElementById('rg-fecha') ? document.getElementById('rg-fecha').value : '';
-  var motivo = document.getElementById('rg-motivo') ? document.getElementById('rg-motivo').value.trim() : '';
-  var desc = document.getElementById('rg-desc') ? document.getElementById('rg-desc').value.trim() : '';
-  var atencion = document.getElementById('rg-atencion') ? document.getElementById('rg-atencion').value.trim() : '';
-  var dias = document.getElementById('rg-dias') ? document.getElementById('rg-dias').value : '';
-  var ok = true;
-  if (!fecha) { var fe = document.getElementById('rg-ferr-fecha'); if(fe) fe.textContent = 'Selecciona la fecha'; ok = false; }
-  if (!motivo) { var fm = document.getElementById('rg-ferr-motivo'); if(fm) fm.textContent = 'Escribe el motivo'; ok = false; }
-  if (curRegistroTipo === 'citacion' && !atencion) { var fa = document.getElementById('rg-ferr-atencion'); if(fa) fa.textContent = 'Escribe quien atendio'; ok = false; }
-  if (curRegistroTipo === 'reparacion' && !atencion) { var fa2 = document.getElementById('rg-ferr-atencion'); if(fa2) fa2.textContent = 'Escribe el docente'; ok = false; }
-  if (curRegistroTipo === 'suspension' && !dias) { var fd = document.getElementById('rg-ferr-dias'); if(fd) fd.textContent = 'Ingresa los dias'; ok = false; }
-  if (!ok) return;
-  var btn = document.getElementById('rg-save-btn');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveRegistro',
-    nombre: currentEstNombre,
-    tipo: curRegistroTipo,
-    fecha: fecha,
-    motivo: motivo,
-    desc: desc,
-    atencion: atencion,
-    dias: dias,
-    bool1: rgBools[Object.keys(rgBools)[0]] || '',
-    date: new Date().toISOString()
-  }).then(function() {
-    closeRegistroModalDirect();
-    toast('Registro guardado', 'ok');
-    rgBools = {};
-    var listIds = { citacion: 'est-citaciones-list', reparacion: 'est-reparaciones-list', suspension: 'est-suspensiones-list' };
-    loadRegistros(curRegistroTipo, currentEstNombre, listIds[curRegistroTipo]);
-  }).catch(function() {
-    toast('Error al guardar', 'red');
-  }).finally(function() { btn.disabled = false; btn.textContent = 'Guardar'; });
-}
-
-function loadRegistros(tipo, nombre, elId) {
-  var el = document.getElementById(elId);
-  if (!el) return;
-  apiCall({ action: 'listRegistros', tipo: tipo, nombre: nombre }).then(function(data) {
-    if (!Array.isArray(data) || !data.length) {
-      el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
-      return;
-    }
-    var colors = { citacion: '#7C3AED', reparacion: '#0891B2', suspension: '#DC2626' };
-    var color = colors[tipo] || 'var(--navy)';
-    // Counter
-    var html = '<div style="background:' + color + ';color:white;border-radius:10px;padding:10px;text-align:center;margin-bottom:8px">'
-      + '<span style="font-size:1.6rem;font-weight:800">' + data.length + '</span>'
-      + '<span style="font-size:0.78rem;font-weight:600;margin-left:8px">registro(s)</span></div>';
-    data.forEach(function(r) {
-      var fecha = r.fecha || '';
-      var bool1Label = '';
-      if (tipo === 'citacion') bool1Label = r.bool1 === 'si' ? 'Asistio' : r.bool1 === 'no' ? 'No asistio' : '';
-      if (tipo === 'reparacion') bool1Label = r.bool1 === 'si' ? 'Cumplio' : r.bool1 === 'no' ? 'No cumplio' : '';
-      if (tipo === 'suspension') bool1Label = r.bool1 === 'si' ? 'Termino' : r.bool1 === 'no' ? 'No termino' : '';
-      html += '<div style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center">'
-        + '<div style="font-size:0.8rem;color:var(--gray)">' + fecha + (tipo === 'suspension' && r.dias ? ' (' + r.dias + ' dias)' : '') + '</div>'
-        + (bool1Label ? '<span class="tag ' + (r.bool1 === 'si' ? 'tag-green' : 'tag-red') + '" style="font-size:0.65rem">' + bool1Label + '</span>' : '')
-        + '</div>'
-        + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px">' + (r.motivo || '') + '</div>'
-        + (r.desc ? '<div style="font-size:0.8rem;color:var(--gray);margin-top:3px">' + r.desc + '</div>' : '')
-        + (r.atencion ? '<div style="font-size:0.78rem;color:var(--gray);margin-top:3px">Responsable: ' + r.atencion + '</div>' : '')
-        + '</div>';
-    });
-    el.innerHTML = html;
-  }).catch(function() {
-    if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
-  });
-}
-// ============================================================
-// NUEVO REGISTRO TAB
-// ============================================================
-var nrCurrentStudent = null;
-var nrTipo = 'citacion';
-var nrBools = {};
-
-function initNuevoRegistro() {
-  nrCurrentStudent = null;
-  nrBools = {};
-  document.getElementById('nr-search').value = '';
-  document.getElementById('nr-select-wrap').style.display = 'none';
-  document.getElementById('nr-student-info').style.display = 'none';
-  document.getElementById('nr-tipo-section').style.display = 'none';
-  selNRTipo('citacion');
-}
-
-function filtrarEstNR() {
-  var q = document.getElementById('nr-search').value.trim().toLowerCase();
-  if (q.length < 2) {
-    document.getElementById('nr-select-wrap').style.display = 'none';
-    return;
-  }
-  var matches = studentsData.filter(function(s) {
-    return s.nombre.toLowerCase().includes(q);
-  }).slice(0, 20);
-  var sel = document.getElementById('nr-student-select');
-  sel.innerHTML = '<option value="">Seleccionar...</option>';
-  matches.forEach(function(s, i) {
-    var opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = s.nombre + ' (' + s.grado + ')';
-    opt.dataset.idx = studentsData.indexOf(s);
-    sel.appendChild(opt);
-  });
-  document.getElementById('nr-select-wrap').style.display = 'flex';
-}
-
-function selEstNR() {
-  var sel = document.getElementById('nr-student-select');
-  var selectedOpt = sel.options[sel.selectedIndex];
-  if (!selectedOpt || !selectedOpt.dataset.idx) {
-    document.getElementById('nr-student-info').style.display = 'none';
-    document.getElementById('nr-tipo-section').style.display = 'none';
-    nrCurrentStudent = null;
-    return;
-  }
-  var idx = parseInt(selectedOpt.dataset.idx);
-  nrCurrentStudent = studentsData[idx];
-  document.getElementById('nr-student-name').textContent = nrCurrentStudent.nombre;
-  document.getElementById('nr-student-grade').textContent = nrCurrentStudent.grado + ' · ' + nrCurrentStudent.jornada;
-  document.getElementById('nr-student-info').style.display = 'block';
-  document.getElementById('nr-tipo-section').style.display = 'block';
-  nrBools = {};
-}
-
-function selNRTipo(tipo) {
-  nrTipo = tipo;
-  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc'];
-  tipos.forEach(function(t) {
-    document.getElementById('nr-tab-' + t).className = 'type-btn' + (t === tipo ? ' sel' : '');
-    document.getElementById('nr-form-' + t).style.display = t === tipo ? 'flex' : 'none';
-  });
-  nrBools = {};
-}
-
-function selNRBool(prefix, val) {
-  nrBools[prefix] = val;
-  document.getElementById('nr-' + prefix + '-si').className = 'type-btn' + (val === 'si' ? ' sel' : '');
-  document.getElementById('nr-' + prefix + '-no').className = 'type-btn' + (val === 'no' ? ' sel' : '');
-}
-
-function saveNRRegistro(tipo) {
-  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
-  var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
-  var prefix = prefixMap[tipo];
-  var fecha = document.getElementById('nr-' + prefix + '-fecha').value;
-  var motivo = document.getElementById('nr-' + prefix + '-motivo').value.trim();
-  var desc = document.getElementById('nr-' + prefix + '-desc') ? document.getElementById('nr-' + prefix + '-desc').value.trim() : '';
-  var atencion = document.getElementById('nr-' + prefix + '-atencion') ? document.getElementById('nr-' + prefix + '-atencion').value.trim() : '';
-  var dias = document.getElementById('nr-' + prefix + '-dias') ? document.getElementById('nr-' + prefix + '-dias').value : '';
-  var ok = true;
-  if (!fecha) { document.getElementById('nr-' + prefix + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
-  if (!motivo) { document.getElementById('nr-' + prefix + '-ferr-motivo').textContent = 'Escribe el motivo'; ok = false; }
-  if ((tipo === 'citacion' || tipo === 'reparacion') && !atencion) {
-    document.getElementById('nr-' + prefix + '-ferr-atencion').textContent = 'Escribe el responsable'; ok = false;
-  }
-  if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + prefix + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
-  if (!ok) return;
-  var btn = document.getElementById('nr-' + prefix + '-btn');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveRegistro',
-    nombre: nrCurrentStudent.nombre,
-    tipo: tipo,
-    fecha: fecha,
-    motivo: motivo,
-    desc: desc,
-    atencion: atencion,
-    dias: dias,
-    bool1: nrBools[prefix] || '',
-    date: new Date().toISOString()
-  }).then(function() {
-    // Clear form
-    document.getElementById('nr-' + prefix + '-fecha').value = '';
-    document.getElementById('nr-' + prefix + '-motivo').value = '';
-    if (document.getElementById('nr-' + prefix + '-desc')) document.getElementById('nr-' + prefix + '-desc').value = '';
-    if (document.getElementById('nr-' + prefix + '-atencion')) document.getElementById('nr-' + prefix + '-atencion').value = '';
-    if (document.getElementById('nr-' + prefix + '-dias')) document.getElementById('nr-' + prefix + '-dias').value = '';
-    nrBools[prefix] = '';
-    document.getElementById('nr-' + prefix + '-si').className = 'type-btn';
-    document.getElementById('nr-' + prefix + '-no').className = 'type-btn';
-    toast('Registro guardado correctamente', 'ok');
-  }).catch(function() {
-    toast('Error al guardar', 'red');
-  }).finally(function() {
-    btn.disabled = false;
-    btn.textContent = tipo === 'citacion' ? 'Guardar citacion' : tipo === 'reparacion' ? 'Guardar actividad' : 'Guardar suspension';
-  });
-}
-
-function saveNRCompromiso(tipo) {
-  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
-  var prefix = tipo === 'academico' ? 'ca' : 'cd';
-  var fecha = document.getElementById('nr-' + prefix + '-fecha').value;
-  var desc = document.getElementById('nr-' + prefix + '-desc').value.trim();
-  var docente = document.getElementById('nr-' + prefix + '-docente').value.trim();
-  var ok = true;
-  if (!fecha) { document.getElementById('nr-' + prefix + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
-  if (!desc) { document.getElementById('nr-' + prefix + '-ferr-desc').textContent = 'Describe el compromiso'; ok = false; }
-  if (!docente) { document.getElementById('nr-' + prefix + '-ferr-doc').textContent = 'Escribe el responsable'; ok = false; }
-  if (!ok) return;
-  var btn = document.getElementById('nr-' + prefix + '-btn');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveCompromiso',
-    nombre: nrCurrentStudent.nombre,
-    tipo: tipo,
-    fecha: fecha,
-    desc: desc,
-    docente: docente,
-    firma: nrBools[prefix] || '',
-    date: new Date().toISOString()
-  }).then(function() {
-    document.getElementById('nr-' + prefix + '-fecha').value = '';
-    document.getElementById('nr-' + prefix + '-desc').value = '';
-    document.getElementById('nr-' + prefix + '-docente').value = '';
-    nrBools[prefix] = '';
-    document.getElementById('nr-' + prefix + '-si').className = 'type-btn';
-    document.getElementById('nr-' + prefix + '-no').className = 'type-btn';
-    toast('Compromiso guardado correctamente', 'ok');
-  }).catch(function() {
-    toast('Error al guardar', 'red');
-  }).finally(function() {
-    btn.disabled = false; btn.textContent = 'Guardar compromiso';
-  });
+function eliminarRegistro(tipo, dateKey, elId) {
+  var pwd = prompt('Contrasena para eliminar:');
+  if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
+  apiCall({ action: 'deleteRegistro', nombre: currentEstNombre, tipo: tipo, date: decodeURIComponent(dateKey) })
+    .then(function() {
+      toast('Registro eliminado', 'red');
+      loadRegistros(tipo, currentEstNombre, elId);
+    }).catch(function() { toast('Error al eliminar', 'red'); });
 }
 </script>
 </body>
