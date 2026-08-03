@@ -134,6 +134,7 @@ textarea{resize:vertical;min-height:90px;}
     <button class="nav-tab" onclick="showPage('docentes')">👩‍🏫 Docentes</button>
     <button class="nav-tab" onclick="showPage('stats')">📈 Stats</button>
     <button class="nav-tab" onclick="showPage('estudiantes')">👤 Estudiantes</button>
+    <button class="nav-tab" onclick="showPage('nuevo-registro')">📝 Registro</button>
     <button class="nav-tab no-print" onclick="showPage('config')">⚙️</button>
   </div>
 </nav>
@@ -724,6 +725,117 @@ textarea{resize:vertical;min-height:90px;}
     <button class="back-btn" onclick="closeRegistroModalDirect()" style="margin-bottom:16px">← Volver</button>
     <div class="serif" id="registro-modal-title" style="font-size:1.1rem;color:var(--navy);font-weight:700;margin-bottom:16px"></div>
     <div class="form-section" id="registro-form-body"></div>
+  </div>
+</div>
+
+<!-- NUEVO REGISTRO -->
+<div class="page" id="page-nuevo-registro">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Nuevo Registro</div>
+
+  <!-- Selector de estudiante -->
+  <div class="card form-section">
+    <div class="field">
+      <label class="lbl">Buscar estudiante</label>
+      <input type="text" id="nr-search" placeholder="Escribe el nombre..." oninput="filtrarEstNR()">
+    </div>
+    <div class="field" id="nr-select-wrap" style="display:none">
+      <label class="lbl">Seleccionar</label>
+      <select id="nr-student-select" onchange="selEstNR()">
+        <option value="">Seleccionar...</option>
+      </select>
+    </div>
+    <div id="nr-student-info" style="display:none;background:var(--navy);color:white;border-radius:10px;padding:12px;margin-top:4px">
+      <div id="nr-student-name" style="font-weight:700;font-size:1rem"></div>
+      <div id="nr-student-grade" style="font-size:0.82rem;color:#94A3B8;margin-top:2px"></div>
+    </div>
+  </div>
+
+  <!-- Tipo de registro -->
+  <div id="nr-tipo-section" style="display:none">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="type-btn sel" id="nr-tab-citacion" onclick="selNRTipo('citacion')" style="flex:1;min-width:120px;font-size:0.8rem">Citacion</button>
+      <button class="type-btn" id="nr-tab-reparacion" onclick="selNRTipo('reparacion')" style="flex:1;min-width:120px;font-size:0.8rem">Reparacion</button>
+      <button class="type-btn" id="nr-tab-suspension" onclick="selNRTipo('suspension')" style="flex:1;min-width:120px;font-size:0.8rem">Suspension</button>
+      <button class="type-btn" id="nr-tab-comp-acad" onclick="selNRTipo('comp-acad')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Acad.</button>
+      <button class="type-btn" id="nr-tab-comp-disc" onclick="selNRTipo('comp-disc')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Disc.</button>
+    </div>
+
+    <!-- Formulario citacion -->
+    <div class="card form-section" id="nr-form-citacion">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Citacion a acudiente</div>
+      <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-cit-fecha"><div class="ferr" id="nr-cit-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Motivo de la citacion</label><textarea id="nr-cit-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="nr-cit-ferr-motivo"></div></div>
+      <div class="field"><label class="lbl">Quien brindo la atencion</label><input type="text" id="nr-cit-atencion" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-cit-ferr-atencion"></div></div>
+      <div class="field"><label class="lbl">Asistio el acudiente?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-cit-si" onclick="selNRBool('cit','si')">Si asistio</button>
+          <button class="type-btn" id="nr-cit-no" onclick="selNRBool('cit','no')">No asistio</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="nr-cit-btn" onclick="saveNRRegistro('citacion')" style="width:100%;padding:14px">Guardar citacion</button>
+    </div>
+
+    <!-- Formulario reparacion -->
+    <div class="card form-section" id="nr-form-reparacion" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Actividad de reparacion</div>
+      <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-rep-fecha"><div class="ferr" id="nr-rep-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Motivo de la actividad</label><textarea id="nr-rep-motivo" placeholder="Por que se asigna esta actividad..." rows="2"></textarea><div class="ferr" id="nr-rep-ferr-motivo"></div></div>
+      <div class="field"><label class="lbl">Descripcion de la actividad</label><textarea id="nr-rep-desc" placeholder="En que consiste la actividad..." rows="3"></textarea></div>
+      <div class="field"><label class="lbl">Docente que asigna</label><input type="text" id="nr-rep-atencion" placeholder="Nombre del docente"><div class="ferr" id="nr-rep-ferr-atencion"></div></div>
+      <div class="field"><label class="lbl">La cumplio el estudiante?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-rep-si" onclick="selNRBool('rep','si')">Si cumplio</button>
+          <button class="type-btn" id="nr-rep-no" onclick="selNRBool('rep','no')">No cumplio</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="nr-rep-btn" onclick="saveNRRegistro('reparacion')" style="width:100%;padding:14px">Guardar actividad</button>
+    </div>
+
+    <!-- Formulario suspension -->
+    <div class="card form-section" id="nr-form-suspension" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Suspension</div>
+      <div class="field"><label class="lbl">Fecha de inicio</label><input type="date" id="nr-sus-fecha"><div class="ferr" id="nr-sus-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Numero de dias</label><input type="number" id="nr-sus-dias" placeholder="Ej: 2" min="1" max="30"><div class="ferr" id="nr-sus-ferr-dias"></div></div>
+      <div class="field"><label class="lbl">Motivo de la suspension</label><textarea id="nr-sus-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="nr-sus-ferr-motivo"></div></div>
+      <div class="field"><label class="lbl">Actividades asignadas</label><textarea id="nr-sus-desc" placeholder="Que actividades debe realizar durante la suspension..." rows="3"></textarea></div>
+      <div class="field"><label class="lbl">Fue completada?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-sus-si" onclick="selNRBool('sus','si')">Si termino</button>
+          <button class="type-btn" id="nr-sus-no" onclick="selNRBool('sus','no')">No termino</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="nr-sus-btn" onclick="saveNRRegistro('suspension')" style="width:100%;padding:14px">Guardar suspension</button>
+    </div>
+
+    <!-- Formulario compromiso academico -->
+    <div class="card form-section" id="nr-form-comp-acad" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Compromiso academico</div>
+      <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-ca-fecha"><div class="ferr" id="nr-ca-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Descripcion del compromiso</label><textarea id="nr-ca-desc" placeholder="Describe el compromiso adquirido..." rows="4"></textarea><div class="ferr" id="nr-ca-ferr-desc"></div></div>
+      <div class="field"><label class="lbl">Docente o responsable</label><input type="text" id="nr-ca-docente" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-ca-ferr-doc"></div></div>
+      <div class="field"><label class="lbl">Firmo el acudiente?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-ca-si" onclick="selNRBool('ca','si')">Si firmo</button>
+          <button class="type-btn" id="nr-ca-no" onclick="selNRBool('ca','no')">No firmo</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="nr-ca-btn" onclick="saveNRCompromiso('academico')" style="width:100%;padding:14px">Guardar compromiso</button>
+    </div>
+
+    <!-- Formulario compromiso disciplinario -->
+    <div class="card form-section" id="nr-form-comp-disc" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Compromiso disciplinario</div>
+      <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-cd-fecha"><div class="ferr" id="nr-cd-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Descripcion del compromiso</label><textarea id="nr-cd-desc" placeholder="Describe el compromiso adquirido..." rows="4"></textarea><div class="ferr" id="nr-cd-ferr-desc"></div></div>
+      <div class="field"><label class="lbl">Docente o responsable</label><input type="text" id="nr-cd-docente" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-cd-ferr-doc"></div></div>
+      <div class="field"><label class="lbl">Firmo el acudiente?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-cd-si" onclick="selNRBool('cd','si')">Si firmo</button>
+          <button class="type-btn" id="nr-cd-no" onclick="selNRBool('cd','no')">No firmo</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="nr-cd-btn" onclick="saveNRCompromiso('disciplinario')" style="width:100%;padding:14px">Guardar compromiso</button>
+    </div>
   </div>
 </div>
 
@@ -4428,7 +4540,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","director","docentes","stats","estudiantes","config"];
+  var tabs=["dashboard","nuevo","casos","historial","director","docentes","stats","estudiantes","nuevo-registro","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -4437,6 +4549,7 @@ function showPage(name) {
   if(name==="docentes"){loadPermisos();loadQuejas();}
   if(name==="stats") renderStats();
   if(name==="estudiantes") renderEstudiantes();
+  if(name==="nuevo-registro") initNuevoRegistro();
   window.scrollTo(0,0);
 }
 
@@ -5193,38 +5306,28 @@ function openEstModal(s) {
   // Compromisos y registros
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Compromisos academicos</div>';
   histHTML += '<div id="est-comp-acad-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button id="btn-comp-acad" style="margin-top:8px;background:var(--navy);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso academico</button>';
+
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Compromisos disciplinarios</div>';
   histHTML += '<div id="est-comp-disc-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button id="btn-comp-disc" style="margin-top:8px;background:var(--red);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar compromiso disciplinario</button>';
+
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Llegadas tarde</div>';
   histHTML += '<div id="est-llegadas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Citaciones a acudiente</div>';
   histHTML += '<div id="est-citaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button id="btn-reg-citacion" style="margin-top:8px;background:#7C3AED;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar citacion</button>';
+
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Actividades de reparacion</div>';
   histHTML += '<div id="est-reparaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button id="btn-reg-reparacion" style="margin-top:8px;background:#0891B2;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar actividad de reparacion</button>';
+
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Suspensiones</div>';
   histHTML += '<div id="est-suspensiones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '<button id="btn-reg-suspension" style="margin-top:8px;background:#DC2626;color:white;border:none;border-radius:10px;padding:10px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;width:100%">+ Registrar suspension</button>';
+
 
   // Documents section
   histHTML += '<div class="slbl" style="margin-bottom:8px;margin-top:16px">Documentos adjuntos</div>';
   histHTML += '<div id="est-docs-list">Cargando documentos...</div>';
   
   document.getElementById('est-modal-historial').innerHTML = histHTML;
-  // Add event listeners to buttons (avoids inline onclick quote issues)
-  var btnCompAcad = document.getElementById('btn-comp-acad');
-  if(btnCompAcad) btnCompAcad.addEventListener('click', function(){ openCompModal('academico'); });
-  var btnCompDisc = document.getElementById('btn-comp-disc');
-  if(btnCompDisc) btnCompDisc.addEventListener('click', function(){ openCompModal('disciplinario'); });
-  var btnCitacion = document.getElementById('btn-reg-citacion');
-  if(btnCitacion) btnCitacion.addEventListener('click', function(){ openRegistroModal('citacion'); });
-  var btnReparacion = document.getElementById('btn-reg-reparacion');
-  if(btnReparacion) btnReparacion.addEventListener('click', function(){ openRegistroModal('reparacion'); });
-  var btnSuspension = document.getElementById('btn-reg-suspension');
-  if(btnSuspension) btnSuspension.addEventListener('click', function(){ openRegistroModal('suspension'); });
+  // Registration is done in the Nuevo Registro tab
   loadEstDocs(s.nombre);
   loadCompromisos(s.nombre);
   loadLlegadasTarde(s.nombre);
@@ -5709,6 +5812,163 @@ function loadRegistros(tipo, nombre, elId) {
     el.innerHTML = html;
   }).catch(function() {
     if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
+  });
+}
+// ============================================================
+// NUEVO REGISTRO TAB
+// ============================================================
+var nrCurrentStudent = null;
+var nrTipo = 'citacion';
+var nrBools = {};
+
+function initNuevoRegistro() {
+  nrCurrentStudent = null;
+  nrBools = {};
+  document.getElementById('nr-search').value = '';
+  document.getElementById('nr-select-wrap').style.display = 'none';
+  document.getElementById('nr-student-info').style.display = 'none';
+  document.getElementById('nr-tipo-section').style.display = 'none';
+  selNRTipo('citacion');
+}
+
+function filtrarEstNR() {
+  var q = document.getElementById('nr-search').value.trim().toLowerCase();
+  if (q.length < 2) {
+    document.getElementById('nr-select-wrap').style.display = 'none';
+    return;
+  }
+  var matches = studentsData.filter(function(s) {
+    return s.nombre.toLowerCase().includes(q);
+  }).slice(0, 20);
+  var sel = document.getElementById('nr-student-select');
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  matches.forEach(function(s, i) {
+    var opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.nombre + ' (' + s.grado + ')';
+    opt.dataset.idx = studentsData.indexOf(s);
+    sel.appendChild(opt);
+  });
+  document.getElementById('nr-select-wrap').style.display = 'flex';
+}
+
+function selEstNR() {
+  var sel = document.getElementById('nr-student-select');
+  var selectedOpt = sel.options[sel.selectedIndex];
+  if (!selectedOpt || !selectedOpt.dataset.idx) {
+    document.getElementById('nr-student-info').style.display = 'none';
+    document.getElementById('nr-tipo-section').style.display = 'none';
+    nrCurrentStudent = null;
+    return;
+  }
+  var idx = parseInt(selectedOpt.dataset.idx);
+  nrCurrentStudent = studentsData[idx];
+  document.getElementById('nr-student-name').textContent = nrCurrentStudent.nombre;
+  document.getElementById('nr-student-grade').textContent = nrCurrentStudent.grado + ' · ' + nrCurrentStudent.jornada;
+  document.getElementById('nr-student-info').style.display = 'block';
+  document.getElementById('nr-tipo-section').style.display = 'block';
+  nrBools = {};
+}
+
+function selNRTipo(tipo) {
+  nrTipo = tipo;
+  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc'];
+  tipos.forEach(function(t) {
+    document.getElementById('nr-tab-' + t).className = 'type-btn' + (t === tipo ? ' sel' : '');
+    document.getElementById('nr-form-' + t).style.display = t === tipo ? 'flex' : 'none';
+  });
+  nrBools = {};
+}
+
+function selNRBool(prefix, val) {
+  nrBools[prefix] = val;
+  document.getElementById('nr-' + prefix + '-si').className = 'type-btn' + (val === 'si' ? ' sel' : '');
+  document.getElementById('nr-' + prefix + '-no').className = 'type-btn' + (val === 'no' ? ' sel' : '');
+}
+
+function saveNRRegistro(tipo) {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
+  var prefix = prefixMap[tipo];
+  var fecha = document.getElementById('nr-' + prefix + '-fecha').value;
+  var motivo = document.getElementById('nr-' + prefix + '-motivo').value.trim();
+  var desc = document.getElementById('nr-' + prefix + '-desc') ? document.getElementById('nr-' + prefix + '-desc').value.trim() : '';
+  var atencion = document.getElementById('nr-' + prefix + '-atencion') ? document.getElementById('nr-' + prefix + '-atencion').value.trim() : '';
+  var dias = document.getElementById('nr-' + prefix + '-dias') ? document.getElementById('nr-' + prefix + '-dias').value : '';
+  var ok = true;
+  if (!fecha) { document.getElementById('nr-' + prefix + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!motivo) { document.getElementById('nr-' + prefix + '-ferr-motivo').textContent = 'Escribe el motivo'; ok = false; }
+  if ((tipo === 'citacion' || tipo === 'reparacion') && !atencion) {
+    document.getElementById('nr-' + prefix + '-ferr-atencion').textContent = 'Escribe el responsable'; ok = false;
+  }
+  if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + prefix + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('nr-' + prefix + '-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveRegistro',
+    nombre: nrCurrentStudent.nombre,
+    tipo: tipo,
+    fecha: fecha,
+    motivo: motivo,
+    desc: desc,
+    atencion: atencion,
+    dias: dias,
+    bool1: nrBools[prefix] || '',
+    date: new Date().toISOString()
+  }).then(function() {
+    // Clear form
+    document.getElementById('nr-' + prefix + '-fecha').value = '';
+    document.getElementById('nr-' + prefix + '-motivo').value = '';
+    if (document.getElementById('nr-' + prefix + '-desc')) document.getElementById('nr-' + prefix + '-desc').value = '';
+    if (document.getElementById('nr-' + prefix + '-atencion')) document.getElementById('nr-' + prefix + '-atencion').value = '';
+    if (document.getElementById('nr-' + prefix + '-dias')) document.getElementById('nr-' + prefix + '-dias').value = '';
+    nrBools[prefix] = '';
+    document.getElementById('nr-' + prefix + '-si').className = 'type-btn';
+    document.getElementById('nr-' + prefix + '-no').className = 'type-btn';
+    toast('Registro guardado correctamente', 'ok');
+  }).catch(function() {
+    toast('Error al guardar', 'red');
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = tipo === 'citacion' ? 'Guardar citacion' : tipo === 'reparacion' ? 'Guardar actividad' : 'Guardar suspension';
+  });
+}
+
+function saveNRCompromiso(tipo) {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  var prefix = tipo === 'academico' ? 'ca' : 'cd';
+  var fecha = document.getElementById('nr-' + prefix + '-fecha').value;
+  var desc = document.getElementById('nr-' + prefix + '-desc').value.trim();
+  var docente = document.getElementById('nr-' + prefix + '-docente').value.trim();
+  var ok = true;
+  if (!fecha) { document.getElementById('nr-' + prefix + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!desc) { document.getElementById('nr-' + prefix + '-ferr-desc').textContent = 'Describe el compromiso'; ok = false; }
+  if (!docente) { document.getElementById('nr-' + prefix + '-ferr-doc').textContent = 'Escribe el responsable'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('nr-' + prefix + '-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveCompromiso',
+    nombre: nrCurrentStudent.nombre,
+    tipo: tipo,
+    fecha: fecha,
+    desc: desc,
+    docente: docente,
+    firma: nrBools[prefix] || '',
+    date: new Date().toISOString()
+  }).then(function() {
+    document.getElementById('nr-' + prefix + '-fecha').value = '';
+    document.getElementById('nr-' + prefix + '-desc').value = '';
+    document.getElementById('nr-' + prefix + '-docente').value = '';
+    nrBools[prefix] = '';
+    document.getElementById('nr-' + prefix + '-si').className = 'type-btn';
+    document.getElementById('nr-' + prefix + '-no').className = 'type-btn';
+    toast('Compromiso guardado correctamente', 'ok');
+  }).catch(function() {
+    toast('Error al guardar', 'red');
+  }).finally(function() {
+    btn.disabled = false; btn.textContent = 'Guardar compromiso';
   });
 }
 </script>
