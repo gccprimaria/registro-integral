@@ -35,7 +35,7 @@ nav{background:linear-gradient(180deg,var(--navy-deep) 0%,var(--navy) 100%);posi
 .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .stat-grid{grid-template-columns:repeat(2,1fr);}
 @media(min-width:640px){.card-grid{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:1150px){.stat-grid{grid-template-columns:repeat(5,1fr);}}
+@media(min-width:1150px){.stat-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));}}
 .stat-card{background:var(--white);border-radius:var(--radius-lg);padding:20px 20px 18px;box-shadow:var(--shadow);border-top:4px solid var(--navy);position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
 .stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
 .stat-icon{position:absolute;top:16px;right:16px;font-size:1.15rem;opacity:0.9;}
@@ -213,10 +213,15 @@ textarea{resize:vertical;min-height:90px;}
   <div class="serif" style="font-size:1.6rem;color:var(--navy);font-weight:700">Resumen general</div>
   <div class="card-grid stat-grid">
     <div class="stat-card grad-navy"><div class="stat-icon">📊</div><div class="stat-num" id="s-total">0</div><div class="stat-label">Total casos</div></div>
-    <div class="stat-card grad-amber"><div class="stat-icon">⏳</div><div class="stat-num" id="s-ab">0</div><div class="stat-label">Abiertos</div></div>
-    <div class="stat-card grad-green"><div class="stat-icon">✅</div><div class="stat-num" id="s-res">0</div><div class="stat-label">Resueltos</div></div>
     <div class="stat-card grad-red"><div class="stat-icon">🤝</div><div class="stat-num" id="s-conv">0</div><div class="stat-label">Convivencia</div></div>
     <div class="stat-card grad-blue"><div class="stat-icon">📚</div><div class="stat-num" id="s-acad">0</div><div class="stat-label">Academicos</div></div>
+    <div class="stat-card grad-amber"><div class="stat-icon">🎯</div><div class="stat-num" id="s-comp-acad">0</div><div class="stat-label">Compromisos academicos</div></div>
+    <div class="stat-card grad-green"><div class="stat-icon">🛡️</div><div class="stat-num" id="s-comp-disc">0</div><div class="stat-label">Compromisos disciplinarios</div></div>
+    <div class="stat-card grad-navy"><div class="stat-icon">🗣️</div><div class="stat-num" id="s-quejas">0</div><div class="stat-label">Quejas a docentes</div></div>
+  </div>
+  <div class="card">
+    <div class="slbl" style="margin-bottom:14px">Citaciones por grado</div>
+    <div id="cit-por-grado"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
   </div>
   <div><div class="slbl" style="margin-bottom:12px">Casos recientes</div><div id="d-recent" style="display:flex;flex-direction:column;gap:10px"></div></div>
 </div>
@@ -908,7 +913,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpYUAvaYLaN0ECTIkZplzwO_h5QCIy8jFq1e_bkJ9O0jOiT-IMF7twInIyIoiuWAlU/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBUqNOiSCFEe9ueykbdFceFSZKf3h1AOhdAspXisZsq5_I4bmxx72dspzwYHor0JEv/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -4563,6 +4568,7 @@ var modalIndex = -1;
 window.onload = function() {
   loadCases();
   initEstudiantes();
+  loadPanelExtras();
 };
 
 function apiCall(params) {
@@ -4613,6 +4619,7 @@ function showPage(name) {
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
   if(name==="historial") renderHSelect();
   if(name==="director") renderDirector();
+  if(name==="dashboard") loadPanelExtras();
   if(name==="docentes"){loadPermisos();loadQuejas();}
   if(name==="stats") renderStats();
   if(name==="estudiantes") renderEstudiantes();
@@ -4636,8 +4643,6 @@ function renderAll(){
 
 function renderDash(){
   document.getElementById("s-total").textContent=cases.length;
-  document.getElementById("s-ab").textContent=cases.filter(function(c){return c.status==="abierto";}).length;
-  document.getElementById("s-res").textContent=cases.filter(function(c){return c.status==="resuelto";}).length;
   document.getElementById("s-conv").textContent=cases.filter(function(c){return c.type==="convivencia";}).length;
   document.getElementById("s-acad").textContent=cases.filter(function(c){return c.type==="academico";}).length;
   var el=document.getElementById("d-recent");
@@ -4821,6 +4826,60 @@ function selDocTab(tab){
     document.getElementById("dpanel-"+t).style.display=tab===t?"flex":"none";
   });
   if(tab==="panel") renderPanelDocente();
+}
+
+var allCompromisos = [];
+var allCitaciones = [];
+
+function resolveStudentGrade(rawNombre){
+  var norm = normName(rawNombre);
+  if (!norm || !studentsData || !studentsData.length) return '?';
+  for (var i = 0; i < studentsData.length; i++) {
+    if (normName(studentsData[i].nombre) === norm) return studentsData[i].grado || '?';
+  }
+  return '?';
+}
+
+function loadPanelExtras(){
+  apiCall({action:'listAllCompromisos'}).then(function(data){
+    allCompromisos = Array.isArray(data) ? data : [];
+    renderPanelExtras();
+  }).catch(function(){});
+  apiCall({action:'listAllRegistros'}).then(function(data){
+    allCitaciones = Array.isArray(data) ? data.filter(function(r){ return String(r.tipo||'').toLowerCase() === 'citacion'; }) : [];
+    renderPanelExtras();
+  }).catch(function(){});
+  apiCall({action:'listQuejas'}).then(function(data){
+    var elQ = document.getElementById('s-quejas');
+    if (elQ) elQ.textContent = Array.isArray(data) ? data.length : 0;
+  }).catch(function(){});
+}
+
+function renderPanelExtras(){
+  var acadCount = allCompromisos.filter(function(c){ return String(c.tipo||'').toLowerCase().indexOf('academic') !== -1; }).length;
+  var discCount = allCompromisos.filter(function(c){ return String(c.tipo||'').toLowerCase().indexOf('disciplin') !== -1; }).length;
+  var elAcad = document.getElementById('s-comp-acad'); if (elAcad) elAcad.textContent = acadCount;
+  var elDisc = document.getElementById('s-comp-disc'); if (elDisc) elDisc.textContent = discCount;
+
+  var el = document.getElementById('cit-por-grado');
+  if (!el) return;
+  if (!allCitaciones.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin citaciones registradas.</div>'; return; }
+  var porGrado = {};
+  allCitaciones.forEach(function(r){
+    var g = resolveStudentGrade(r.nombre);
+    porGrado[g] = (porGrado[g]||0) + 1;
+  });
+  var grades = Object.keys(porGrado).sort();
+  var max = Math.max.apply(null, grades.map(function(g){ return porGrado[g]; }));
+  el.innerHTML = grades.map(function(g){
+    var n = porGrado[g];
+    var pct = max ? Math.round(n/max*100) : 0;
+    return '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
+      + '<div style="width:46px;font-weight:700;color:var(--navy);font-size:0.85rem">' + g + '</div>'
+      + '<div style="flex:1;background:var(--gray-bg);border-radius:8px;height:10px;overflow:hidden"><div style="width:' + pct + '%;background:var(--amber);height:100%;border-radius:8px"></div></div>'
+      + '<div style="width:28px;text-align:right;font-weight:700;color:var(--navy);font-size:0.85rem">' + n + '</div>'
+      + '</div>';
+  }).join('');
 }
 
 function loadPermisos(){
