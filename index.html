@@ -812,6 +812,7 @@ textarea{resize:vertical;min-height:90px;}
       <button class="type-btn" id="nr-tab-suspension" onclick="selNRTipo('suspension')" style="flex:1;min-width:120px;font-size:0.8rem">Suspension</button>
       <button class="type-btn" id="nr-tab-comp-acad" onclick="selNRTipo('comp-acad')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Acad.</button>
       <button class="type-btn" id="nr-tab-comp-disc" onclick="selNRTipo('comp-disc')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Disc.</button>
+      <button class="type-btn" id="nr-tab-hist-acad" onclick="selNRTipo('hist-acad')" style="flex:1;min-width:130px;font-size:0.8rem">Hist. Academico</button>
     </div>
 
     <!-- Formulario citacion -->
@@ -890,6 +891,31 @@ textarea{resize:vertical;min-height:90px;}
       </div>
       <button class="btn btn-primary" id="nr-cd-btn" onclick="saveNRCompromiso('disciplinario')" style="width:100%;padding:14px">Guardar compromiso</button>
     </div>
+
+    <!-- Formulario historial academico -->
+    <div class="card form-section" id="nr-form-hist-acad" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Historial academico</div>
+      <div class="field">
+        <label class="lbl">Periodo</label>
+        <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <button class="type-btn" id="nr-ha-per-I" onclick="selNRPeriodo('I')">Periodo I</button>
+          <button class="type-btn" id="nr-ha-per-II" onclick="selNRPeriodo('II')">Periodo II</button>
+          <button class="type-btn" id="nr-ha-per-III" onclick="selNRPeriodo('III')">Periodo III</button>
+        </div>
+        <div class="ferr" id="nr-ha-ferr-periodo"></div>
+      </div>
+      <div class="field"><label class="lbl">Asignatura</label><input type="text" id="nr-ha-asignatura" placeholder="Ej: Matematicas"><div class="ferr" id="nr-ha-ferr-asignatura"></div></div>
+      <div class="field">
+        <label class="lbl">Momento</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-ha-mom-corte" onclick="selNRMomento('corte')">Corte del periodo</button>
+          <button class="type-btn" id="nr-ha-mom-final" onclick="selNRMomento('final')">Final del periodo</button>
+        </div>
+        <div class="ferr" id="nr-ha-ferr-momento"></div>
+      </div>
+      <div class="field"><label class="lbl">Nota (escala 10-50)</label><input type="number" min="10" max="50" step="1" id="nr-ha-nota" placeholder="Ej: 31"><div class="ferr" id="nr-ha-ferr-nota"></div></div>
+      <button class="btn btn-primary" id="nr-ha-btn" onclick="saveNRHistorialAcademico()" style="width:100%;padding:14px">Guardar historial academico</button>
+    </div>
   </div>
 </div>
 
@@ -913,7 +939,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBUqNOiSCFEe9ueykbdFceFSZKf3h1AOhdAspXisZsq5_I4bmxx72dspzwYHor0JEv/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxu4Hkr0EAqPYMgG-j1gGsw0TwUeKjbrVm_PmDMY7tCnvfpnWCGSqBJ4Ps8p9bO_OIq/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5431,42 +5457,9 @@ function openEstModal(s) {
   }
   histHTML += '</div>';
 
-  // Academic history
-  var normName = s.nombre.toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N');
-  var acadData = ACADEMIC_DB[normName] || ACADEMIC_DB[s.nombre] || null;
+  // Academic history (live + legacy, con corte/final)
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Historial academico (materias con dificultad)</div>';
-  if (acadData && Object.keys(acadData.materias).length) {
-    // Count by period
-    var byPeriod = {I:[], II:[], III:[]};
-    Object.entries(acadData.materias).forEach(function(entry) {
-      var subj = entry[0]; var periods = entry[1];
-      Object.entries(periods).forEach(function(p) { if(byPeriod[p[0]]) byPeriod[p[0]].push(subj); });
-    });
-    // Period summary cards
-    histHTML += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">';
-    ['I','II','III'].forEach(function(per) {
-      var cnt = byPeriod[per].length;
-      var color = cnt === 0 ? 'var(--green)' : cnt <= 2 ? 'var(--amber)' : 'var(--red)';
-      histHTML += '<div style="background:white;border:2px solid '+color+';border-radius:10px;padding:10px;text-align:center">' +
-        '<div style="font-size:1.4rem;font-weight:800;color:'+color+'">'+cnt+'</div>' +
-        '<div style="font-size:0.7rem;color:var(--gray);font-weight:600">Periodo '+per+'</div>' +
-        '</div>';
-    });
-    histHTML += '</div>';
-    // Detail by subject
-    histHTML += '<div class="card" style="background:var(--blue-bg);padding:12px">';
-    Object.entries(acadData.materias).forEach(function(entry) {
-      var subj = entry[0]; var periods = entry[1];
-      var periodoStr = Object.entries(periods).map(function(p) { return 'P.'+p[0]; }).join(' · ');
-      histHTML += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(59,130,246,0.2)">' +
-        '<div style="font-weight:600;color:var(--blue-dark);font-size:0.85rem">'+subj+'</div>' +
-        '<div style="font-size:0.75rem;color:var(--blue-dark);font-weight:700">'+periodoStr+'</div>' +
-        '</div>';
-    });
-    histHTML += '</div>';
-  } else {
-    histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>';
-  }
+  histHTML += '<div id="est-histacad-content"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
   // Compromisos y registros
@@ -5492,6 +5485,7 @@ function openEstModal(s) {
   loadEstDocs(s.nombre);
   loadCompromisos(s.nombre);
   loadLlegadasTarde(s.nombre);
+  loadHistorialAcademico(s.nombre);
   loadRegistros('citacion', s.nombre, 'est-citaciones-list');
   loadRegistros('reparacion', s.nombre, 'est-reparaciones-list');
   loadRegistros('suspension', s.nombre, 'est-suspensiones-list');
@@ -5863,6 +5857,70 @@ function renderRegistrosList(el, list, tipo, elId) {
   }).join('');
 }
 
+function renderHistorialAcademico(el, liveRecords, legacyData) {
+  if (!el) return;
+  var merged = {I:{}, II:{}, III:{}};
+  if (legacyData && legacyData.materias) {
+    Object.keys(legacyData.materias).forEach(function(subj) {
+      Object.keys(legacyData.materias[subj]).forEach(function(per) {
+        if (!merged[per]) return;
+        if (!merged[per][subj]) merged[per][subj] = {};
+        merged[per][subj].final = legacyData.materias[subj][per];
+      });
+    });
+  }
+  (liveRecords || []).forEach(function(r) {
+    var per = r.periodo, subj = r.asignatura, mom = r.momento, nota = r.nota;
+    if (!merged[per] || !subj || !mom) return;
+    if (!merged[per][subj]) merged[per][subj] = {};
+    merged[per][subj][mom] = nota;
+  });
+  var anyData = ['I','II','III'].some(function(p){ return Object.keys(merged[p]).length; });
+  if (!anyData) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>'; return; }
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">';
+  ['I','II','III'].forEach(function(per) {
+    var cnt = Object.keys(merged[per]).length;
+    var color = cnt === 0 ? 'var(--green)' : cnt <= 2 ? 'var(--amber)' : 'var(--red)';
+    html += '<div style="background:white;border:2px solid '+color+';border-radius:10px;padding:10px;text-align:center">' +
+      '<div style="font-size:1.4rem;font-weight:800;color:'+color+'">'+cnt+'</div>' +
+      '<div style="font-size:0.7rem;color:var(--gray);font-weight:600">Periodo '+per+'</div>' +
+      '</div>';
+  });
+  html += '</div>';
+  ['I','II','III'].forEach(function(per) {
+    var subjects = Object.keys(merged[per]);
+    if (!subjects.length) return;
+    html += '<div class="card" style="background:var(--blue-bg);padding:12px;margin-bottom:8px">';
+    html += '<div style="font-size:0.72rem;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Periodo '+per+'</div>';
+    html += '<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;font-size:0.68rem;font-weight:700;color:var(--gray);text-transform:uppercase;padding-bottom:4px">' +
+      '<div>Asignatura</div><div style="text-align:center">Corte</div><div style="text-align:center">Final</div></div>';
+    subjects.forEach(function(subj) {
+      var d = merged[per][subj];
+      var corteVal = (d.corte !== undefined && d.corte !== null && d.corte !== '') ? d.corte : '—';
+      var finalVal = (d.final !== undefined && d.final !== null && d.final !== '') ? d.final : '—';
+      html += '<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;padding:6px 0;border-top:1px solid rgba(59,130,246,0.2);align-items:center">' +
+        '<div style="font-weight:600;color:var(--blue-dark);font-size:0.85rem">'+subj+'</div>' +
+        '<div style="text-align:center;font-weight:700;color:var(--blue-dark);font-size:0.85rem">'+corteVal+'</div>' +
+        '<div style="text-align:center;font-weight:700;color:var(--blue-dark);font-size:0.85rem">'+finalVal+'</div>' +
+        '</div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function loadHistorialAcademico(nombre) {
+  var el = document.getElementById('est-histacad-content');
+  if (!el) return;
+  var normName = nombre.toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N');
+  var legacyData = ACADEMIC_DB[normName] || ACADEMIC_DB[nombre] || null;
+  apiCall({ action: 'listHistorialAcademico', nombre: nombre }).then(function(data) {
+    renderHistorialAcademico(el, Array.isArray(data) ? data : [], legacyData);
+  }).catch(function() {
+    renderHistorialAcademico(el, [], legacyData);
+  });
+}
+
 function loadLlegadasTarde(nombre) {
   var el = document.getElementById('est-llegadas-list');
   apiCall({ action: 'listLlegadasTarde', nombre: nombre }).then(function(data) {
@@ -5925,6 +5983,8 @@ function eliminarRegistro(tipo, dateKey, elId) {
 var nrCurrentStudent = null;
 var nrTipo = 'citacion';
 var nrBools = {};
+var nrPeriodo = '';
+var nrMomento = '';
 
 function initNuevoRegistro() {
   nrCurrentStudent = null;
@@ -5982,7 +6042,7 @@ function selEstNR() {
 
 function selNRTipo(tipo) {
   nrTipo = tipo;
-  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc'];
+  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc','hist-acad'];
   tipos.forEach(function(t) {
     var tab = document.getElementById('nr-tab-' + t);
     var form = document.getElementById('nr-form-' + t);
@@ -6080,6 +6140,47 @@ function saveNRCompromiso(tipo) {
     toast('Compromiso guardado', 'ok');
   }).catch(function() { toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar compromiso'; });
+}
+
+function selNRPeriodo(p) {
+  nrPeriodo = p;
+  ['I','II','III'].forEach(function(v){ document.getElementById('nr-ha-per-'+v).className = 'type-btn' + (v===p?' sel':''); });
+  document.getElementById('nr-ha-ferr-periodo').textContent = '';
+}
+function selNRMomento(m) {
+  nrMomento = m;
+  document.getElementById('nr-ha-mom-corte').className = 'type-btn' + (m==='corte'?' sel':'');
+  document.getElementById('nr-ha-mom-final').className = 'type-btn' + (m==='final'?' sel':'');
+  document.getElementById('nr-ha-ferr-momento').textContent = '';
+}
+function saveNRHistorialAcademico() {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  clearNRFerr('ha', ['periodo','asignatura','momento','nota']);
+  var asignatura = document.getElementById('nr-ha-asignatura').value.trim();
+  var nota = document.getElementById('nr-ha-nota').value;
+  var ok = true;
+  if (!nrPeriodo) { document.getElementById('nr-ha-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
+  if (!asignatura) { document.getElementById('nr-ha-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
+  if (!nrMomento) { document.getElementById('nr-ha-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
+  if (!nota) { document.getElementById('nr-ha-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('nr-ha-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveHistorialAcademico',
+    nombre: nrCurrentStudent.nombre,
+    periodo: nrPeriodo, asignatura: asignatura, momento: nrMomento, nota: nota,
+    date: new Date().toISOString()
+  }).then(function() {
+    document.getElementById('nr-ha-asignatura').value = '';
+    document.getElementById('nr-ha-nota').value = '';
+    nrPeriodo = ''; nrMomento = '';
+    ['I','II','III'].forEach(function(v){ document.getElementById('nr-ha-per-'+v).className = 'type-btn'; });
+    document.getElementById('nr-ha-mom-corte').className = 'type-btn';
+    document.getElementById('nr-ha-mom-final').className = 'type-btn';
+    toast('Historial academico guardado', 'ok');
+  }).catch(function() { toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar historial academico'; });
 }
 </script>
 </body>
