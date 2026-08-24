@@ -176,6 +176,7 @@ textarea{resize:vertical;min-height:90px;}
     <button class="nav-tab" onclick="showPage('nuevo')">➕ Nuevo caso</button>
     <button class="nav-tab" onclick="showPage('casos')">📋 Casos</button>
     <button class="nav-tab" onclick="showPage('historial')">🔍 Historial</button>
+    <button class="nav-tab" onclick="showPage('reportes-docentes')">📥 Reportes</button>
     <div class="side-group-label">Analisis</div>
     <button class="nav-tab" onclick="showPage('director')">🏫 Director</button>
     <button class="nav-tab" onclick="showPage('docentes')">👩‍🏫 Docentes</button>
@@ -371,6 +372,13 @@ textarea{resize:vertical;min-height:90px;}
   <div id="h-list" style="display:flex;flex-direction:column;gap:10px"></div>
 </div>
 
+<!-- REPORTES DOCENTES -->
+<div class="page" id="page-reportes-docentes">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Reportes de docentes</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Situaciones que los docentes reportan directamente desde su formulario. Revisa cada una y conviértela en caso si aplica.</div>
+  <div id="rd-list" style="display:flex;flex-direction:column;gap:10px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
+</div>
+
 <!-- DIRECTOR -->
 <div class="page" id="page-director">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Portal Director de Grado</div>
@@ -519,6 +527,19 @@ textarea{resize:vertical;min-height:90px;}
           <button class="type-btn" id="dq-btn-escrito-si" onclick="selEscrito('si')">Si</button>
           <button class="type-btn" id="dq-btn-escrito-no" onclick="selEscrito('no')">No</button>
         </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Se cito al docente?</label>
+        <div class="type-grid">
+          <button class="type-btn" id="dq-btn-citacion-si" onclick="selQuejaCitacion('si')">Si</button>
+          <button class="type-btn" id="dq-btn-citacion-no" onclick="selQuejaCitacion('no')">No</button>
+        </div>
+      </div>
+      <div class="field" id="dq-campo-citacion" style="display:none">
+        <label class="lbl">Fecha de la citacion</label>
+        <input type="date" id="dq-fecha-citacion">
+        <label class="lbl" style="margin-top:12px">Que se conversó en la citacion</label>
+        <textarea id="dq-conversado" placeholder="Resumen de lo tratado con el docente..."></textarea>
       </div>
       <div class="field">
         <label class="lbl">A quien se notifico?</label>
@@ -939,7 +960,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4woMYT7BNKLx51YCAywQEf6hSBd3PZrd3uCcf3hfXGfYsF2BAX3JuYsTHt1O7ZHYr/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4h44F3iQOKRW3MiD8-Ieo3FneM7dPcB3my52SdJWmIqSxPTusCcqJWGU9mempXZX-/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -4623,15 +4644,22 @@ function resetApp() {
   location.reload();
 }
 
+var docentesUnlocked = false;
 function showPage(name) {
+  if (name === "docentes" && !docentesUnlocked) {
+    var pwdDoc = prompt("Ingresa la contrasena para ver el panel de Docentes:");
+    if (pwdDoc !== DELETE_PWD) { toast("Contrasena incorrecta", "red"); return; }
+    docentesUnlocked = true;
+  }
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","director","docentes","stats","estudiantes","nuevo-registro","config"];
+  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","director","docentes","stats","estudiantes","nuevo-registro","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
   if(name==="historial") renderHSelect();
+  if(name==="reportes-docentes") loadReportesDocentes();
   if(name==="director") renderDirector();
   if(name==="dashboard") loadPanelExtras();
   if(name==="docentes"){loadPermisos();loadQuejas();}
@@ -4912,6 +4940,62 @@ function renderPanelExtras(){
   }).join('');
 }
 
+var reportesDocentes = [];
+function loadReportesDocentes(){
+  var el = document.getElementById('rd-list');
+  apiCall({action:'listReportesDocentes'}).then(function(data){
+    reportesDocentes = Array.isArray(data) ? data : [];
+    renderReportesDocentes();
+  }).catch(function(){
+    if(el) el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><p>Error cargando los reportes de docentes</p></div>';
+  });
+}
+function renderReportesDocentes(){
+  var el = document.getElementById('rd-list');
+  if(!el) return;
+  if(!reportesDocentes.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📥</div><p>No hay reportes de docentes</p></div>'; return; }
+  el.innerHTML='';
+  reportesDocentes.slice().reverse().forEach(function(r){
+    var idx = reportesDocentes.indexOf(r);
+    var atendido = String(r['Estado']||'').toUpperCase()==='ATENDIDO';
+    var div=document.createElement('div'); div.className='doc-card';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+(r['Estudiante']||'')+'</div><span class="tag '+(atendido?'tag-green':'tag-amber')+'">'+(r['Estado']||'')+'</span></div>'
+      +'<div class="tags" style="margin-top:6px"><span class="tag tag-gray">'+(r['Curso']||'')+'</span><span class="tag tag-gray">'+(r['Jornada']||'')+'</span><span class="tag tag-blue">'+(r['Situación']||'')+'</span></div>'
+      +'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+(r['Detalle']||'')+'</div>'
+      +'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">Reportado por '+(r['Docente']||'')+' · '+(r['Fecha y hora']||'')+'</div>'
+      +(atendido?'<div style="font-size:0.78rem;color:var(--green-dark);margin-top:4px">Atendido por '+(r['Atendido por']||'')+': '+(r['Accion tomada']||'')+'</div>':'')
+      +'<button onclick="convertirReporteACaso('+idx+')" style="margin-top:10px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Convertir a caso →</button>';
+    el.appendChild(div);
+  });
+}
+function convertirReporteACaso(idx){
+  var r = reportesDocentes[idx];
+  if(!r) return;
+  showPage('nuevo');
+  clearForm();
+  var jornada = String(r['Jornada']||'').trim();
+  if(/mañana/i.test(jornada)) jornada='Manana'; else if(/tarde/i.test(jornada)) jornada='Tarde';
+  document.getElementById('f-jornada').value = jornada;
+  updateGrades();
+  document.getElementById('f-grade').value = String(r['Curso']||'').trim();
+  updateStudents();
+  var estNorm = normName(r['Estudiante']||'');
+  var opts = document.getElementById('f-student').options;
+  for(var i=0;i<opts.length;i++){ if(normName(opts[i].value)===estNorm){ document.getElementById('f-student').value=opts[i].value; break; } }
+  var docente = String(r['Docente']||'').trim();
+  var selT = document.getElementById('f-teacher');
+  selT.value = docente;
+  if(selT.value !== docente){
+    selT.value = 'Otro docente';
+    document.getElementById('f-teacher-other').value = docente;
+  }
+  onTeacherChange();
+  var desc = (r['Situación']||'') + (r['Detalle'] ? ': ' + r['Detalle'] : '');
+  document.getElementById('f-desc').value = desc.trim();
+  selType('convivencia');
+  toast('Datos del reporte cargados, revisa y completa','ok');
+}
+
 function loadPermisos(){
   apiCall({action:"listPermisos"}).then(function(data){
     permisos=Array.isArray(data)?data.map(function(p){return{id:String(p.id||""),teacher:String(p.teacher||""),fecha:String(p.fecha||""),duracion:String(p.duracion||""),horas:String(p.horas||""),motivo:String(p.motivo||""),adjunto:String(p.adjunto||""),date:String(p.date||"")};}):[]; renderPermisos();
@@ -4919,13 +5003,20 @@ function loadPermisos(){
 }
 function loadQuejas(){
   apiCall({action:"listQuejas"}).then(function(data){
-    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],adjunto:String(q.adjunto||""),date:String(q.date||"")};}):[]; renderQuejas();
+    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],adjunto:String(q.adjunto||""),date:String(q.date||""),citacion:String(q.citacion||""),fechaCitacion:String(q.fechaCitacion||""),conversado:String(q.conversado||"")};}):[]; renderQuejas();
   }).catch(function(){toast("Error cargando quejas","red");});
 }
 
 function selPermisoDuracion(v){curPermisoDuracion=v;document.getElementById("dp-btn-dia").className="type-btn"+(v==="dia"?" sel":"");document.getElementById("dp-btn-horas").className="type-btn"+(v==="horas"?" sel":"");document.getElementById("dp-campo-horas").style.display=v==="horas"?"flex":"none";}
 function selVerbal(v){curVerbal=v;document.getElementById("dq-btn-verbal-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("dq-btn-verbal-no").className="type-btn"+(v==="no"?" sel":"");}
 function selEscrito(v){curEscrito=v;document.getElementById("dq-btn-escrito-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("dq-btn-escrito-no").className="type-btn"+(v==="no"?" sel":"");}
+var curQuejaCitacion = "";
+function selQuejaCitacion(v){
+  curQuejaCitacion=v;
+  document.getElementById("dq-btn-citacion-si").className="type-btn"+(v==="si"?" sel":"");
+  document.getElementById("dq-btn-citacion-no").className="type-btn"+(v==="no"?" sel":"");
+  document.getElementById("dq-campo-citacion").style.display=v==="si"?"":"none";
+}
 var notifSelected = {rectoria:false, convivencia:false, academica:false, otro:false};
 function toggleNotif(key){
   notifSelected[key]=!notifSelected[key];
@@ -4976,16 +5067,22 @@ function deletePermiso(idx){
   apiCall({action:"deletePermiso",id:p.id}).then(function(){permisos.splice(idx,1);renderPermisos();toast("Permiso eliminado","red");}).catch(function(){toast("Error al eliminar","red");});
 }
 
+var editingQuejaIdx = -1;
 function clearQuejaForm(){
   document.getElementById("dq-teacher").value=""; document.getElementById("dq-teacher-other").value=""; document.getElementById("dq-teacher-other").style.display="none";
   document.getElementById("dq-fecha").value=""; document.getElementById("dq-desc").value="";
   notifSelected={rectoria:false,convivencia:false,academica:false,otro:false};
   ["notif-rectoria","notif-convivencia","notif-academica","notif-otro"].forEach(function(id){var el=document.getElementById(id);if(el)el.className="notif-btn";});
   document.getElementById("dq-not-otro-texto").style.display="none"; document.getElementById("dq-not-otro-texto").value="";
-  curVerbal=""; curEscrito="";
+  curVerbal=""; curEscrito=""; curQuejaCitacion="";
   document.getElementById("dq-btn-verbal-si").className="type-btn"; document.getElementById("dq-btn-verbal-no").className="type-btn";
   document.getElementById("dq-btn-escrito-si").className="type-btn"; document.getElementById("dq-btn-escrito-no").className="type-btn";
+  document.getElementById("dq-btn-citacion-si").className="type-btn"; document.getElementById("dq-btn-citacion-no").className="type-btn";
+  document.getElementById("dq-campo-citacion").style.display="none";
+  document.getElementById("dq-fecha-citacion").value=""; document.getElementById("dq-conversado").value="";
   ["eq-teacher","eq-fecha","eq-desc"].forEach(function(id){document.getElementById(id).textContent="";});
+  editingQuejaIdx=-1;
+  document.getElementById("dq-btn-submit").textContent="Registrar queja";
 }
 
 function submitQueja(){
@@ -5001,9 +5098,51 @@ function submitQueja(){
   if(notifSelected.convivencia) notificados.push("Coord. Convivencia");
   if(notifSelected.academica) notificados.push("Coord. Academica");
   if(notifSelected.otro){var ot=document.getElementById("dq-not-otro-texto").value.trim();if(ot)notificados.push(ot);}
-  var q={id:Date.now().toString(36),teacher:teacher,fecha:fecha,desc:desc,verbal:curVerbal,escrito:curEscrito,notificados:notificados,date:new Date().toISOString()};
+  var fechaCitacion=curQuejaCitacion==="si"?document.getElementById("dq-fecha-citacion").value:"";
+  var conversado=curQuejaCitacion==="si"?document.getElementById("dq-conversado").value.trim():"";
+  var isEdit = editingQuejaIdx >= 0;
+  if(isEdit){
+    var pwdQ=prompt("Ingresa la contrasena para guardar cambios:"); if(pwdQ!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
+  }
+  var q={id:isEdit?quejas[editingQuejaIdx].id:Date.now().toString(36),teacher:teacher,fecha:fecha,desc:desc,verbal:curVerbal,escrito:curEscrito,notificados:notificados,citacion:curQuejaCitacion,fechaCitacion:fechaCitacion,conversado:conversado,date:isEdit?quejas[editingQuejaIdx].date:new Date().toISOString()};
   var btn=document.getElementById("dq-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
-  apiCall(Object.assign({action:"addQueja"},q,{notificados:notificados.join(",")})).then(function(){quejas.unshift(q);clearQuejaForm();renderQuejas();toast("Queja registrada","ok");}).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar queja";});
+  apiCall(Object.assign({action:isEdit?"updateQueja":"addQueja"},q,{notificados:notificados.join(",")})).then(function(){
+    if(isEdit){ quejas[editingQuejaIdx]=q; } else { quejas.unshift(q); }
+    clearQuejaForm();renderQuejas();toast(isEdit?"Queja actualizada":"Queja registrada","ok");
+  }).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent=isEdit?"Guardar cambios":"Registrar queja";});
+}
+
+function editQueja(idx){
+  var q=quejas[idx]; if(!q) return;
+  editingQuejaIdx=idx;
+  var sel=document.getElementById("dq-teacher");
+  sel.value=q.teacher;
+  if(sel.value!==q.teacher){
+    sel.value="Otro docente";
+    document.getElementById("dq-teacher-other").style.display="block";
+    document.getElementById("dq-teacher-other").value=q.teacher;
+  } else {
+    document.getElementById("dq-teacher-other").style.display="none";
+  }
+  document.getElementById("dq-fecha").value=q.fecha||"";
+  document.getElementById("dq-desc").value=q.desc||"";
+  selVerbal(q.verbal||"");
+  selEscrito(q.escrito||"");
+  selQuejaCitacion(q.citacion||"");
+  document.getElementById("dq-fecha-citacion").value=q.fechaCitacion||"";
+  document.getElementById("dq-conversado").value=q.conversado||"";
+  notifSelected={rectoria:false,convivencia:false,academica:false,otro:false};
+  (q.notificados||[]).forEach(function(n){
+    if(n==="Rectoria") notifSelected.rectoria=true;
+    else if(n==="Coord. Convivencia") notifSelected.convivencia=true;
+    else if(n==="Coord. Academica") notifSelected.academica=true;
+    else if(n){ notifSelected.otro=true; document.getElementById("dq-not-otro-texto").value=n; document.getElementById("dq-not-otro-texto").style.display="block"; }
+  });
+  ["rectoria","convivencia","academica","otro"].forEach(function(k){
+    document.getElementById("notif-"+k).className="notif-btn"+(notifSelected[k]?" active":"");
+  });
+  document.getElementById("dq-btn-submit").textContent="Guardar cambios";
+  document.getElementById("dtab-quejas").scrollIntoView({behavior:"smooth"});
 }
 
 function renderQuejas(){
@@ -5013,7 +5152,8 @@ function renderQuejas(){
   quejas.forEach(function(q,idx){
     var div=document.createElement("div"); div.className="doc-card queja";
     var notHtml=q.notificados&&q.notificados.length?q.notificados.map(function(n){return'<span class="tag tag-gray">'+n+"</span>";}).join(""):"";
-    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+q.teacher+'</div><span class="tag tag-amber">'+q.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag '+(q.verbal==="si"?"tag-green":"tag-red")+'">Verbal: '+(q.verbal==="si"?"Si":q.verbal==="no"?"No":"—")+"</span>"+'<span class="tag '+(q.escrito==="si"?"tag-green":"tag-red")+'">Escrito: '+(q.escrito==="si"?"Si":q.escrito==="no"?"No":"—")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+q.desc+"</div>"+(notHtml?'<div class="tags" style="margin-top:8px"><span style="font-size:0.78rem;color:var(--gray);font-weight:600">Notificado a:</span>'+notHtml+"</div>":"")+'<button onclick="deleteQueja('+idx+')" style="margin-top:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button>';
+    var citHtml=q.citacion==="si"?'<div class="detail-block" style="margin-top:8px"><div style="font-weight:700;color:var(--navy);font-size:0.8rem">Citacion al docente'+(q.fechaCitacion?" · "+q.fechaCitacion:"")+'</div>'+(q.conversado?'<div style="margin-top:4px">'+q.conversado+'</div>':'')+'</div>':'';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+q.teacher+'</div><span class="tag tag-amber">'+q.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag '+(q.verbal==="si"?"tag-green":"tag-red")+'">Verbal: '+(q.verbal==="si"?"Si":q.verbal==="no"?"No":"—")+"</span>"+'<span class="tag '+(q.escrito==="si"?"tag-green":"tag-red")+'">Escrito: '+(q.escrito==="si"?"Si":q.escrito==="no"?"No":"—")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+q.desc+"</div>"+citHtml+(notHtml?'<div class="tags" style="margin-top:8px"><span style="font-size:0.78rem;color:var(--gray);font-weight:600">Notificado a:</span>'+notHtml+"</div>":"")+'<div style="display:flex;gap:14px;margin-top:10px"><button onclick="editQueja('+idx+')" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Editar</button><button onclick="deleteQueja('+idx+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button></div>';
     list.appendChild(div);
   });
 }
