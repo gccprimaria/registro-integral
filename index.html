@@ -158,6 +158,29 @@ textarea{resize:vertical;min-height:90px;}
   .page{margin-left:0;max-width:720px;margin-left:auto;margin-right:auto;padding:24px 16px 100px;}
 }
 @media print{nav,.no-print{display:none!important}body{background:white}.page{display:flex!important;padding:0;margin-left:0;}.case-card,.doc-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;margin-bottom:8px}}
+#print-area{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #print-area, #print-area *{visibility:visible;}
+  #print-area{display:block;position:absolute;left:0;top:0;width:100%;padding:20px;font-family:'DM Sans',sans-serif;color:#0F2942;}
+  #print-area button, #print-area [onclick*="eliminar"], #print-area [onclick*="Eliminar"], #print-area [onclick*="openModal"] .print-hide{display:none !important;}
+  #print-area a{color:inherit !important;text-decoration:none !important;pointer-events:none;}
+  .print-header{border-bottom:3px solid #0F2942;padding-bottom:12px;margin-bottom:20px;}
+  .print-school{font-weight:800;font-size:1.1rem;}
+  .print-title{font-size:1.3rem;font-weight:700;margin-top:4px;font-family:'Playfair Display',serif;}
+  .print-date{font-size:0.8rem;color:#64748B;margin-top:4px;}
+  .print-student-box{background:#F1F5F9;border-radius:8px;padding:14px 18px;margin-bottom:20px;}
+  .print-student-name{font-size:1.15rem;font-weight:700;font-family:'Playfair Display',serif;}
+  .print-student-meta{font-size:0.85rem;color:#64748B;margin-top:2px;}
+  .print-section{margin-bottom:22px;page-break-inside:avoid;}
+  .print-section-title{font-weight:700;font-size:0.95rem;color:#0F2942;border-bottom:2px solid #0F2942;padding-bottom:4px;margin-bottom:10px;}
+  .print-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+  .print-table td{padding:5px 8px;border-bottom:1px solid #E2E8F0;}
+  .print-queja{border-bottom:1px solid #E2E8F0;padding:10px 0;font-size:0.85rem;}
+  .print-queja-fecha{font-weight:700;color:#0F2942;}
+  .print-queja-meta{color:#64748B;font-size:0.78rem;margin-top:3px;}
+  .hist-title-badge{background:#0F2942 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
 </style>
 </head>
 <body>
@@ -177,6 +200,7 @@ textarea{resize:vertical;min-height:90px;}
     <button class="nav-tab" onclick="showPage('casos')">📋 Casos</button>
     <button class="nav-tab" onclick="showPage('historial')">🔍 Historial</button>
     <button class="nav-tab" onclick="showPage('reportes-docentes')">📥 Reportes</button>
+    <button class="nav-tab" onclick="showPage('anotacion-general')">🗒️ Anotación general</button>
     <div class="side-group-label">Analisis</div>
     <button class="nav-tab" onclick="showPage('director')">🏫 Director</button>
     <button class="nav-tab" onclick="showPage('docentes')">👩‍🏫 Docentes</button>
@@ -276,7 +300,7 @@ textarea{resize:vertical;min-height:90px;}
         <optgroup label="Manana">
           <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
           <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
-          <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+          <option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option>
           <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
           <option>Sofia Lesmes</option>
         </optgroup>
@@ -284,8 +308,8 @@ textarea{resize:vertical;min-height:90px;}
           <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
           <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
           <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
-          <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
-          <option>Yiseth Daza</option>
+          <option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option>
+          <option>Steve Bayona</option>
         </optgroup>
         <option>Otro docente</option>
       </select>
@@ -379,6 +403,43 @@ textarea{resize:vertical;min-height:90px;}
   <div id="rd-list" style="display:flex;flex-direction:column;gap:10px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
 </div>
 
+<!-- ANOTACION GENERAL -->
+<div class="page" id="page-anotacion-general">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Anotación general</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Notas sueltas sobre un estudiante, sin necesidad de abrir un caso formal.</div>
+
+  <div class="card form-section">
+    <div class="field">
+      <label class="lbl">Buscar estudiante</label>
+      <input type="text" id="an-search" placeholder="Escribe el nombre..." oninput="filtrarEstAnotacion()">
+    </div>
+    <div class="field" id="an-select-wrap" style="display:none">
+      <label class="lbl">Seleccionar</label>
+      <select id="an-student-select" onchange="selEstAnotacion()">
+        <option value="">Seleccionar...</option>
+      </select>
+    </div>
+    <div id="an-student-info" style="display:none;background:var(--navy);color:white;border-radius:10px;padding:12px;margin-top:4px">
+      <div id="an-student-name" style="font-weight:700;font-size:1rem"></div>
+      <div id="an-student-grade" style="font-size:0.82rem;color:#94A3B8;margin-top:2px"></div>
+    </div>
+  </div>
+
+  <div class="card form-section" id="an-form-section" style="display:none">
+    <div class="field">
+      <label class="lbl">Fecha</label>
+      <input type="date" id="an-fecha">
+      <div class="ferr" id="an-ferr-fecha"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Nota</label>
+      <textarea id="an-nota" placeholder="Escribe la anotación..." style="min-height:120px"></textarea>
+      <div class="ferr" id="an-ferr-nota"></div>
+    </div>
+    <button class="btn btn-primary" id="an-btn-submit" onclick="saveAnotacionGeneral()" style="width:100%;padding:14px">Guardar anotación</button>
+  </div>
+</div>
+
 <!-- DIRECTOR -->
 <div class="page" id="page-director">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Portal Director de Grado</div>
@@ -387,7 +448,7 @@ textarea{resize:vertical;min-height:90px;}
     <select id="dir-grade" onchange="renderDirector()">
       <option value="">Elegir grado...</option>
       <optgroup label="Manana">
-        <option value="1A">1A - Dir. Maria De Los Angeles Barrera</option>
+        <option value="1A">1A - Dir. Diana Yiseth Daza</option>
         <option value="1B">1B - Dir. Leilys Rodriguez</option>
         <option value="2A">2A - Dir. Adriana Romero</option>
         <option value="2B">2B - Dir. Angela Ibanez</option>
@@ -401,7 +462,7 @@ textarea{resize:vertical;min-height:90px;}
       <optgroup label="Tarde">
         <option value="1C">1C - Dir. Leidy Gonzalez</option>
         <option value="1D">1D - Dir. Diana Sanchez</option>
-        <option value="2C">2C - Dir. Yiseth Daza</option>
+        <option value="2C">2C - Dir. Katherine Manrique</option>
         <option value="2D">2D - Dir. Isbel Sanchez</option>
         <option value="3C">3C - Dir. Juan Duenas</option>
         <option value="3D">3D - Dir. Leidy Atilua</option>
@@ -433,7 +494,7 @@ textarea{resize:vertical;min-height:90px;}
           <optgroup label="Manana">
             <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
             <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
-            <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+            <option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option>
             <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
             <option>Sofia Lesmes</option>
           </optgroup>
@@ -441,8 +502,8 @@ textarea{resize:vertical;min-height:90px;}
             <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
             <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
             <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
-            <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
-            <option>Yiseth Daza</option>
+            <option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option>
+            <option>Steve Bayona</option>
           </optgroup>
           <option>Otro docente</option>
         </select>
@@ -488,7 +549,7 @@ textarea{resize:vertical;min-height:90px;}
           <optgroup label="Manana">
             <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
             <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
-            <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+            <option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option>
             <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
             <option>Sofia Lesmes</option>
           </optgroup>
@@ -496,8 +557,8 @@ textarea{resize:vertical;min-height:90px;}
             <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
             <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
             <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
-            <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
-            <option>Yiseth Daza</option>
+            <option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option>
+            <option>Steve Bayona</option>
           </optgroup>
           <option>Otro docente</option>
         </select>
@@ -535,6 +596,10 @@ textarea{resize:vertical;min-height:90px;}
           <button class="type-btn" id="dq-btn-citacion-no" onclick="selQuejaCitacion('no')">No</button>
         </div>
       </div>
+      <div class="field">
+        <label class="lbl">Que manejo se le dio?</label>
+        <textarea id="dq-manejo" placeholder="Describe el manejo o accion tomada..."></textarea>
+      </div>
       <div class="field" id="dq-campo-citacion" style="display:none">
         <label class="lbl">Fecha de la citacion</label>
         <input type="date" id="dq-fecha-citacion">
@@ -556,7 +621,7 @@ textarea{resize:vertical;min-height:90px;}
         <button class="btn btn-primary" id="dq-btn-submit" onclick="submitQueja()" style="flex:2">Registrar queja</button>
       </div>
     </div>
-    <div><div class="slbl" style="margin-bottom:12px">Quejas registradas</div><div id="quejas-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
+    <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div class="slbl" style="margin-bottom:0">Quejas registradas</div><button class="btn btn-ghost" onclick="exportQuejasPDF()">📄 Exportar informe</button></div><div id="quejas-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
   </div>
 
   <!-- PANEL DOCENTE -->
@@ -568,7 +633,7 @@ textarea{resize:vertical;min-height:90px;}
         <optgroup label="Manana">
           <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
           <option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
-          <option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria De Los Angeles Barrera</option>
+          <option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option>
           <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
           <option>Sofia Lesmes</option>
         </optgroup>
@@ -576,8 +641,8 @@ textarea{resize:vertical;min-height:90px;}
           <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
           <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
           <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
-          <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
-          <option>Yiseth Daza</option>
+          <option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option>
+          <option>Steve Bayona</option>
         </optgroup>
       </select>
     </div>
@@ -727,8 +792,13 @@ textarea{resize:vertical;min-height:90px;}
 <div class="modal-overlay" id="est-modal-overlay" onclick="closeEstModal(event)">
   <div class="modal">
     <button class="back-btn" onclick="closeEstModalDirect()" style="margin-bottom:16px">← Volver</button>
-    <div class="serif" id="est-modal-nombre" style="font-size:1.2rem;color:var(--navy);font-weight:700;margin-bottom:4px"></div>
-    <div id="est-modal-grado" style="font-size:0.85rem;color:var(--gray);margin-bottom:20px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="serif" id="est-modal-nombre" style="font-size:1.2rem;color:var(--navy);font-weight:700;margin-bottom:4px"></div>
+        <div id="est-modal-grado" style="font-size:0.85rem;color:var(--gray);margin-bottom:20px"></div>
+      </div>
+      <button class="btn btn-ghost" onclick="exportStudentPDF()" style="white-space:nowrap">📄 Exportar en PDF</button>
+    </div>
 
     <!-- Historial disciplinario -->
     <div id="est-modal-historial" style="margin-bottom:20px"></div>
@@ -838,11 +908,18 @@ textarea{resize:vertical;min-height:90px;}
 
     <!-- Formulario citacion -->
     <div class="card form-section" id="nr-form-citacion">
-      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Citacion a acudiente</div>
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700" id="nr-cit-titulo">Citacion a acudiente</div>
+      <div class="field">
+        <label class="lbl">A quien se cita</label>
+        <div class="type-grid">
+          <button class="type-btn sel" id="nr-cit-dest-acudiente" onclick="selCitDestino('acudiente')">Citacion a acudiente</button>
+          <button class="type-btn" id="nr-cit-dest-estudiante" onclick="selCitDestino('estudiante')">Citacion a estudiante</button>
+        </div>
+      </div>
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-cit-fecha"><div class="ferr" id="nr-cit-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Motivo de la citacion</label><textarea id="nr-cit-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="nr-cit-ferr-motivo"></div></div>
       <div class="field"><label class="lbl">Quien brindo la atencion</label><input type="text" id="nr-cit-atencion" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-cit-ferr-atencion"></div></div>
-      <div class="field"><label class="lbl">Asistio el acudiente?</label>
+      <div class="field" id="nr-cit-campo-asistio"><label class="lbl">Asistio el acudiente?</label>
         <div class="type-grid">
           <button class="type-btn" id="nr-cit-si" onclick="selNRBool('cit','si')">Si asistio</button>
           <button class="type-btn" id="nr-cit-no" onclick="selNRBool('cit','no')">No asistio</button>
@@ -960,7 +1037,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4h44F3iQOKRW3MiD8-Ieo3FneM7dPcB3my52SdJWmIqSxPTusCcqJWGU9mempXZX-/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKkN8pkhiN_T34ek4RwQnF8TGfKKJdeoT0L1g_Af7TD6BRdJNIBF6vFF6ZuNKNMx-6/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -972,7 +1049,8 @@ var DELETE_PWD = "Dilia123";
 var TEACHERS_DATA = {
   "Adriana Romero":{"asignatura":"Lenguaje","direccion":"2A"},
   "Maria Helena Soto":{"asignatura":"Lenguaje","direccion":"5B"},
-  "Maria De Los Angeles Barrera":{"asignatura":"Matematicas","direccion":"1A"},
+  "Diana Yiseth Daza":{"asignatura":"Matematicas","direccion":"1A"},
+  "Katherine Manrique":{"asignatura":"Matematicas","direccion":"2C"},
   "Ana Bolanos":{"asignatura":"Ingles","direccion":"3A"},
   "Sofia Lesmes":{"asignatura":"Ingles","direccion":"4A"},
   "Consuelo Ardila":{"asignatura":"Ciencias Naturales","direccion":"4B"},
@@ -985,7 +1063,6 @@ var TEACHERS_DATA = {
   "Magda Suarez":{"asignatura":"Bilinguismo","direccion":null},
   "Mabel Sanchez":{"asignatura":"Lenguaje","direccion":"4C"},
   "Leidy Gonzalez":{"asignatura":"Lenguaje","direccion":"1C"},
-  "Yiseth Daza":{"asignatura":"Matematicas","direccion":"2C"},
   "Nidia Torres":{"asignatura":"Matematicas","direccion":"4D"},
   "Isbel Sanchez":{"asignatura":"Ingles","direccion":"2D"},
   "Angel Gaviria":{"asignatura":"Ingles","direccion":null},
@@ -4582,11 +4659,26 @@ function normName(s) {
     .replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O')
     .replace(/[ÚÙÜÛ]/g,'U').replace(/[Ñ]/g,'N');
 }
-function resolveStudentName(raw) {
+function resolveStudentName(raw, grado) {
   var norm = normName(raw);
   if (!norm || !studentsData || !studentsData.length) return raw;
   for (var i = 0; i < studentsData.length; i++) {
     if (normName(studentsData[i].nombre) === norm) return studentsData[i].nombre;
+  }
+  var wordsRaw = norm.split(' ').filter(function(w){ return w.length > 1; });
+  if (wordsRaw.length < 2) return raw;
+  var candidatos = studentsData;
+  if (grado) {
+    var mismoGrado = studentsData.filter(function(s){ return String(s.grado||'').trim().toUpperCase() === String(grado).trim().toUpperCase(); });
+    if (mismoGrado.length) candidatos = mismoGrado;
+  }
+  for (var i = 0; i < candidatos.length; i++) {
+    var wordsRoster = normName(candidatos[i].nombre).split(' ').filter(function(w){ return w.length > 1; });
+    var shorter = wordsRaw.length <= wordsRoster.length ? wordsRaw : wordsRoster;
+    var longer = wordsRaw.length <= wordsRoster.length ? wordsRoster : wordsRaw;
+    if (shorter.length >= 2 && shorter.every(function(w){ return longer.indexOf(w) !== -1; })) {
+      return candidatos[i].nombre;
+    }
   }
   return raw;
 }
@@ -4608,7 +4700,14 @@ window.onload = function() {
 
 function apiCall(params) {
   var url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
-  return fetch(url, {redirect:"follow"}).then(function(r){return r.json();});
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function(){ controller.abort(); }, 20000);
+  return fetch(url, {redirect:"follow", signal: controller.signal}).then(function(r){return r.json();}).finally(function(){ clearTimeout(timeoutId); }).catch(function(err){
+    if (err && err.name === "AbortError") {
+      throw new Error("La conexion tardo demasiado. Verifica tu internet antes de intentar de nuevo (evita hacer varios clics seguidos).");
+    }
+    throw err;
+  });
 }
 
 function normalizeCase(c) {
@@ -4628,7 +4727,7 @@ function loadCases() {
   loading(true);
   apiCall({action:"list"}).then(function(data){
     cases = Array.isArray(data)?data.map(normalizeCase):[];
-    cases.forEach(function(c){ c.studentName = resolveStudentName(c.studentName); });
+    cases.forEach(function(c){ c.studentName = resolveStudentName(c.studentName, c.grade); });
     renderAll(); toast("Sincronizado","ok");
   }).catch(function(){toast("Error de conexion","red");}).finally(function(){loading(false);});
 }
@@ -4654,7 +4753,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","director","docentes","stats","estudiantes","nuevo-registro","config"];
+  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -4836,13 +4935,99 @@ function confirmDelete(){
   apiCall({action:"delete",id:c.id}).then(function(){cases.splice(modalIndex,1);closeModal();renderAll();toast("Caso eliminado","red");}).catch(function(){toast("Error","red");}).finally(function(){loading(false);});
 }
 
+function eliminarCasoDesdeHistorial(idx, event){
+  if(event) event.stopPropagation();
+  var c=cases[idx]; if(!c) return;
+  var pwd=prompt("Ingresa la contrasena para eliminar:");
+  if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
+  var id=c.id; loading(true);
+  apiCall({action:"delete",id:id}).then(function(){
+    var i=cases.findIndex(function(x){return x.id===id;});
+    if(i>=0) cases.splice(i,1);
+    renderAll();
+    var s=studentsData[currentEstIndex];
+    if(s) openEstModal(s);
+    toast("Caso eliminado","red");
+  }).catch(function(){toast("Error al eliminar","red");}).finally(function(){loading(false);});
+}
+
 // DIRECTOR
+var allLlegadasTarde = [];
+var llegadasTardeLoaded = false;
+function loadAllLlegadasTarde(){
+  apiCall({action:'listAllLlegadasTarde'}).then(function(data){
+    allLlegadasTarde = Array.isArray(data) ? data : [];
+    llegadasTardeLoaded = true;
+    renderDirector();
+  }).catch(function(){ llegadasTardeLoaded = true; renderDirector(); });
+}
+function getPeriodoLlegada(dateObj){
+  if(!dateObj || isNaN(dateObj.getTime())) return null;
+  var y=dateObj.getFullYear();
+  var ranges=[
+    ['I', new Date(y,1,2,0,0,0), new Date(y,4,8,23,59,59)],
+    ['II', new Date(y,4,11,0,0,0), new Date(y,7,21,23,59,59)],
+    ['III', new Date(y,7,24,0,0,0), new Date(y,10,13,23,59,59)]
+  ];
+  var t=dateObj.getTime();
+  for(var i=0;i<ranges.length;i++){
+    if(t>=ranges[i][1].getTime() && t<=ranges[i][2].getTime()) return ranges[i][0];
+  }
+  return null;
+}
+function resolveLlegadaTardeStudent(raw){
+  var celda = String(raw||'').replace(/\u00a0/g,' ').trim().toUpperCase();
+  celda = celda.replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N');
+  var nombreParte = celda.indexOf(' - ') !== -1 ? celda.split(' - ').pop().trim() : celda;
+  if (!nombreParte || !studentsData || !studentsData.length) return null;
+  for (var i=0;i<studentsData.length;i++){
+    if (normName(studentsData[i].nombre) === nombreParte) return studentsData[i];
+  }
+  var wordsForm = nombreParte.split(' ').filter(function(w){return w.length>2;});
+  if (!wordsForm.length) return null;
+  for (var i=0;i<studentsData.length;i++){
+    var sNorm = normName(studentsData[i].nombre);
+    var matches = wordsForm.filter(function(w){return sNorm.indexOf(w)!==-1;});
+    if (matches.length >= Math.min(2, wordsForm.length)) return studentsData[i];
+  }
+  return null;
+}
 function renderDirector(){
   if(!cases.length){loadCases();return;}
+  if(!llegadasTardeLoaded){loadAllLlegadasTarde();}
   var grade=document.getElementById("dir-grade").value; var el=document.getElementById("dir-content");
   if(!grade){el.innerHTML="";return;}
   var gc=cases.filter(function(c){return String(c.grade||'').trim()===String(grade).trim();});
-  if(!gc.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No hay casos para el grado '+grade+"</p></div>";return;}
+
+  var ltByPeriodo={I:{},II:{},III:{}};
+  if(llegadasTardeLoaded){
+    allLlegadasTarde.forEach(function(r){
+      var s=resolveLlegadaTardeStudent(r.estudiante);
+      if(!s || String(s.grado||'').trim()!==String(grade).trim()) return;
+      var per=getPeriodoLlegada(new Date(r.fecha));
+      if(!per) return;
+      ltByPeriodo[per][s.nombre]=(ltByPeriodo[per][s.nombre]||0)+1;
+    });
+  }
+  var ltHtml='<div class="card"><div class="slbl" style="margin-bottom:12px">Llegadas tarde por periodo</div>';
+  if(!llegadasTardeLoaded){
+    ltHtml+='<div style="font-size:0.85rem;color:var(--gray)">Cargando...</div>';
+  } else {
+    ['I','II','III'].forEach(function(per){
+      var list=Object.entries(ltByPeriodo[per]).sort(function(a,b){return b[1]-a[1];});
+      ltHtml+='<div style="font-size:0.72rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em;margin-top:'+(per==='I'?'0':'16px')+';margin-bottom:6px">Periodo '+per+'</div>';
+      if(!list.length){
+        ltHtml+='<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde en este periodo.</div>';
+      } else {
+        list.forEach(function(e){
+          ltHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-light)"><div style="font-weight:600;color:var(--navy)">'+e[0]+'</div><span class="tag tag-amber">'+e[1]+' llegada'+(e[1]>1?'s':'')+'</span></div>';
+        });
+      }
+    });
+  }
+  ltHtml+='</div>';
+
+  if(!gc.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No hay casos para el grado '+grade+"</p></div>"+ltHtml;return;}
   var total=gc.length; var abiertos=gc.filter(function(c){return c.status==="abierto";}).length; var conv=gc.filter(function(c){return c.type==="convivencia";}).length;
   var countMap={};gc.forEach(function(c){countMap[c.studentName]=(countMap[c.studentName]||0)+1;});
   var reincidentes=Object.entries(countMap).filter(function(e){return e[1]>1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
@@ -4855,6 +5040,7 @@ function renderDirector(){
   if(reincidentes.length){html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Estudiantes reincidentes</div>';reincidentes.forEach(function(e){html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-light)"><div style="font-weight:600;color:var(--navy)">'+e[0]+'</div><span class="tag tag-red">'+e[1]+" caso"+(e[1]>1?"s":"")+"</span></div>";});html+="</div>";}
   html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Casos por asignatura</div>';asgList.forEach(function(e){html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-light)"><div>'+e[0]+'</div><span class="tag tag-blue">'+e[1]+"</span></div>";});html+="</div>";
   html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Citaciones a acudientes</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center"><div style="background:var(--gray-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--navy)">'+citados+'</div><div style="font-size:0.72rem;color:var(--gray)">Citados</div></div><div style="background:var(--green-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--green-dark)">'+asistieron+'</div><div style="font-size:0.72rem;color:var(--green-dark)">Asistieron</div></div><div style="background:var(--red-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--red-dark)">'+noAsistieron+'</div><div style="font-size:0.72rem;color:var(--red-dark)">No asistieron</div></div></div></div>';
+  html+=ltHtml;
   html+='<div><div class="slbl" style="margin-bottom:12px">Todos los casos</div><div style="display:flex;flex-direction:column;gap:10px">';
   gc.forEach(function(c){var idx=cases.indexOf(c);var sn=c.description.length>80?c.description.slice(0,80)+"...":c.description;html+='<div class="case-card '+c.type+'" onclick="openModal('+idx+')"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+c.studentName+"</div>"+stag(c.status)+"</div>"+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">'+fmtD(c.date)+" - "+c.teacher+"</div>"+'<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">'+sn+"</div></div>";});
   html+="</div></div>"; el.innerHTML=html;
@@ -4941,10 +5127,16 @@ function renderPanelExtras(){
 }
 
 var reportesDocentes = [];
+var reportesDescartadosIds = [];
 function loadReportesDocentes(){
   var el = document.getElementById('rd-list');
-  apiCall({action:'listReportesDocentes'}).then(function(data){
-    reportesDocentes = Array.isArray(data) ? data : [];
+  Promise.all([
+    apiCall({action:'listReportesDocentes'}).catch(function(){ return []; }),
+    apiCall({action:'listReportesDescartados'}).catch(function(){ return []; })
+  ]).then(function(results){
+    var todos = Array.isArray(results[0]) ? results[0] : [];
+    reportesDescartadosIds = (Array.isArray(results[1]) ? results[1] : []).map(String);
+    reportesDocentes = todos.filter(function(r){ return reportesDescartadosIds.indexOf(String(r['ID']||'')) === -1; });
     renderReportesDocentes();
   }).catch(function(){
     if(el) el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><p>Error cargando los reportes de docentes</p></div>';
@@ -4964,13 +5156,28 @@ function renderReportesDocentes(){
       +'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+(r['Detalle']||'')+'</div>'
       +'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">Reportado por '+(r['Docente']||'')+' · '+(r['Fecha y hora']||'')+'</div>'
       +(atendido?'<div style="font-size:0.78rem;color:var(--green-dark);margin-top:4px">Atendido por '+(r['Atendido por']||'')+': '+(r['Accion tomada']||'')+'</div>':'')
-      +'<button onclick="convertirReporteACaso('+idx+')" style="margin-top:10px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Convertir a caso →</button>';
+      +'<div style="display:flex;gap:14px;margin-top:10px"><button onclick="convertirReporteACaso('+idx+')" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Convertir a caso →</button><button onclick="descartarReporte('+idx+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Descartar</button></div>';
     el.appendChild(div);
   });
+}
+function descartarReporte(idx){
+  var r = reportesDocentes[idx];
+  if(!r) return;
+  var pwd = prompt('Ingresa la contrasena para descartar este reporte:');
+  if(pwd !== DELETE_PWD){ toast('Contrasena incorrecta','red'); return; }
+  var id = String(r['ID']||'');
+  apiCall({action:'descartarReporte', id:id}).then(function(){
+    reportesDocentes.splice(idx,1);
+    reportesDescartadosIds.push(id);
+    renderReportesDocentes();
+    toast('Reporte descartado','red');
+  }).catch(function(){ toast('Error al descartar','red'); });
 }
 function convertirReporteACaso(idx){
   var r = reportesDocentes[idx];
   if(!r) return;
+  var idRep = String(r['ID']||'');
+  apiCall({action:'descartarReporte', id:idRep}).catch(function(){});
   showPage('nuevo');
   clearForm();
   var jornada = String(r['Jornada']||'').trim();
@@ -5003,7 +5210,7 @@ function loadPermisos(){
 }
 function loadQuejas(){
   apiCall({action:"listQuejas"}).then(function(data){
-    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],adjunto:String(q.adjunto||""),date:String(q.date||""),citacion:String(q.citacion||""),fechaCitacion:String(q.fechaCitacion||""),conversado:String(q.conversado||"")};}):[]; renderQuejas();
+    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],adjunto:String(q.adjunto||""),date:String(q.date||""),citacion:String(q.citacion||""),fechaCitacion:String(q.fechaCitacion||""),conversado:String(q.conversado||""),manejo:String(q.manejo||"")};}):[]; renderQuejas();
   }).catch(function(){toast("Error cargando quejas","red");});
 }
 
@@ -5080,6 +5287,7 @@ function clearQuejaForm(){
   document.getElementById("dq-btn-citacion-si").className="type-btn"; document.getElementById("dq-btn-citacion-no").className="type-btn";
   document.getElementById("dq-campo-citacion").style.display="none";
   document.getElementById("dq-fecha-citacion").value=""; document.getElementById("dq-conversado").value="";
+  document.getElementById("dq-manejo").value="";
   ["eq-teacher","eq-fecha","eq-desc"].forEach(function(id){document.getElementById(id).textContent="";});
   editingQuejaIdx=-1;
   document.getElementById("dq-btn-submit").textContent="Registrar queja";
@@ -5100,11 +5308,12 @@ function submitQueja(){
   if(notifSelected.otro){var ot=document.getElementById("dq-not-otro-texto").value.trim();if(ot)notificados.push(ot);}
   var fechaCitacion=curQuejaCitacion==="si"?document.getElementById("dq-fecha-citacion").value:"";
   var conversado=curQuejaCitacion==="si"?document.getElementById("dq-conversado").value.trim():"";
+  var manejo=document.getElementById("dq-manejo").value.trim();
   var isEdit = editingQuejaIdx >= 0;
   if(isEdit){
     var pwdQ=prompt("Ingresa la contrasena para guardar cambios:"); if(pwdQ!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
   }
-  var q={id:isEdit?quejas[editingQuejaIdx].id:Date.now().toString(36),teacher:teacher,fecha:fecha,desc:desc,verbal:curVerbal,escrito:curEscrito,notificados:notificados,citacion:curQuejaCitacion,fechaCitacion:fechaCitacion,conversado:conversado,date:isEdit?quejas[editingQuejaIdx].date:new Date().toISOString()};
+  var q={id:isEdit?quejas[editingQuejaIdx].id:Date.now().toString(36),teacher:teacher,fecha:fecha,desc:desc,verbal:curVerbal,escrito:curEscrito,notificados:notificados,citacion:curQuejaCitacion,fechaCitacion:fechaCitacion,conversado:conversado,manejo:manejo,date:isEdit?quejas[editingQuejaIdx].date:new Date().toISOString()};
   var btn=document.getElementById("dq-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
   apiCall(Object.assign({action:isEdit?"updateQueja":"addQueja"},q,{notificados:notificados.join(",")})).then(function(){
     if(isEdit){ quejas[editingQuejaIdx]=q; } else { quejas.unshift(q); }
@@ -5131,6 +5340,7 @@ function editQueja(idx){
   selQuejaCitacion(q.citacion||"");
   document.getElementById("dq-fecha-citacion").value=q.fechaCitacion||"";
   document.getElementById("dq-conversado").value=q.conversado||"";
+  document.getElementById("dq-manejo").value=q.manejo||"";
   notifSelected={rectoria:false,convivencia:false,academica:false,otro:false};
   (q.notificados||[]).forEach(function(n){
     if(n==="Rectoria") notifSelected.rectoria=true;
@@ -5153,7 +5363,8 @@ function renderQuejas(){
     var div=document.createElement("div"); div.className="doc-card queja";
     var notHtml=q.notificados&&q.notificados.length?q.notificados.map(function(n){return'<span class="tag tag-gray">'+n+"</span>";}).join(""):"";
     var citHtml=q.citacion==="si"?'<div class="detail-block" style="margin-top:8px"><div style="font-weight:700;color:var(--navy);font-size:0.8rem">Citacion al docente'+(q.fechaCitacion?" · "+q.fechaCitacion:"")+'</div>'+(q.conversado?'<div style="margin-top:4px">'+q.conversado+'</div>':'')+'</div>':'';
-    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+q.teacher+'</div><span class="tag tag-amber">'+q.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag '+(q.verbal==="si"?"tag-green":"tag-red")+'">Verbal: '+(q.verbal==="si"?"Si":q.verbal==="no"?"No":"—")+"</span>"+'<span class="tag '+(q.escrito==="si"?"tag-green":"tag-red")+'">Escrito: '+(q.escrito==="si"?"Si":q.escrito==="no"?"No":"—")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+q.desc+"</div>"+citHtml+(notHtml?'<div class="tags" style="margin-top:8px"><span style="font-size:0.78rem;color:var(--gray);font-weight:600">Notificado a:</span>'+notHtml+"</div>":"")+'<div style="display:flex;gap:14px;margin-top:10px"><button onclick="editQueja('+idx+')" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Editar</button><button onclick="deleteQueja('+idx+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button></div>';
+    var manejoHtml=q.manejo?'<div class="detail-block gr" style="margin-top:8px"><div style="font-weight:700;color:var(--navy);font-size:0.8rem">Manejo dado</div><div style="margin-top:4px">'+q.manejo+'</div></div>':'';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+q.teacher+'</div><span class="tag tag-amber">'+q.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag '+(q.verbal==="si"?"tag-green":"tag-red")+'">Verbal: '+(q.verbal==="si"?"Si":q.verbal==="no"?"No":"—")+"</span>"+'<span class="tag '+(q.escrito==="si"?"tag-green":"tag-red")+'">Escrito: '+(q.escrito==="si"?"Si":q.escrito==="no"?"No":"—")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+q.desc+"</div>"+citHtml+manejoHtml+(notHtml?'<div class="tags" style="margin-top:8px"><span style="font-size:0.78rem;color:var(--gray);font-weight:600">Notificado a:</span>'+notHtml+"</div>":"")+'<div style="display:flex;gap:14px;margin-top:10px"><button onclick="editQueja('+idx+')" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Editar</button><button onclick="deleteQueja('+idx+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button></div>';
     list.appendChild(div);
   });
 }
@@ -5576,13 +5787,21 @@ function openEstModal(s) {
         '</div>' +
         '<div style="font-size:0.82rem;color:#475569;margin-top:4px">' + fmtD(c.date) + ' · ' + (c.asignatura || c.teacher) + '</div>' +
         '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + (c.description.length > 80 ? c.description.slice(0,80)+'...' : c.description) + '</div>' +
-        '<div style="font-size:0.72rem;color:var(--blue);margin-top:4px;font-weight:600">Ver detalle completo →</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">' +
+          '<span style="font-size:0.72rem;color:var(--blue);font-weight:600">Ver detalle completo →</span>' +
+          '<span onclick="eliminarCasoDesdeHistorial(' + cidx + ', event)" style="font-size:0.72rem;color:var(--red);font-weight:600;cursor:pointer">Eliminar</span>' +
+        '</div>' +
       '</div>';
     });
     histHTML += '</div>';
   } else {
     histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin casos disciplinarios.</div>';
   }
+  histHTML += '</div>';
+
+  // Anotaciones generales
+  histHTML += '<div class="hist-section"><div class="hist-title-badge">Anotaciones generales</div>';
+  histHTML += '<div id="est-anotaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
   // Academic history (live + legacy, con corte/final)
@@ -5601,6 +5820,8 @@ function openEstModal(s) {
   histHTML += '<div id="est-llegadas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Citaciones a acudiente</div>';
   histHTML += '<div id="est-citaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
+  histHTML += '<div class="hist-section"><div class="hist-title-badge">Citaciones a estudiante</div>';
+  histHTML += '<div id="est-citaciones-estudiante-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Actividades de reparacion</div>';
   histHTML += '<div id="est-reparaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
@@ -5612,9 +5833,11 @@ function openEstModal(s) {
   // Registration is done in the Nuevo Registro tab
   loadEstDocs(s.nombre);
   loadCompromisos(s.nombre);
-  loadLlegadasTarde(s.nombre);
+  loadLlegadasTarde(s.nombre, s.grado);
   loadHistorialAcademico(s.nombre);
+  loadAnotaciones(s.nombre);
   loadRegistros('citacion', s.nombre, 'est-citaciones-list');
+  loadRegistros('citacion_estudiante', s.nombre, 'est-citaciones-estudiante-list');
   loadRegistros('reparacion', s.nombre, 'est-reparaciones-list');
   loadRegistros('suspension', s.nombre, 'est-suspensiones-list');
 
@@ -5973,7 +6196,7 @@ function renderRegistrosList(el, list, tipo, elId) {
     }
     var extra = '';
     if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + '</div>';
-    if ((tipo === 'citacion' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
+    if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
     if (r.bool1) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
     return '<div style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
       + '<div style="font-size:0.78rem;color:var(--gray)">' + fechaLabel + '</div>'
@@ -6046,6 +6269,42 @@ function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
   el.innerHTML = html;
 }
 
+function renderAnotaciones(el, data, nombre) {
+  if (!el) return;
+  if (!data || !data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin anotaciones registradas.</div>'; return; }
+  var ordenadas = data.slice().sort(function(a,b){ return new Date(b.fecha||0) - new Date(a.fecha||0); });
+  var html = '';
+  ordenadas.forEach(function(a) {
+    var dateKey = encodeURIComponent(String(a.date || a.fecha || ''));
+    html += '<div class="detail-block" style="margin-bottom:8px">' +
+      '<div style="font-weight:700;color:var(--navy);font-size:0.8rem">' + fmtD(a.fecha) + '</div>' +
+      '<div style="margin-top:4px">' + (a.nota||'') + '</div>' +
+      '<button onclick="eliminarAnotacion(\'' + encodeURIComponent(nombre) + '\', \'' + dateKey + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;font-weight:600;padding:0">Eliminar</button>' +
+    '</div>';
+  });
+  el.innerHTML = html;
+}
+function eliminarAnotacion(nombreEnc, dateKey) {
+  var pwd = prompt('Ingresa la contrasena para eliminar:');
+  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  var nombre = decodeURIComponent(nombreEnc);
+  apiCall({ action: 'deleteAnotacion', nombre: nombre, date: decodeURIComponent(dateKey) })
+    .then(function(res) {
+      if (res && res.deleted === false) { toast('No se encontro la anotacion en la hoja', 'red'); return; }
+      toast('Anotacion eliminada', 'red');
+      loadAnotaciones(nombre);
+    }).catch(function() { toast('Error al eliminar', 'red'); });
+}
+function loadAnotaciones(nombre) {
+  var el = document.getElementById('est-anotaciones-list');
+  if (!el) return;
+  apiCall({ action: 'listAnotaciones', nombre: nombre }).then(function(data) {
+    renderAnotaciones(el, Array.isArray(data) ? data : [], nombre);
+  }).catch(function() {
+    renderAnotaciones(el, [], nombre);
+  });
+}
+
 function loadHistorialAcademico(nombre) {
   var el = document.getElementById('est-histacad-content');
   if (!el) return;
@@ -6060,9 +6319,9 @@ function loadHistorialAcademico(nombre) {
   });
 }
 
-function loadLlegadasTarde(nombre) {
+function loadLlegadasTarde(nombre, grado) {
   var el = document.getElementById('est-llegadas-list');
-  apiCall({ action: 'listLlegadasTarde', nombre: nombre }).then(function(data) {
+  apiCall({ action: 'listLlegadasTarde', nombre: nombre, grado: grado || '' }).then(function(data) {
     if (!el) return;
     if (!Array.isArray(data)) data = [];
     if (!data.length) { el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde registradas.</div>'; return; }
@@ -6139,6 +6398,69 @@ function initNuevoRegistro() {
   selNRTipo('citacion');
 }
 
+var anCurrentStudent = null;
+function filtrarEstAnotacion() {
+  var q = document.getElementById('an-search').value.trim().toLowerCase();
+  if (q.length < 2) {
+    document.getElementById('an-select-wrap').style.display = 'none';
+    return;
+  }
+  var matches = studentsData.filter(function(s) {
+    return s.nombre.toLowerCase().includes(q);
+  }).slice(0, 25);
+  var sel = document.getElementById('an-student-select');
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  matches.forEach(function(s) {
+    var opt = document.createElement('option');
+    var globalIdx = studentsData.indexOf(s);
+    opt.value = globalIdx;
+    opt.textContent = s.nombre + ' (' + s.grado + ' ' + s.jornada + ')';
+    sel.appendChild(opt);
+  });
+  document.getElementById('an-select-wrap').style.display = 'flex';
+}
+function selEstAnotacion() {
+  var sel = document.getElementById('an-student-select');
+  var val = sel.value;
+  if (!val) {
+    document.getElementById('an-student-info').style.display = 'none';
+    document.getElementById('an-form-section').style.display = 'none';
+    anCurrentStudent = null;
+    return;
+  }
+  var idx = parseInt(val);
+  anCurrentStudent = studentsData[idx];
+  if (!anCurrentStudent) return;
+  document.getElementById('an-student-name').textContent = anCurrentStudent.nombre;
+  document.getElementById('an-student-grade').textContent = anCurrentStudent.grado + ' · ' + anCurrentStudent.jornada;
+  document.getElementById('an-student-info').style.display = 'block';
+  document.getElementById('an-form-section').style.display = 'block';
+}
+function saveAnotacionGeneral() {
+  if (!anCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  document.getElementById('an-ferr-fecha').textContent = '';
+  document.getElementById('an-ferr-nota').textContent = '';
+  var fecha = document.getElementById('an-fecha').value;
+  var nota = document.getElementById('an-nota').value.trim();
+  var ok = true;
+  if (!fecha) { document.getElementById('an-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!nota) { document.getElementById('an-ferr-nota').textContent = 'Escribe la anotacion'; ok = false; }
+  if (!ok) return;
+  var btn = document.getElementById('an-btn-submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveAnotacion',
+    nombre: anCurrentStudent.nombre,
+    fecha: fecha, nota: nota,
+    date: new Date().toISOString()
+  }).then(function() {
+    document.getElementById('an-fecha').value = '';
+    document.getElementById('an-nota').value = '';
+    toast('Anotacion guardada', 'ok');
+  }).catch(function() { toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar anotación'; });
+}
+
 function filtrarEstNR() {
   var q = document.getElementById('nr-search').value.trim().toLowerCase();
   if (q.length < 2) {
@@ -6191,6 +6513,22 @@ function selNRTipo(tipo) {
   nrBools = {};
 }
 
+var curCitDestino = 'acudiente';
+function selCitDestino(v) {
+  curCitDestino = v;
+  document.getElementById('nr-cit-dest-acudiente').className = 'type-btn' + (v === 'acudiente' ? ' sel' : '');
+  document.getElementById('nr-cit-dest-estudiante').className = 'type-btn' + (v === 'estudiante' ? ' sel' : '');
+  document.getElementById('nr-cit-titulo').textContent = v === 'estudiante' ? 'Citacion a estudiante' : 'Citacion a acudiente';
+  var campoAsistio = document.getElementById('nr-cit-campo-asistio');
+  if (v === 'estudiante') {
+    campoAsistio.style.display = 'none';
+    nrBools['cit'] = '';
+    selNRBool('cit', '');
+  } else {
+    campoAsistio.style.display = '';
+  }
+}
+
 function selNRBool(prefix, val) {
   nrBools[prefix] = val;
   var si = document.getElementById('nr-' + prefix + '-si');
@@ -6210,6 +6548,7 @@ function saveNRRegistro(tipo) {
   if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
   var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
   var pf = prefixMap[tipo];
+  var tipoReal = (tipo === 'citacion' && curCitDestino === 'estudiante') ? 'citacion_estudiante' : tipo;
   clearNRFerr(pf, ['fecha','motivo','atencion','dias']);
   var fecha = document.getElementById('nr-' + pf + '-fecha').value;
   var motivo = document.getElementById('nr-' + pf + '-motivo').value.trim();
@@ -6233,9 +6572,9 @@ function saveNRRegistro(tipo) {
   apiCall({
     action: 'saveRegistro',
     nombre: nrCurrentStudent.nombre,
-    tipo: tipo, fecha: fecha, motivo: motivo,
+    tipo: tipoReal, fecha: fecha, motivo: motivo,
     desc: desc, atencion: atencion, dias: dias,
-    bool1: nrBools[pf] || '',
+    bool1: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || ''),
     date: new Date().toISOString()
   }).then(function() {
     document.getElementById('nr-' + pf + '-fecha').value = '';
@@ -6245,6 +6584,7 @@ function saveNRRegistro(tipo) {
     if(diasEl) diasEl.value = '';
     nrBools[pf] = '';
     selNRBool(pf, '');
+    if (tipo === 'citacion') selCitDestino('acudiente');
     toast('Registro guardado', 'ok');
   }).catch(function() { toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = labels[tipo]; });
@@ -6321,6 +6661,83 @@ function saveNRHistorialAcademico() {
   }).catch(function() { toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar historial academico'; });
 }
+
+function exportStudentPDF() {
+  var s = studentsData[currentEstIndex];
+  if (!s) return;
+  var histContent = document.getElementById('est-modal-historial').innerHTML;
+  var acudiente = document.getElementById('est-edit-acudiente').value || '—';
+  var telefono = document.getElementById('est-edit-telefono').value || '—';
+  var correo = document.getElementById('est-edit-correo').value || '—';
+  var direccion = document.getElementById('est-edit-direccion').value || '—';
+  var fecha = new Date().toLocaleDateString('es-CO', {day:'numeric', month:'long', year:'numeric'});
+
+  var html =
+    '<div class="print-header">' +
+      '<div class="print-school">Gimnasio ComfaCasanare — Registro Integral</div>' +
+      '<div class="print-title">Informe individual del estudiante</div>' +
+      '<div class="print-date">Generado el ' + fecha + '</div>' +
+    '</div>' +
+    '<div class="print-student-box">' +
+      '<div class="print-student-name">' + s.nombre + '</div>' +
+      '<div class="print-student-meta">' + s.grado + ' · ' + s.jornada + '</div>' +
+    '</div>' +
+    '<div class="print-section">' + histContent + '</div>' +
+    '<div class="print-section">' +
+      '<div class="print-section-title">Datos del acudiente</div>' +
+      '<table class="print-table">' +
+        '<tr><td><b>Acudiente</b></td><td>' + acudiente + '</td></tr>' +
+        '<tr><td><b>Telefono</b></td><td>' + telefono + '</td></tr>' +
+        '<tr><td><b>Correo</b></td><td>' + correo + '</td></tr>' +
+        '<tr><td><b>Direccion</b></td><td>' + direccion + '</td></tr>' +
+      '</table>' +
+    '</div>';
+
+  document.getElementById('print-area').innerHTML = html;
+  window.print();
+}
+
+function exportQuejasPDF() {
+  if (!quejas.length) { toast('No hay quejas registradas para exportar', 'red'); return; }
+  var porDocente = {};
+  quejas.forEach(function(q) {
+    var key = q.teacher || 'Sin docente';
+    if (!porDocente[key]) porDocente[key] = [];
+    porDocente[key].push(q);
+  });
+  var docentesOrdenados = Object.keys(porDocente).sort();
+  var fecha = new Date().toLocaleDateString('es-CO', {day:'numeric', month:'long', year:'numeric'});
+
+  var html =
+    '<div class="print-header">' +
+      '<div class="print-school">Gimnasio ComfaCasanare — Registro Integral</div>' +
+      '<div class="print-title">Informe de quejas a docentes</div>' +
+      '<div class="print-date">Generado el ' + fecha + ' · Total: ' + quejas.length + ' queja(s) en ' + docentesOrdenados.length + ' docente(s)</div>' +
+    '</div>';
+
+  docentesOrdenados.forEach(function(docente) {
+    var lista = porDocente[docente].slice().sort(function(a,b){ return new Date(a.fecha||0) - new Date(b.fecha||0); });
+    html += '<div class="print-section">' +
+      '<div class="print-section-title">' + docente + ' (' + lista.length + ' queja' + (lista.length>1?'s':'') + ')</div>';
+    lista.forEach(function(q) {
+      var notif = (q.notificados && q.notificados.length) ? q.notificados.join(', ') : '—';
+      var cit = q.citacion === 'si' ? ('Si' + (q.fechaCitacion ? ' — ' + q.fechaCitacion : '') + (q.conversado ? '. ' + q.conversado : '')) : 'No';
+      html +=
+        '<div class="print-queja">' +
+          '<div class="print-queja-fecha">' + (q.fecha||'') + '</div>' +
+          '<div>' + (q.desc||'') + '</div>' +
+          '<div class="print-queja-meta">Verbal: ' + (q.verbal==='si'?'Si':'No') + ' &middot; Escrito: ' + (q.escrito==='si'?'Si':'No') + ' &middot; Notificado a: ' + notif + '</div>' +
+          '<div class="print-queja-meta">Citacion al docente: ' + cit + '</div>' +
+          (q.manejo ? '<div class="print-queja-meta">Manejo dado: ' + q.manejo + '</div>' : '') +
+        '</div>';
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('print-area').innerHTML = html;
+  window.print();
+}
 </script>
+<div id="print-area"></div>
 </body>
 </html>
