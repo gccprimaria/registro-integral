@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Registro Integral · Gimnasio ComfaCasanare</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--navy:#0F2942;--navy-deep:#0A1E33;--navy-light:#1B4F72;--cream:#F7F4EF;--bg:#F1F4F9;--white:#FFFFFF;--amber:#F59E0B;--amber-dark:#B45309;--green:#10B981;--green-dark:#065F46;--green-bg:#D1FAE5;--red:#EF4444;--red-dark:#991B1B;--red-bg:#FEE2E2;--blue:#3B82F6;--blue-dark:#1E40AF;--blue-bg:#DBEAFE;--gray:#64748B;--gray-light:#E2E8F0;--gray-bg:#F1F5F9;--text:#1E293B;--shadow:0 2px 14px rgba(15,41,66,0.08);--shadow-md:0 10px 30px rgba(15,41,66,0.12);--radius:15px;--radius-lg:20px;--sidebar-w:258px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -481,6 +482,7 @@ textarea{resize:vertical;min-height:90px;}
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     <button class="type-btn sel" id="dtab-permisos" onclick="selDocTab('permisos')" style="flex:1;padding:10px;min-width:100px">Permisos</button>
     <button class="type-btn" id="dtab-quejas" onclick="selDocTab('quejas')" style="flex:1;padding:10px;min-width:100px">Quejas</button>
+    <button class="type-btn" id="dtab-libros" onclick="selDocTab('libros')" style="flex:1;padding:10px;min-width:100px">Revisión de libros</button>
     <button class="type-btn" id="dtab-panel" onclick="selDocTab('panel')" style="flex:1;padding:10px;min-width:100px">Panel</button>
   </div>
 
@@ -622,6 +624,62 @@ textarea{resize:vertical;min-height:90px;}
       </div>
     </div>
     <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div class="slbl" style="margin-bottom:0">Quejas registradas</div><button class="btn btn-ghost" onclick="exportQuejasPDF()">📄 Exportar informe</button></div><div id="quejas-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
+  </div>
+
+  <!-- REVISION DE LIBROS -->
+  <div id="dpanel-libros" style="display:none;flex-direction:column;gap:20px">
+    <div class="card form-section">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar revisión</div>
+      <div class="field">
+        <label class="lbl">Buscar estudiante</label>
+        <input type="text" id="rl-search" placeholder="Escribe el nombre..." oninput="filtrarEstRL()">
+      </div>
+      <div class="field" id="rl-select-wrap" style="display:none">
+        <label class="lbl">Seleccionar</label>
+        <select id="rl-student-select" onchange="selEstRL()">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div id="rl-student-info" style="display:none;background:var(--navy);color:white;border-radius:10px;padding:12px;margin-top:4px">
+        <div id="rl-student-name" style="font-weight:700;font-size:1rem"></div>
+        <div id="rl-student-grade" style="font-size:0.82rem;color:#94A3B8;margin-top:2px"></div>
+      </div>
+      <div id="rl-form-rest" style="display:none">
+        <div class="field"><label class="lbl">Docente</label>
+          <select id="rl-teacher" onchange="document.getElementById('rl-teacher-other').style.display=this.value==='Otro docente'?'block':'none';">
+            <option value="">Seleccionar docente...</option>
+            <optgroup label="Mañana">
+              <option>Adriana Romero</option><option>Ana Bolaños</option><option>Angela Ibañez</option><option>Camila De Castro</option><option>Carolina Padilla</option><option>Consuelo Ardila</option>
+              <option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option>
+              <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option>
+            </optgroup>
+            <optgroup label="Tarde">
+              <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Dueñas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
+              <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Katherine Manrique</option>
+              <option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option>
+            </optgroup>
+            <option>Otro docente</option>
+          </select>
+          <input type="text" id="rl-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
+          <div class="ferr" id="rl-ferr-teacher"></div>
+        </div>
+        <div class="field"><label class="lbl">Asignatura / libro</label><input type="text" id="rl-asignatura" placeholder="Ej: Matematicas"><div class="ferr" id="rl-ferr-asignatura"></div></div>
+        <div class="field"><label class="lbl">Fecha</label><input type="date" id="rl-fecha"><div class="ferr" id="rl-ferr-fecha"></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label class="lbl">Total de paginas</label><input type="number" id="rl-total" min="1" oninput="rlActualizarPct()"><div class="ferr" id="rl-ferr-total"></div></div>
+          <div class="field"><label class="lbl">Pagina actual</label><input type="number" id="rl-actual" min="0" oninput="rlActualizarPct()"><div class="ferr" id="rl-ferr-actual"></div></div>
+        </div>
+        <div style="background:var(--gray-bg);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px">
+          <span style="font-size:0.8rem;color:var(--gray);font-weight:600">Porcentaje de llenado</span>
+          <span id="rl-pct" style="font-weight:800;color:var(--navy);font-size:1.1rem">0%</span>
+        </div>
+        <button class="btn btn-primary" id="rl-btn-submit" onclick="saveRevisionLibro()" style="width:100%;padding:14px">Guardar revisión</button>
+      </div>
+    </div>
+    <div>
+      <div class="slbl" style="margin-bottom:12px">Historial de revisiones</div>
+      <div id="rl-historial-list" style="display:flex;flex-direction:column;gap:10px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
+    </div>
   </div>
 
   <!-- PANEL DOCENTE -->
@@ -1037,7 +1095,7 @@ textarea{resize:vertical;min-height:90px;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKkN8pkhiN_T34ek4RwQnF8TGfKKJdeoT0L1g_Af7TD6BRdJNIBF6vFF6ZuNKNMx-6/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUp4mUxaKqGmXIuXENxMCsucyDTOdugkbDzBlzS_Zq43QvP6cp2g5lGOL_guV5U01V/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -4696,7 +4754,46 @@ window.onload = function() {
   loadCases();
   initEstudiantes();
   loadPanelExtras();
+  loadSbEstudiantes();
 };
+
+// ============================================================
+// SUPABASE (migracion en curso: Casos ya usa Supabase, el resto sigue en Apps Script)
+// ============================================================
+var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+var sbEstudiantes = [];
+function loadSbEstudiantes() {
+  return sb.from('estudiantes').select('id,nombre,grado,jornada').then(function(res){
+    if (res.error) { console.error(res.error); return; }
+    sbEstudiantes = res.data || [];
+  });
+}
+function resolveEstudianteId(nombreRaw, gradoRaw) {
+  var norm = normName(nombreRaw);
+  if (!norm || !sbEstudiantes.length) return null;
+  for (var i = 0; i < sbEstudiantes.length; i++) {
+    if (normName(sbEstudiantes[i].nombre) === norm) return sbEstudiantes[i].id;
+  }
+  var wordsRaw = norm.split(' ').filter(function(w){ return w.length > 1; });
+  if (wordsRaw.length < 2) return null;
+  var candidatos = sbEstudiantes;
+  if (gradoRaw) {
+    var mismoGrado = sbEstudiantes.filter(function(s){ return String(s.grado||'').trim().toUpperCase() === String(gradoRaw).trim().toUpperCase(); });
+    if (mismoGrado.length) candidatos = mismoGrado;
+  }
+  for (var i = 0; i < candidatos.length; i++) {
+    var wordsRoster = normName(candidatos[i].nombre).split(' ').filter(function(w){ return w.length > 1; });
+    var shorter = wordsRaw.length <= wordsRoster.length ? wordsRaw : wordsRoster;
+    var longer = wordsRaw.length <= wordsRoster.length ? wordsRoster : wordsRaw;
+    if (shorter.length >= 2 && shorter.every(function(w){ return longer.indexOf(w) !== -1; })) {
+      return candidatos[i].id;
+    }
+  }
+  return null;
+}
 
 function apiCall(params) {
   var url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
@@ -4725,11 +4822,21 @@ function normalizeCase(c) {
 
 function loadCases() {
   loading(true);
-  apiCall({action:"list"}).then(function(data){
-    cases = Array.isArray(data)?data.map(normalizeCase):[];
-    cases.forEach(function(c){ c.studentName = resolveStudentName(c.studentName, c.grade); });
+  sb.from('casos').select('*, estudiantes(nombre)').order('fecha', {ascending:false}).then(function(res){
+    if (res.error) throw res.error;
+    cases = (res.data||[]).map(function(row){
+      return normalizeCase({
+        id: row.id, type: row.tipo,
+        studentName: row.estudiantes ? row.estudiantes.nombre : '',
+        grade: row.grado, teacher: row.docente, description: row.descripcion,
+        actions: row.acciones, status: row.status, date: row.fecha || row.created_at,
+        tipologia: row.tipologia, jornada: row.jornada, citacion: row.citacion,
+        fechaCitacion: row.fecha_citacion, asistencia: row.asistencia,
+        asignatura: row.asignatura, acta: row.acta_url
+      });
+    });
     renderAll(); toast("Sincronizado","ok");
-  }).catch(function(){toast("Error de conexion","red");}).finally(function(){loading(false);});
+  }).catch(function(err){console.error(err);toast("Error de conexion","red");}).finally(function(){loading(false);});
 }
 
 function updateCfg() {
@@ -4864,10 +4971,28 @@ function submitCase(){
   if(!validate()) return;
   var tRaw=document.getElementById("f-teacher").value; var teacher=tRaw==="Otro docente"?(document.getElementById("f-teacher-other").value.trim()||"Otro docente"):tRaw;
   var info=TEACHERS_DATA[tRaw]; var asignatura=tRaw==="Otro docente"?document.getElementById("f-asignatura-otro").value.trim():(info?info.asignatura:"");
-  var c=normalizeCase({id:Date.now().toString(36)+Math.random().toString(36).slice(2),type:curType,studentName:document.getElementById("f-student").value,grade:document.getElementById("f-grade").value,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:new Date().toISOString()});
+  var studentName=document.getElementById("f-student").value; var grade=document.getElementById("f-grade").value;
+  var estudianteId=resolveEstudianteId(studentName, grade);
+  if(!estudianteId){toast("No se encontro ese estudiante en la base de datos","red");return;}
+  var c=normalizeCase({id:null,type:curType,studentName:studentName,grade:grade,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:new Date().toISOString()});
   var btn=document.getElementById("btn-submit"); btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Guardando...';
   loading(true);
-  apiCall(Object.assign({action:"add"},c)).then(function(){cases.push(c);renderAll();clearForm();toast("Caso registrado","ok");showPage("casos");}).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar caso";loading(false);});
+  sb.from('casos').insert({
+    estudiante_id:estudianteId, tipo:c.type, grado:c.grade, jornada:c.jornada, docente:c.teacher,
+    descripcion:c.description, acciones:c.actions, status:c.status, tipologia:c.tipologia,
+    citacion:c.citacion, fecha_citacion:c.fechaCitacion||null, asistencia:c.asistencia,
+    asignatura:c.asignatura, fecha:c.date
+  }).select('*, estudiantes(nombre)').single().then(function(res){
+    if(res.error) throw res.error;
+    var row=res.data;
+    var nuevo=normalizeCase({
+      id:row.id, type:row.tipo, studentName:row.estudiantes?row.estudiantes.nombre:studentName,
+      grade:row.grado, teacher:row.docente, description:row.descripcion, actions:row.acciones,
+      status:row.status, date:row.fecha||row.created_at, tipologia:row.tipologia, jornada:row.jornada,
+      citacion:row.citacion, fechaCitacion:row.fecha_citacion, asistencia:row.asistencia, asignatura:row.asignatura
+    });
+    cases.push(nuevo);renderAll();clearForm();toast("Caso registrado","ok");showPage("casos");
+  }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar caso";loading(false);});
 }
 
 // CASES LIST
@@ -4920,7 +5045,10 @@ function toggleStatus(){
   var pwd=prompt("Ingresa la contrasena para cambiar el estado:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
   var newS=c.status==="abierto"?"resuelto":"abierto";
   var btn=document.getElementById("m-status-btn"); if(btn)btn.disabled=true; loading(true);
-  apiCall({action:"updateStatus",id:c.id,status:newS}).then(function(){cases[modalIndex].status=newS;renderAll();openModal(modalIndex);toast("Estado actualizado","ok");}).catch(function(){toast("Error","red");}).finally(function(){loading(false);});
+  sb.from('casos').update({status:newS}).eq('id',c.id).then(function(res){
+    if(res.error) throw res.error;
+    cases[modalIndex].status=newS;renderAll();openModal(modalIndex);toast("Estado actualizado","ok");
+  }).catch(function(err){console.error(err);toast("Error","red");}).finally(function(){loading(false);});
 }
 
 // CONTRASENA
@@ -4932,7 +5060,10 @@ function confirmDelete(){
   if(pwd!==DELETE_PWD){document.getElementById("pwd-err").classList.add("show");document.getElementById("pwd-input").value="";document.getElementById("pwd-input").focus();return;}
   document.getElementById("pwd-err").classList.remove("show"); closePwd();
   var c=cases[modalIndex]; if(!c) return; loading(true);
-  apiCall({action:"delete",id:c.id}).then(function(){cases.splice(modalIndex,1);closeModal();renderAll();toast("Caso eliminado","red");}).catch(function(){toast("Error","red");}).finally(function(){loading(false);});
+  sb.from('casos').delete().eq('id',c.id).then(function(res){
+    if(res.error) throw res.error;
+    cases.splice(modalIndex,1);closeModal();renderAll();toast("Caso eliminado","red");
+  }).catch(function(err){console.error(err);toast("Error","red");}).finally(function(){loading(false);});
 }
 
 function eliminarCasoDesdeHistorial(idx, event){
@@ -4941,14 +5072,15 @@ function eliminarCasoDesdeHistorial(idx, event){
   var pwd=prompt("Ingresa la contrasena para eliminar:");
   if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
   var id=c.id; loading(true);
-  apiCall({action:"delete",id:id}).then(function(){
+  sb.from('casos').delete().eq('id',id).then(function(res){
+    if(res.error) throw res.error;
     var i=cases.findIndex(function(x){return x.id===id;});
     if(i>=0) cases.splice(i,1);
     renderAll();
     var s=studentsData[currentEstIndex];
     if(s) openEstModal(s);
     toast("Caso eliminado","red");
-  }).catch(function(){toast("Error al eliminar","red");}).finally(function(){loading(false);});
+  }).catch(function(err){console.error(err);toast("Error al eliminar","red");}).finally(function(){loading(false);});
 }
 
 // DIRECTOR
@@ -5065,11 +5197,12 @@ function renderHistorial(){
 // DOCENTES
 function selDocTab(tab){
   curDocTab=tab;
-  ["permisos","quejas","panel"].forEach(function(t){
+  ["permisos","quejas","libros","panel"].forEach(function(t){
     document.getElementById("dtab-"+t).className="type-btn"+(tab===t?" sel":"");
     document.getElementById("dpanel-"+t).style.display=tab===t?"flex":"none";
   });
   if(tab==="panel") renderPanelDocente();
+  if(tab==="libros") loadRevisionLibros();
 }
 
 var allCompromisos = [];
@@ -5525,12 +5658,19 @@ function saveEdit() {
     fechaCitacion: editCitacion === "si" ? document.getElementById("edit-fecha-cit").value : "",
     asistencia: editCitacion === "si" ? editAsistencia : ""
   });
-  apiCall(Object.assign({ action: "updateCase" }, updated)).then(function() {
+  sb.from('casos').update({
+    tipo: updated.type, tipologia: updated.tipologia, status: updated.status,
+    descripcion: updated.description, acciones: updated.actions, acta_url: updated.acta,
+    citacion: updated.citacion, fecha_citacion: updated.fechaCitacion || null,
+    asistencia: updated.asistencia
+  }).eq('id', c.id).then(function(res) {
+    if (res.error) throw res.error;
     cases[editIndex] = normalizeCase(updated);
     renderAll();
     closeEdit();
     toast("Caso actualizado", "ok");
-  }).catch(function() {
+  }).catch(function(err) {
+    console.error(err);
     toast("Error al guardar", "red");
   }).finally(function() {
     btn.disabled = false; btn.textContent = "Guardar cambios";
@@ -6399,6 +6539,124 @@ function initNuevoRegistro() {
 }
 
 var anCurrentStudent = null;
+var rlCurrentStudent = null;
+function filtrarEstRL() {
+  var q = document.getElementById('rl-search').value.trim().toLowerCase();
+  if (q.length < 2) {
+    document.getElementById('rl-select-wrap').style.display = 'none';
+    return;
+  }
+  var matches = studentsData.filter(function(s) {
+    return s.nombre.toLowerCase().includes(q);
+  }).slice(0, 25);
+  var sel = document.getElementById('rl-student-select');
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  matches.forEach(function(s) {
+    var opt = document.createElement('option');
+    var globalIdx = studentsData.indexOf(s);
+    opt.value = globalIdx;
+    opt.textContent = s.nombre + ' (' + s.grado + ' ' + s.jornada + ')';
+    sel.appendChild(opt);
+  });
+  document.getElementById('rl-select-wrap').style.display = 'flex';
+}
+function selEstRL() {
+  var val = document.getElementById('rl-student-select').value;
+  if (!val) {
+    document.getElementById('rl-student-info').style.display = 'none';
+    document.getElementById('rl-form-rest').style.display = 'none';
+    rlCurrentStudent = null;
+    return;
+  }
+  rlCurrentStudent = studentsData[parseInt(val)];
+  if (!rlCurrentStudent) return;
+  document.getElementById('rl-student-name').textContent = rlCurrentStudent.nombre;
+  document.getElementById('rl-student-grade').textContent = rlCurrentStudent.grado + ' · ' + rlCurrentStudent.jornada;
+  document.getElementById('rl-student-info').style.display = 'block';
+  document.getElementById('rl-form-rest').style.display = 'block';
+}
+function rlActualizarPct() {
+  var total = parseFloat(document.getElementById('rl-total').value) || 0;
+  var actual = parseFloat(document.getElementById('rl-actual').value) || 0;
+  var pct = total > 0 ? Math.round(actual / total * 100) : 0;
+  document.getElementById('rl-pct').textContent = pct + '%';
+}
+function saveRevisionLibro() {
+  if (!rlCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  ['teacher','asignatura','fecha','total','actual'].forEach(function(f){ document.getElementById('rl-ferr-'+f).textContent=''; });
+  var teacher = document.getElementById('rl-teacher').value;
+  var asignatura = document.getElementById('rl-asignatura').value.trim();
+  var fecha = document.getElementById('rl-fecha').value;
+  var total = document.getElementById('rl-total').value;
+  var actual = document.getElementById('rl-actual').value;
+  var ok = true;
+  if (!teacher) { document.getElementById('rl-ferr-teacher').textContent = 'Selecciona el docente'; ok = false; }
+  if (!asignatura) { document.getElementById('rl-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
+  if (!fecha) { document.getElementById('rl-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!total) { document.getElementById('rl-ferr-total').textContent = 'Ingresa el total de paginas'; ok = false; }
+  if (actual === '') { document.getElementById('rl-ferr-actual').textContent = 'Ingresa la pagina actual'; ok = false; }
+  if (!ok) return;
+  if (teacher === 'Otro docente') teacher = document.getElementById('rl-teacher-other').value.trim() || 'Otro docente';
+  var btn = document.getElementById('rl-btn-submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  apiCall({
+    action: 'saveRevisionLibro',
+    estudiante: rlCurrentStudent.nombre, grado: rlCurrentStudent.grado,
+    docente: teacher, asignatura: asignatura, fecha: fecha,
+    totalPaginas: total, paginaActual: actual,
+    date: new Date().toISOString()
+  }).then(function() {
+    document.getElementById('rl-asignatura').value = '';
+    document.getElementById('rl-fecha').value = '';
+    document.getElementById('rl-total').value = '';
+    document.getElementById('rl-actual').value = '';
+    document.getElementById('rl-pct').textContent = '0%';
+    toast('Revision guardada', 'ok');
+    loadRevisionLibros();
+  }).catch(function() { toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar revisión'; });
+}
+function loadRevisionLibros() {
+  var el = document.getElementById('rl-historial-list');
+  apiCall({ action: 'listRevisionLibros' }).then(function(data) {
+    renderRevisionLibrosList(el, Array.isArray(data) ? data : []);
+  }).catch(function() { renderRevisionLibrosList(el, []); });
+}
+function renderRevisionLibrosList(el, data) {
+  if (!el) return;
+  if (!data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>No hay revisiones registradas</p></div>'; return; }
+  var grupos = {};
+  data.forEach(function(r) {
+    var key = (r.estudiante||'') + ' · ' + (r.asignatura||'');
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(r);
+  });
+  var claves = Object.keys(grupos).sort();
+  el.innerHTML = '';
+  claves.forEach(function(key) {
+    var lista = grupos[key].slice().sort(function(a,b){ return new Date(b.fecha||0) - new Date(a.fecha||0); });
+    var ultimo = lista[0];
+    var div = document.createElement('div');
+    div.className = 'doc-card';
+    var filas = lista.map(function(r) {
+      var total = parseFloat(r.totalPaginas) || 0;
+      var actual = parseFloat(r.paginaActual) || 0;
+      var pct = total > 0 ? Math.round(actual/total*100) : 0;
+      return '<div style="display:flex;align-items:center;gap:10px;margin-top:8px">' +
+        '<span style="font-size:0.72rem;color:var(--gray);min-width:64px">' + fmtD(r.fecha) + '</span>' +
+        '<div style="flex:1;background:var(--gray-light);border-radius:8px;height:8px;overflow:hidden"><div style="width:' + pct + '%;background:var(--amber);height:100%"></div></div>' +
+        '<span style="font-size:0.78rem;color:var(--navy);font-weight:700;white-space:nowrap">' + actual + '/' + total + ' · ' + pct + '%</span>' +
+      '</div>';
+    }).join('');
+    div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
+      '<div style="font-weight:700;color:var(--navy)">' + (ultimo.estudiante||'') + '</div>' +
+      '<span class="tag tag-gray">' + (ultimo.grado||'') + '</span></div>' +
+      '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">' + (ultimo.asignatura||'') + ' · ' + (ultimo.docente||'') + '</div>' +
+      filas;
+    el.appendChild(div);
+  });
+}
+
 function filtrarEstAnotacion() {
   var q = document.getElementById('an-search').value.trim().toLowerCase();
   if (q.length < 2) {
