@@ -1099,9 +1099,6 @@ var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUp4mUxaKqGmXIuXENxMC
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
-var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
-var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
-var SUPABASE_BUCKET = "documentos";
 var DELETE_PWD = "Dilia123";
 
 var TEACHERS_DATA = {
@@ -4760,9 +4757,7 @@ window.onload = function() {
 // ============================================================
 // SUPABASE (migracion en curso: Casos ya usa Supabase, el resto sigue en Apps Script)
 // ============================================================
-var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
-var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var sbEstudiantes = [];
 function loadSbEstudiantes() {
@@ -5222,8 +5217,11 @@ function loadPanelExtras(){
     allCompromisos = Array.isArray(data) ? data : [];
     renderPanelExtras();
   }).catch(function(){});
-  apiCall({action:'listAllRegistros'}).then(function(data){
-    allCitaciones = Array.isArray(data) ? data.filter(function(r){ return String(r.tipo||'').toLowerCase() === 'citacion'; }) : [];
+  sb.from('registros').select('*, estudiantes(nombre,grado)').eq('tipo','citacion').then(function(res){
+    if (res.error) { console.error(res.error); return; }
+    allCitaciones = (res.data||[]).map(function(r){
+      return { tipo:'citacion', nombre: r.estudiantes?r.estudiantes.nombre:'', grado: r.grado || (r.estudiantes?r.estudiantes.grado:'') };
+    });
     renderPanelExtras();
   }).catch(function(){});
   apiCall({action:'listQuejas'}).then(function(data){
@@ -6313,10 +6311,16 @@ function renderCompList(el, list, color, tipo) {
 
 function loadRegistros(tipo, nombre, elId) {
   var el = document.getElementById(elId);
-  apiCall({ action: 'listRegistros', tipo: tipo, nombre: nombre }).then(function(data) {
-    if (!Array.isArray(data)) data = [];
+  var estId = resolveEstudianteId(nombre);
+  if (!estId) { if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>'; return; }
+  sb.from('registros').select('*').eq('estudiante_id', estId).eq('tipo', tipo).order('fecha', {ascending:false}).then(function(res) {
+    if (res.error) throw res.error;
+    var data = (res.data || []).map(function(r) {
+      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio };
+    });
     renderRegistrosList(el, data, tipo, elId);
-  }).catch(function() {
+  }).catch(function(err) {
+    console.error(err);
     if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
   });
 }
@@ -6326,7 +6330,6 @@ function renderRegistrosList(el, list, tipo, elId) {
   if (!list.length) { el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>'; return; }
   var color = tipo === 'suspension' ? 'var(--red)' : (tipo === 'citacion' ? 'var(--amber)' : 'var(--blue)');
   el.innerHTML = list.map(function(r) {
-    var dateKey = encodeURIComponent(String(r.date || r.fecha || ''));
     var rawFecha = r.fecha || '';
     var dObj = rawFecha ? new Date(rawFecha) : null;
     var fechaLabel = rawFecha;
@@ -6343,7 +6346,7 @@ function renderRegistrosList(el, list, tipo, elId) {
       + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (r.motivo || '') + '</div>'
       + (r.desc ? '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + r.desc + '</div>' : '')
       + extra
-      + '<button data-date="' + dateKey + '" onclick="eliminarRegistro(\'' + tipo + '\', this.dataset.date, \'' + elId + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
+      + '<button onclick="eliminarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
       + '</div>';
   }).join('');
 }
@@ -6504,15 +6507,14 @@ function eliminarCompromiso(btn) {
     }).catch(function() { toast('Error al eliminar', 'red'); btn.disabled = false; btn.textContent = 'Eliminar'; });
 }
 
-function eliminarRegistro(tipo, dateKey, elId) {
+function eliminarRegistro(id, tipo, elId) {
   var pwd = prompt('Contrasena para eliminar:');
   if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
-  apiCall({ action: 'deleteRegistro', nombre: currentEstNombre, tipo: tipo, date: decodeURIComponent(dateKey) })
-    .then(function(res) {
-      if (res && res.deleted === false) { toast('No se encontro el registro en la hoja', 'red'); return; }
-      toast('Registro eliminado', 'red');
-      loadRegistros(tipo, currentEstNombre, elId);
-    }).catch(function() { toast('Error al eliminar', 'red'); });
+  sb.from('registros').delete().eq('id', id).then(function(res) {
+    if (res.error) throw res.error;
+    toast('Registro eliminado', 'red');
+    loadRegistros(tipo, currentEstNombre, elId);
+  }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
 }
 
 // ============================================================
@@ -6824,17 +6826,17 @@ function saveNRRegistro(tipo) {
   }
   if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + pf + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
   if (!ok) return;
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('nr-' + pf + '-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   var labels = {citacion:'Guardar citacion', reparacion:'Guardar actividad', suspension:'Guardar suspension'};
-  apiCall({
-    action: 'saveRegistro',
-    nombre: nrCurrentStudent.nombre,
-    tipo: tipoReal, fecha: fecha, motivo: motivo,
-    desc: desc, atencion: atencion, dias: dias,
-    bool1: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || ''),
-    date: new Date().toISOString()
-  }).then(function() {
+  sb.from('registros').insert({
+    estudiante_id: estId, tipo: tipoReal, fecha: fecha, motivo: motivo,
+    descripcion: desc, atencion: atencion, dias: dias || null,
+    asistio: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || '')
+  }).then(function(res) {
+    if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
     document.getElementById('nr-' + pf + '-motivo').value = '';
     if(descEl) descEl.value = '';
@@ -6844,7 +6846,7 @@ function saveNRRegistro(tipo) {
     selNRBool(pf, '');
     if (tipo === 'citacion') selCitDestino('acudiente');
     toast('Registro guardado', 'ok');
-  }).catch(function() { toast('Error al guardar', 'red'); })
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = labels[tipo]; });
 }
 
