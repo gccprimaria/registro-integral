@@ -5213,8 +5213,11 @@ function resolveStudentGrade(rawNombre){
 }
 
 function loadPanelExtras(){
-  apiCall({action:'listAllCompromisos'}).then(function(data){
-    allCompromisos = Array.isArray(data) ? data : [];
+  sb.from('compromisos').select('*').then(function(res){
+    if (res.error) { console.error(res.error); return; }
+    allCompromisos = (res.data||[]).map(function(c){
+      return { tipo: c.tipo, fecha: c.fecha, desc: c.descripcion, docente: c.docente, firma: c.firma ? 'si' : 'no' };
+    });
     renderPanelExtras();
   }).catch(function(){});
   sb.from('registros').select('*, estudiantes(nombre,grado)').eq('tipo','citacion').then(function(res){
@@ -5340,9 +5343,19 @@ function loadPermisos(){
   }).catch(function(){toast("Error cargando permisos","red");});
 }
 function loadQuejas(){
-  apiCall({action:"listQuejas"}).then(function(data){
-    quejas=Array.isArray(data)?data.map(function(q){var notif=String(q.notificados||"");return{id:String(q.id||""),teacher:String(q.teacher||""),fecha:String(q.fecha||""),desc:String(q.desc||""),verbal:String(q.verbal||""),escrito:String(q.escrito||""),notificados:notif?notif.split(","):[],adjunto:String(q.adjunto||""),date:String(q.date||""),citacion:String(q.citacion||""),fechaCitacion:String(q.fechaCitacion||""),conversado:String(q.conversado||""),manejo:String(q.manejo||"")};}):[]; renderQuejas();
-  }).catch(function(){toast("Error cargando quejas","red");});
+  sb.from('quejas').select('*').order('fecha', {ascending:false}).then(function(res){
+    if (res.error) throw res.error;
+    quejas = (res.data||[]).map(function(q){
+      return {
+        id: q.id, teacher: String(q.docente||""), fecha: String(q.fecha||""), desc: String(q.descripcion||""),
+        verbal: q.verbal ? "si" : "no", escrito: q.escrito ? "si" : "no",
+        notificados: Array.isArray(q.notificados) ? q.notificados : [],
+        adjunto: String(q.adjunto||""), citacion: q.citacion ? "si" : "no",
+        fechaCitacion: String(q.fecha_citacion||""), conversado: String(q.conversado||""), manejo: String(q.manejo||"")
+      };
+    });
+    renderQuejas();
+  }).catch(function(err){ console.error(err); toast("Error cargando quejas","red"); });
 }
 
 function selPermisoDuracion(v){curPermisoDuracion=v;document.getElementById("dp-btn-dia").className="type-btn"+(v==="dia"?" sel":"");document.getElementById("dp-btn-horas").className="type-btn"+(v==="horas"?" sel":"");document.getElementById("dp-campo-horas").style.display=v==="horas"?"flex":"none";}
@@ -5444,12 +5457,24 @@ function submitQueja(){
   if(isEdit){
     var pwdQ=prompt("Ingresa la contrasena para guardar cambios:"); if(pwdQ!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
   }
-  var q={id:isEdit?quejas[editingQuejaIdx].id:Date.now().toString(36),teacher:teacher,fecha:fecha,desc:desc,verbal:curVerbal,escrito:curEscrito,notificados:notificados,citacion:curQuejaCitacion,fechaCitacion:fechaCitacion,conversado:conversado,manejo:manejo,date:isEdit?quejas[editingQuejaIdx].date:new Date().toISOString()};
+  var payload = {
+    docente: teacher, fecha: fecha, descripcion: desc,
+    verbal: curVerbal === "si", escrito: curEscrito === "si",
+    notificados: notificados, citacion: curQuejaCitacion === "si",
+    fecha_citacion: fechaCitacion || null, conversado: conversado, manejo: manejo
+  };
   var btn=document.getElementById("dq-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
-  apiCall(Object.assign({action:isEdit?"updateQueja":"addQueja"},q,{notificados:notificados.join(",")})).then(function(){
+  var op = isEdit ? sb.from('quejas').update(payload).eq('id', quejas[editingQuejaIdx].id) : sb.from('quejas').insert(payload);
+  op.select().then(function(res){
+    if (res.error) throw res.error;
+    var row = res.data && res.data[0];
+    var q = {
+      id: row.id, teacher: teacher, fecha: fecha, desc: desc, verbal: curVerbal, escrito: curEscrito,
+      notificados: notificados, citacion: curQuejaCitacion, fechaCitacion: fechaCitacion, conversado: conversado, manejo: manejo
+    };
     if(isEdit){ quejas[editingQuejaIdx]=q; } else { quejas.unshift(q); }
     clearQuejaForm();renderQuejas();toast(isEdit?"Queja actualizada":"Queja registrada","ok");
-  }).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent=isEdit?"Guardar cambios":"Registrar queja";});
+  }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent=isEdit?"Guardar cambios":"Registrar queja";});
 }
 
 function editQueja(idx){
@@ -5790,7 +5815,10 @@ function barChartColors(list, colors) {
 function deleteQueja(idx){
   var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
   var q=quejas[idx];
-  apiCall({action:"deleteQueja",id:q.id}).then(function(){quejas.splice(idx,1);renderQuejas();toast("Queja eliminada","red");}).catch(function(){toast("Error al eliminar","red");});
+  sb.from('quejas').delete().eq('id', q.id).then(function(res){
+    if (res.error) throw res.error;
+    quejas.splice(idx,1);renderQuejas();toast("Queja eliminada","red");
+  }).catch(function(err){console.error(err);toast("Error al eliminar","red");});
 }
 
 // ============================================================
@@ -6277,13 +6305,23 @@ function saveCompromiso() {
 function loadCompromisos(nombre) {
   var acadEl = document.getElementById('est-comp-acad-list');
   var discEl = document.getElementById('est-comp-disc-list');
-  apiCall({ action: 'listCompromisos', nombre: nombre }).then(function(data) {
-    if(!Array.isArray(data)) data=[];
+  var estId = resolveEstudianteId(nombre);
+  if (!estId) {
+    if(acadEl) acadEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
+    if(discEl) discEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
+    return;
+  }
+  sb.from('compromisos').select('*').eq('estudiante_id', estId).order('fecha', {ascending:false}).then(function(res) {
+    if (res.error) throw res.error;
+    var data = (res.data||[]).map(function(c) {
+      return { id: c.id, tipo: c.tipo, fecha: c.fecha, desc: c.descripcion, docente: c.docente, firma: c.firma ? 'si' : 'no' };
+    });
     var acad = data.filter(function(c){return c.tipo==='academico';});
     var disc = data.filter(function(c){return c.tipo==='disciplinario';});
     renderCompList(acadEl, acad, 'var(--blue)', 'academico');
     renderCompList(discEl, disc, 'var(--red)', 'disciplinario');
-  }).catch(function() {
+  }).catch(function(err) {
+    console.error(err);
     if(acadEl) acadEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
     if(discEl) discEl.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos.</div>';
   });
@@ -6292,8 +6330,7 @@ function loadCompromisos(nombre) {
 function renderCompList(el, list, color, tipo) {
   if(!el) return;
   if(!list.length){ el.innerHTML='<div style="font-size:0.82rem;color:var(--gray)">Sin compromisos registrados.</div>'; return; }
-  el.innerHTML = list.map(function(c, idx) {
-    var dateKey = encodeURIComponent(String(c.date||c.fecha||idx));
+  el.innerHTML = list.map(function(c) {
     var firmaTag = c.firma==='si'
       ? '<span class="tag tag-green" style="font-size:0.65rem">Firmado</span>'
       : '<span class="tag tag-red" style="font-size:0.65rem">Sin firma</span>';
@@ -6304,7 +6341,7 @@ function renderCompList(el, list, color, tipo) {
       + '</div>'
       + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (c.desc||'') + '</div>'
       + '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Responsable: ' + (c.docente||'') + '</div>'
-      + '<button data-tipo="'+tipo+'" data-date="'+dateKey+'" onclick="eliminarCompromiso(this)" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
+      + '<button onclick="eliminarCompromiso(\''+c.id+'\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
       + '</div>';
   }).join('');
 }
@@ -6412,39 +6449,37 @@ function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
   el.innerHTML = html;
 }
 
-function renderAnotaciones(el, data, nombre) {
+function renderAnotaciones(el, data) {
   if (!el) return;
   if (!data || !data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin anotaciones registradas.</div>'; return; }
   var ordenadas = data.slice().sort(function(a,b){ return new Date(b.fecha||0) - new Date(a.fecha||0); });
   var html = '';
   ordenadas.forEach(function(a) {
-    var dateKey = encodeURIComponent(String(a.date || a.fecha || ''));
     html += '<div class="detail-block" style="margin-bottom:8px">' +
       '<div style="font-weight:700;color:var(--navy);font-size:0.8rem">' + fmtD(a.fecha) + '</div>' +
       '<div style="margin-top:4px">' + (a.nota||'') + '</div>' +
-      '<button onclick="eliminarAnotacion(\'' + encodeURIComponent(nombre) + '\', \'' + dateKey + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;font-weight:600;padding:0">Eliminar</button>' +
+      '<button onclick="eliminarAnotacion(\'' + a.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;font-weight:600;padding:0">Eliminar</button>' +
     '</div>';
   });
   el.innerHTML = html;
 }
-function eliminarAnotacion(nombreEnc, dateKey) {
+function eliminarAnotacion(id) {
   var pwd = prompt('Ingresa la contrasena para eliminar:');
   if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  var nombre = decodeURIComponent(nombreEnc);
-  apiCall({ action: 'deleteAnotacion', nombre: nombre, date: decodeURIComponent(dateKey) })
-    .then(function(res) {
-      if (res && res.deleted === false) { toast('No se encontro la anotacion en la hoja', 'red'); return; }
-      toast('Anotacion eliminada', 'red');
-      loadAnotaciones(nombre);
-    }).catch(function() { toast('Error al eliminar', 'red'); });
+  sb.from('anotaciones').delete().eq('id', id).then(function(res) {
+    if (res.error) { toast('Error al eliminar', 'red'); return; }
+    toast('Anotacion eliminada', 'red');
+    loadAnotaciones(currentEstNombre);
+  });
 }
 function loadAnotaciones(nombre) {
   var el = document.getElementById('est-anotaciones-list');
   if (!el) return;
-  apiCall({ action: 'listAnotaciones', nombre: nombre }).then(function(data) {
-    renderAnotaciones(el, Array.isArray(data) ? data : [], nombre);
-  }).catch(function() {
-    renderAnotaciones(el, [], nombre);
+  var estId = resolveEstudianteId(nombre);
+  if (!estId) { renderAnotaciones(el, []); return; }
+  sb.from('anotaciones').select('*').eq('estudiante_id', estId).then(function(res) {
+    if (res.error) { renderAnotaciones(el, []); return; }
+    renderAnotaciones(el, res.data || []);
   });
 }
 
@@ -6452,13 +6487,21 @@ function loadHistorialAcademico(nombre) {
   var el = document.getElementById('est-histacad-content');
   if (!el) return;
   var legacyData = ACADEMIC_DB[normName(nombre)] || ACADEMIC_DB[nombre] || null;
+  var estId = resolveEstudianteId(nombre);
+  var liveManualPromise = estId
+    ? sb.from('historial_academico').select('*').eq('estudiante_id', estId)
+    : Promise.resolve({data: []});
   Promise.all([
-    apiCall({ action: 'listHistorialAcademico', nombre: nombre }).catch(function(){ return []; }),
+    liveManualPromise,
     apiCall({ action: 'listAsignaturasPerdidasJefe', nombre: nombre }).catch(function(){ return null; })
   ]).then(function(results) {
-    var liveManual = Array.isArray(results[0]) ? results[0] : [];
+    var rawManual = (results[0] && !results[0].error) ? (results[0].data || []) : [];
+    var liveManual = rawManual.map(function(r){ return {periodo:r.periodo, asignatura:r.asignatura, momento:r.momento, nota:r.nota}; });
     var liveJefe = results[1] || null;
     renderHistorialAcademico(el, liveManual, legacyData, liveJefe);
+  }).catch(function(err) {
+    console.error(err);
+    renderHistorialAcademico(el, [], legacyData, null);
   });
 }
 
@@ -6493,18 +6536,14 @@ function loadLlegadasTarde(nombre, grado) {
   });
 }
 
-function eliminarCompromiso(btn) {
+function eliminarCompromiso(id) {
   var pwd = prompt('Contrasena para eliminar:');
   if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
-  var tipo = btn.dataset.tipo;
-  var dateKey = decodeURIComponent(btn.dataset.date);
-  btn.textContent = 'Eliminando...'; btn.disabled = true;
-  apiCall({ action: 'deleteCompromiso', nombre: currentEstNombre, tipo: tipo, date: dateKey })
-    .then(function(res) {
-      if (res && res.deleted === false) { toast('No se encontro el compromiso en la hoja', 'red'); btn.disabled = false; btn.textContent = 'Eliminar'; return; }
-      toast('Compromiso eliminado', 'red');
-      loadCompromisos(currentEstNombre);
-    }).catch(function() { toast('Error al eliminar', 'red'); btn.disabled = false; btn.textContent = 'Eliminar'; });
+  sb.from('compromisos').delete().eq('id', id).then(function(res) {
+    if (res.error) throw res.error;
+    toast('Compromiso eliminado', 'red');
+    loadCompromisos(currentEstNombre);
+  }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
 }
 
 function eliminarRegistro(id, tipo, elId) {
@@ -6599,15 +6638,15 @@ function saveRevisionLibro() {
   if (actual === '') { document.getElementById('rl-ferr-actual').textContent = 'Ingresa la pagina actual'; ok = false; }
   if (!ok) return;
   if (teacher === 'Otro docente') teacher = document.getElementById('rl-teacher-other').value.trim() || 'Otro docente';
+  var estId = resolveEstudianteId(rlCurrentStudent.nombre, rlCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('rl-btn-submit');
   btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveRevisionLibro',
-    estudiante: rlCurrentStudent.nombre, grado: rlCurrentStudent.grado,
-    docente: teacher, asignatura: asignatura, fecha: fecha,
-    totalPaginas: total, paginaActual: actual,
-    date: new Date().toISOString()
-  }).then(function() {
+  sb.from('revision_libros').insert({
+    estudiante_id: estId, grado: rlCurrentStudent.grado, docente: teacher,
+    asignatura: asignatura, fecha: fecha, total_paginas: total, pagina_actual: actual
+  }).then(function(res) {
+    if (res.error) throw res.error;
     document.getElementById('rl-asignatura').value = '';
     document.getElementById('rl-fecha').value = '';
     document.getElementById('rl-total').value = '';
@@ -6615,14 +6654,31 @@ function saveRevisionLibro() {
     document.getElementById('rl-pct').textContent = '0%';
     toast('Revision guardada', 'ok');
     loadRevisionLibros();
-  }).catch(function() { toast('Error al guardar', 'red'); })
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar revisión'; });
+}
+function eliminarRevisionLibro(id) {
+  var pwd = prompt('Contrasena para eliminar:');
+  if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
+  sb.from('revision_libros').delete().eq('id', id).then(function(res) {
+    if (res.error) throw res.error;
+    toast('Revision eliminada', 'red');
+    loadRevisionLibros();
+  }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
 }
 function loadRevisionLibros() {
   var el = document.getElementById('rl-historial-list');
-  apiCall({ action: 'listRevisionLibros' }).then(function(data) {
-    renderRevisionLibrosList(el, Array.isArray(data) ? data : []);
-  }).catch(function() { renderRevisionLibrosList(el, []); });
+  sb.from('revision_libros').select('*, estudiantes(nombre)').order('fecha', {ascending:false}).then(function(res) {
+    if (res.error) throw res.error;
+    var data = (res.data||[]).map(function(r) {
+      return {
+        id: r.id, estudiante: r.estudiantes ? r.estudiantes.nombre : '', grado: r.grado,
+        docente: r.docente, asignatura: r.asignatura, fecha: r.fecha,
+        totalPaginas: r.total_paginas, paginaActual: r.pagina_actual
+      };
+    });
+    renderRevisionLibrosList(el, data);
+  }).catch(function(err) { console.error(err); renderRevisionLibrosList(el, []); });
 }
 function renderRevisionLibrosList(el, data) {
   if (!el) return;
@@ -6648,6 +6704,7 @@ function renderRevisionLibrosList(el, data) {
         '<span style="font-size:0.72rem;color:var(--gray);min-width:64px">' + fmtD(r.fecha) + '</span>' +
         '<div style="flex:1;background:var(--gray-light);border-radius:8px;height:8px;overflow:hidden"><div style="width:' + pct + '%;background:var(--amber);height:100%"></div></div>' +
         '<span style="font-size:0.78rem;color:var(--navy);font-weight:700;white-space:nowrap">' + actual + '/' + total + ' · ' + pct + '%</span>' +
+        '<span onclick="eliminarRevisionLibro(\''+r.id+'\')" style="cursor:pointer;color:var(--red);font-size:0.72rem;font-weight:600">Eliminar</span>' +
       '</div>';
     }).join('');
     div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
@@ -6706,19 +6763,18 @@ function saveAnotacionGeneral() {
   if (!fecha) { document.getElementById('an-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
   if (!nota) { document.getElementById('an-ferr-nota').textContent = 'Escribe la anotacion'; ok = false; }
   if (!ok) return;
+  var estId = resolveEstudianteId(anCurrentStudent.nombre, anCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('an-btn-submit');
   btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveAnotacion',
-    nombre: anCurrentStudent.nombre,
-    fecha: fecha, nota: nota,
-    date: new Date().toISOString()
-  }).then(function() {
+  sb.from('anotaciones').insert({
+    estudiante_id: estId, fecha: fecha, nota: nota
+  }).then(function(res) {
+    if (res.error) { toast('Error al guardar', 'red'); return; }
     document.getElementById('an-fecha').value = '';
     document.getElementById('an-nota').value = '';
     toast('Anotacion guardada', 'ok');
-  }).catch(function() { toast('Error al guardar', 'red'); })
-  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar anotación'; });
+  }).finally(function() { btn.disabled = false; btn.textContent = 'Guardar anotación'; });
 }
 
 function filtrarEstNR() {
@@ -6862,22 +6918,22 @@ function saveNRCompromiso(tipo) {
   if (!desc) { document.getElementById('nr-' + pf + '-ferr-desc').textContent = 'Describe el compromiso'; ok = false; }
   if (!docente) { document.getElementById('nr-' + pf + '-ferr-doc').textContent = 'Escribe el responsable'; ok = false; }
   if (!ok) return;
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('nr-' + pf + '-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveCompromiso',
-    nombre: nrCurrentStudent.nombre,
-    tipo: tipo, fecha: fecha, desc: desc,
-    docente: docente, firma: nrBools[pf] || '',
-    date: new Date().toISOString()
-  }).then(function() {
+  sb.from('compromisos').insert({
+    estudiante_id: estId, tipo: tipo, fecha: fecha, descripcion: desc,
+    docente: docente, firma: (nrBools[pf] || '') === 'si'
+  }).then(function(res) {
+    if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
     document.getElementById('nr-' + pf + '-desc').value = '';
     document.getElementById('nr-' + pf + '-docente').value = '';
     nrBools[pf] = '';
     selNRBool(pf, '');
     toast('Compromiso guardado', 'ok');
-  }).catch(function() { toast('Error al guardar', 'red'); })
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar compromiso'; });
 }
 
@@ -6903,14 +6959,14 @@ function saveNRHistorialAcademico() {
   if (!nrMomento) { document.getElementById('nr-ha-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
   if (!nota) { document.getElementById('nr-ha-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
   if (!ok) return;
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('nr-ha-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
-  apiCall({
-    action: 'saveHistorialAcademico',
-    nombre: nrCurrentStudent.nombre,
-    periodo: nrPeriodo, asignatura: asignatura, momento: nrMomento, nota: nota,
-    date: new Date().toISOString()
-  }).then(function() {
+  sb.from('historial_academico').insert({
+    estudiante_id: estId, periodo: nrPeriodo, asignatura: asignatura, momento: nrMomento, nota: nota
+  }).then(function(res) {
+    if (res.error) throw res.error;
     document.getElementById('nr-ha-asignatura').value = '';
     document.getElementById('nr-ha-nota').value = '';
     nrPeriodo = ''; nrMomento = '';
@@ -6918,7 +6974,7 @@ function saveNRHistorialAcademico() {
     document.getElementById('nr-ha-mom-corte').className = 'type-btn';
     document.getElementById('nr-ha-mom-final').className = 'type-btn';
     toast('Historial academico guardado', 'ok');
-  }).catch(function() { toast('Error al guardar', 'red'); })
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar historial academico'; });
 }
 
