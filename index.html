@@ -4840,6 +4840,20 @@ function showDocenteHome() {
     });
     sbEstudiantes = studentsData;
   });
+  sb.from('casos').select('*, estudiantes(nombre)').order('fecha', {ascending:false}).then(function(res) {
+    if (res.error) { console.error(res.error); return; }
+    cases = (res.data||[]).map(function(row){
+      return normalizeCase({
+        id: row.id, type: row.tipo,
+        studentName: row.estudiantes ? row.estudiantes.nombre : '',
+        grade: row.grado, teacher: row.docente, description: row.descripcion,
+        actions: row.acciones, status: row.status, date: row.fecha || row.created_at,
+        tipologia: row.tipologia, jornada: row.jornada, citacion: row.citacion,
+        fechaCitacion: row.fecha_citacion, asistencia: row.asistencia,
+        asignatura: row.asignatura, acta: row.acta_url
+      });
+    });
+  });
 }
 function filtrarEstDocente() {
   var q = document.getElementById('docente-search').value.trim().toLowerCase();
