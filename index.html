@@ -182,9 +182,18 @@ textarea{resize:vertical;min-height:90px;}
   .print-queja-meta{color:#64748B;font-size:0.78rem;margin-top:3px;}
   .hist-title-badge{background:#0F2942 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
+#docente-login-screen, #docente-home-screen{display:none;}
+#docente-login-screen{display:none;position:fixed;inset:0;z-index:600;}
+#docente-login-screen.open{display:flex;}
+#docente-home-screen.open{display:block;position:fixed;inset:0;z-index:600;overflow-y:auto;}
+body.docente-mode #admin-app{display:none !important;}
+.docente-result-card{background:#fff;border:1px solid var(--gray-light);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s;}
+.docente-result-card:hover{border-color:var(--amber);}
+body.docente-mode .admin-only{display:none !important;}
 </style>
 </head>
 <body>
+<div id="admin-app">
 
 <nav>
   <div class="nav-top">
@@ -884,7 +893,7 @@ textarea{resize:vertical;min-height:90px;}
         <label class="lbl">Documento del estudiante</label>
         <input type="text" id="est-edit-documento" placeholder="Numero de documento">
       </div>
-      <button class="btn btn-primary" id="est-save-btn" onclick="saveEstudiante()" style="width:100%;padding:14px">💾 Guardar cambios</button>
+      <button class="btn btn-primary admin-only" id="est-save-btn" onclick="saveEstudiante()" style="width:100%;padding:14px">💾 Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -4735,6 +4744,12 @@ var curDocTab = "permisos";
 var modalIndex = -1;
 
 window.onload = function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.has('docentes')) {
+    document.body.classList.add('docente-mode');
+    initDocenteAccess();
+    return;
+  }
   loadCases();
   initEstudiantes();
   loadPanelExtras();
@@ -4775,6 +4790,72 @@ function resolveEstudianteId(nombreRaw, gradoRaw) {
     }
   }
   return null;
+}
+
+// ============================================================
+// ACCESO DOCENTES (solo lectura, solo Estudiantes)
+// ============================================================
+var DOCENTE_EMAIL = 'docentes@registrointegral.com';
+
+function initDocenteAccess() {
+  sb.auth.getSession().then(function(res) {
+    var session = res.data && res.data.session;
+    if (session) {
+      showDocenteHome();
+    } else {
+      document.getElementById('docente-login-screen').classList.add('open');
+    }
+  });
+}
+function docenteLogin() {
+  var pwd = document.getElementById('docente-pwd').value;
+  var errEl = document.getElementById('docente-login-err');
+  errEl.textContent = '';
+  if (!pwd) { errEl.textContent = 'Escribe la contrasena'; return; }
+  sb.auth.signInWithPassword({ email: DOCENTE_EMAIL, password: pwd }).then(function(res) {
+    if (res.error) { errEl.textContent = 'Contrasena incorrecta'; return; }
+    document.getElementById('docente-pwd').value = '';
+    showDocenteHome();
+  });
+}
+function docenteLogout() {
+  sb.auth.signOut().then(function() {
+    window.location.href = window.location.pathname + '?docentes=1';
+  });
+}
+function showDocenteHome() {
+  document.getElementById('docente-login-screen').classList.remove('open');
+  document.getElementById('docente-home-screen').classList.add('open');
+  ['est-edit-acudiente','est-edit-telefono','est-edit-correo','est-edit-direccion','est-edit-documento'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.readOnly = true;
+  });
+  sb.from('estudiantes').select('*').order('nombre').then(function(res) {
+    if (res.error) { console.error(res.error); return; }
+    studentsData = (res.data || []).map(function(s) {
+      return { id: s.id, nombre: s.nombre, grado: s.grado||'', jornada: s.jornada||'',
+        acudiente: s.acudiente||'', telefono: s.telefono||'', correo: s.correo||'',
+        direccion: s.direccion||'', documento: s.documento||'', edited: true };
+    });
+    sbEstudiantes = studentsData;
+  });
+}
+function filtrarEstDocente() {
+  var q = document.getElementById('docente-search').value.trim().toLowerCase();
+  var el = document.getElementById('docente-search-results');
+  if (q.length < 2) { el.innerHTML = ''; return; }
+  var matches = studentsData.filter(function(s){ return s.nombre.toLowerCase().indexOf(q) !== -1; }).slice(0, 20);
+  if (!matches.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray);padding:8px 0">Sin resultados.</div>'; return; }
+  el.innerHTML = matches.map(function(s) {
+    return '<div class="docente-result-card" onclick=\'docenteAbrirPerfil(' + JSON.stringify(s.nombre) + ')\'>' +
+      '<div style="font-weight:700;color:var(--navy);font-size:0.9rem">' + s.nombre + '</div>' +
+      '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">' + s.grado + ' · ' + s.jornada + '</div>' +
+    '</div>';
+  }).join('');
+}
+function docenteAbrirPerfil(nombre) {
+  var s = studentsData.find(function(x){ return x.nombre === nombre; });
+  if (s) openEstModal(s);
 }
 
 function apiCall(params) {
@@ -5912,7 +5993,7 @@ function openEstModal(s) {
         '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + (c.description.length > 80 ? c.description.slice(0,80)+'...' : c.description) + '</div>' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">' +
           '<span style="font-size:0.72rem;color:var(--blue);font-weight:600">Ver detalle completo →</span>' +
-          '<span onclick="eliminarCasoDesdeHistorial(' + cidx + ', event)" style="font-size:0.72rem;color:var(--red);font-weight:600;cursor:pointer">Eliminar</span>' +
+          '<span class="admin-only" onclick="eliminarCasoDesdeHistorial(' + cidx + ', event)" style="font-size:0.72rem;color:var(--red);font-weight:600;cursor:pointer">Eliminar</span>' +
         '</div>' +
       '</div>';
     });
@@ -6291,7 +6372,7 @@ function renderCompList(el, list, color, tipo) {
       + '</div>'
       + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (c.desc||'') + '</div>'
       + '<div style="font-size:0.78rem;color:var(--gray);margin-top:4px">Responsable: ' + (c.docente||'') + '</div>'
-      + '<button onclick="eliminarCompromiso(\''+c.id+'\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
+      + '<button class="admin-only" onclick="eliminarCompromiso(\''+c.id+'\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
       + '</div>';
   }).join('');
 }
@@ -6333,7 +6414,7 @@ function renderRegistrosList(el, list, tipo, elId) {
       + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (r.motivo || '') + '</div>'
       + (r.desc ? '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + r.desc + '</div>' : '')
       + extra
-      + '<button onclick="eliminarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
+      + '<button class="admin-only" onclick="eliminarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
       + '</div>';
   }).join('');
 }
@@ -6408,7 +6489,7 @@ function renderAnotaciones(el, data) {
     html += '<div class="detail-block" style="margin-bottom:8px">' +
       '<div style="font-weight:700;color:var(--navy);font-size:0.8rem">' + fmtD(a.fecha) + '</div>' +
       '<div style="margin-top:4px">' + (a.nota||'') + '</div>' +
-      '<button onclick="eliminarAnotacion(\'' + a.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;font-weight:600;padding:0">Eliminar</button>' +
+      '<button class="admin-only" onclick="eliminarAnotacion(\'' + a.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;font-weight:600;padding:0">Eliminar</button>' +
     '</div>';
   });
   el.innerHTML = html;
@@ -6654,7 +6735,7 @@ function renderRevisionLibrosList(el, data) {
         '<span style="font-size:0.72rem;color:var(--gray);min-width:64px">' + fmtD(r.fecha) + '</span>' +
         '<div style="flex:1;background:var(--gray-light);border-radius:8px;height:8px;overflow:hidden"><div style="width:' + pct + '%;background:var(--amber);height:100%"></div></div>' +
         '<span style="font-size:0.78rem;color:var(--navy);font-weight:700;white-space:nowrap">' + actual + '/' + total + ' · ' + pct + '%</span>' +
-        '<span onclick="eliminarRevisionLibro(\''+r.id+'\')" style="cursor:pointer;color:var(--red);font-size:0.72rem;font-weight:600">Eliminar</span>' +
+        '<span class="admin-only" onclick="eliminarRevisionLibro(\''+r.id+'\')" style="cursor:pointer;color:var(--red);font-size:0.72rem;font-weight:600">Eliminar</span>' +
       '</div>';
     }).join('');
     div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
@@ -7005,5 +7086,40 @@ function exportQuejasPDF() {
 }
 </script>
 <div id="print-area"></div>
+</div>
+
+<!-- ACCESO DOCENTES -->
+<div id="docente-login-screen" style="min-height:100vh;align-items:center;justify-content:center;background:var(--bg);font-family:'DM Sans',sans-serif">
+  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;width:90%;box-shadow:0 4px 24px rgba(15,41,66,0.12)">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:56px;height:56px;background:var(--navy);color:var(--amber);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Playfair Display',serif;font-size:1.2rem;margin:0 auto 14px">RI</div>
+      <div class="serif" style="font-size:1.2rem;color:var(--navy);font-weight:700">Gimnasio ComfaCasanare</div>
+      <div style="font-size:0.85rem;color:var(--gray);margin-top:2px">Consulta de estudiantes · Acceso docentes</div>
+    </div>
+    <label class="lbl">Contraseña</label>
+    <input type="password" id="docente-pwd" style="width:100%;margin-top:4px;padding:11px;border:1px solid var(--gray-light);border-radius:10px;font-family:inherit;font-size:0.9rem" onkeydown="if(event.key==='Enter')docenteLogin()">
+    <div id="docente-login-err" style="color:var(--red);font-size:0.8rem;margin-top:8px;min-height:18px"></div>
+    <button onclick="docenteLogin()" style="width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer;margin-top:6px">Ingresar</button>
+  </div>
+</div>
+
+<!-- INICIO DOCENTES -->
+<div id="docente-home-screen" style="min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;padding:24px 16px">
+  <div style="max-width:560px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div style="width:44px;height:44px;background:var(--navy);color:var(--amber);border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Playfair Display',serif">RI</div>
+      <div>
+        <div class="serif" style="font-size:1.1rem;color:var(--navy);font-weight:700">Consulta de estudiantes</div>
+        <div style="font-size:0.78rem;color:var(--gray)">Gimnasio ComfaCasanare</div>
+      </div>
+    </div>
+    <div class="card">
+      <label class="lbl">Buscar estudiante</label>
+      <input type="text" id="docente-search" placeholder="Escribe el nombre..." style="width:100%;margin-top:4px;padding:11px;border:1px solid var(--gray-light);border-radius:10px;font-family:inherit;font-size:0.9rem" oninput="filtrarEstDocente()">
+      <div id="docente-search-results" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
