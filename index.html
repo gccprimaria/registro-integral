@@ -4906,7 +4906,7 @@ function updateGrades(){
   ge.innerHTML='<option value="">Seleccionar grado...</option>'; se.innerHTML='<option value="">Primero selecciona grado...</option>';
   ge.disabled=true; se.disabled=true;
   if(!j) return;
-  Object.keys(STUDENTS[j]||{}).forEach(function(g){var o=document.createElement("option");o.value=g;o.textContent=g;ge.appendChild(o);});
+  Object.keys(STUDENTS[j]||{}).sort().forEach(function(g){var o=document.createElement("option");o.value=g;o.textContent=g;ge.appendChild(o);});
   ge.disabled=false; document.getElementById("e-jornada").textContent="";
 }
 function updateStudents(){
