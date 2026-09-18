@@ -5069,7 +5069,9 @@ function submitCase(){
       status:row.status, date:row.fecha||row.created_at, tipologia:row.tipologia, jornada:row.jornada,
       citacion:row.citacion, fechaCitacion:row.fecha_citacion, asistencia:row.asistencia, asignatura:row.asignatura
     });
-    cases.push(nuevo);renderAll();clearForm();toast("Caso registrado","ok");showPage("casos");
+    cases.push(nuevo);
+    cases.sort(function(a,b){ return new Date(b.date||0) - new Date(a.date||0); });
+    renderAll();clearForm();toast("Caso registrado","ok");showPage("casos");
   }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar caso";loading(false);});
 }
 
@@ -5994,6 +5996,7 @@ function openEstModal(s) {
 
   // Disciplinary history
   var studentCases = cases.filter(function(c) { return c.studentName === s.nombre; });
+  studentCases.sort(function(a,b){ return new Date(b.date||0) - new Date(a.date||0); });
   var histHTML = '<div class="hist-section"><div class="hist-title-badge">Historial disciplinario</div>';
   if (studentCases.length) {
     histHTML += '<div class="card" style="background:var(--gray-bg);padding:12px">';
