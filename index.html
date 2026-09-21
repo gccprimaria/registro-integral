@@ -493,6 +493,7 @@ body.docente-mode .admin-only{display:none !important;}
     <button class="type-btn sel" id="dtab-permisos" onclick="selDocTab('permisos')" style="flex:1;padding:10px;min-width:100px">Permisos</button>
     <button class="type-btn" id="dtab-quejas" onclick="selDocTab('quejas')" style="flex:1;padding:10px;min-width:100px">Quejas</button>
     <button class="type-btn" id="dtab-libros" onclick="selDocTab('libros')" style="flex:1;padding:10px;min-width:100px">Revisión de libros</button>
+    <button class="type-btn" id="dtab-ficha" onclick="selDocTab('ficha')" style="flex:1;padding:10px;min-width:100px">Ficha docente</button>
     <button class="type-btn" id="dtab-panel" onclick="selDocTab('panel')" style="flex:1;padding:10px;min-width:100px">Panel</button>
   </div>
 
@@ -690,6 +691,16 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="slbl" style="margin-bottom:12px">Historial de revisiones</div>
       <div id="rl-historial-list" style="display:flex;flex-direction:column;gap:10px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
     </div>
+  </div>
+
+  <!-- FICHA DOCENTE -->
+  <div id="dpanel-ficha" style="display:none;flex-direction:column;gap:20px">
+    <div class="card">
+      <label class="lbl">Buscar docente</label>
+      <input type="text" id="df-search" placeholder="Escribe el nombre..." style="width:100%;margin-top:4px;padding:11px;border:1px solid var(--gray-light);border-radius:10px;font-family:inherit;font-size:0.9rem" oninput="filtrarDocenteFicha()">
+      <div id="df-search-results" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div id="df-content"></div>
   </div>
 
   <!-- PANEL DOCENTE -->
@@ -1105,7 +1116,7 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUp4mUxaKqGmXIuXENxMCsucyDTOdugkbDzBlzS_Zq43QvP6cp2g5lGOL_guV5U01V/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM9vRxVteHfb5Y_yaYEAjOhEbUHgz1sgJSI_uej45ehAyJNJtrK_iOIGeyWyvxoZQ/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -5277,12 +5288,13 @@ function renderHistorial(){
 // DOCENTES
 function selDocTab(tab){
   curDocTab=tab;
-  ["permisos","quejas","libros","panel"].forEach(function(t){
+  ["permisos","quejas","libros","ficha","panel"].forEach(function(t){
     document.getElementById("dtab-"+t).className="type-btn"+(tab===t?" sel":"");
     document.getElementById("dpanel-"+t).style.display=tab===t?"flex":"none";
   });
   if(tab==="panel") renderPanelDocente();
   if(tab==="libros") loadRevisionLibros();
+  if(tab==="ficha") loadDocentesFicha();
 }
 
 var allCompromisos = [];
@@ -6715,6 +6727,174 @@ function eliminarRevisionLibro(id) {
     loadRevisionLibros();
   }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
 }
+// ============================================================
+// FICHA DOCENTE
+// ============================================================
+var docentesData = [];
+var docentesDataLoaded = false;
+var fichaDocenteActual = null;
+
+function loadDocentesFicha() {
+  if (docentesDataLoaded) return;
+  sb.from('docentes').select('*').order('nombre').then(function(res) {
+    if (res.error) { console.error(res.error); return; }
+    docentesData = res.data || [];
+    docentesDataLoaded = true;
+  });
+}
+function filtrarDocenteFicha() {
+  var q = document.getElementById('df-search').value.trim().toLowerCase();
+  var el = document.getElementById('df-search-results');
+  if (q.length < 2) { el.innerHTML = ''; return; }
+  var matches = docentesData.filter(function(d){ return d.nombre.toLowerCase().indexOf(q) !== -1; }).slice(0, 20);
+  if (!matches.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray);padding:6px 0">Sin resultados.</div>'; return; }
+  el.innerHTML = matches.map(function(d) {
+    var rolTag = d.rol && d.rol !== 'docente' ? ' <span class="tag tag-gray" style="font-size:0.65rem">' + d.rol + '</span>' : '';
+    return '<div class="docente-result-card" onclick="abrirFichaDocente(\'' + d.id + '\')">' +
+      '<div style="font-weight:700;color:var(--navy);font-size:0.9rem">' + d.nombre + rolTag + '</div>' +
+      '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">' + (d.jornada||'') + '</div>' +
+    '</div>';
+  }).join('');
+}
+function abrirFichaDocente(id) {
+  var d = docentesData.find(function(x){ return x.id === id; });
+  if (!d) return;
+  fichaDocenteActual = d;
+  document.getElementById('df-search').value = '';
+  document.getElementById('df-search-results').innerHTML = '';
+  var el = document.getElementById('df-content');
+  el.innerHTML =
+    '<div class="card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+        '<div><div class="serif" style="font-size:1.1rem;color:var(--navy);font-weight:700">' + (d.nombre_completo || d.nombre) + '</div>' +
+        '<div style="font-size:0.82rem;color:var(--gray);margin-top:2px">' + (d.jornada||'') + (d.rol && d.rol!=='docente' ? ' · ' + d.rol : '') + '</div></div>' +
+        '<button class="btn btn-ghost" onclick="abrirFichaDocente(\'' + d.id + '\')" style="font-size:0.78rem">↻ Actualizar</button>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;font-size:0.85rem">' +
+        '<div><span style="color:var(--gray);font-weight:600">Documento:</span> ' + (d.documento||'—') + '</div>' +
+        '<div><span style="color:var(--gray);font-weight:600">Año de ingreso:</span> ' + (d.anio_ingreso||'—') + '</div>' +
+        (d.nivel_formacion ? '<div><span style="color:var(--gray);font-weight:600">Formación:</span> ' + d.nivel_formacion + '</div>' : '') +
+        (d.titulo_obtenido ? '<div><span style="color:var(--gray);font-weight:600">Título:</span> ' + d.titulo_obtenido + '</div>' : '') +
+        (d.enfasis_experiencia ? '<div style="grid-column:1/-1"><span style="color:var(--gray);font-weight:600">Énfasis/experiencia:</span> ' + d.enfasis_experiencia + '</div>' : '') +
+        (d.grados_desempeno ? '<div style="grid-column:1/-1"><span style="color:var(--gray);font-weight:600">Grados donde se ha desempeñado:</span> ' + d.grados_desempeno + '</div>' : '') +
+        (d.observacion ? '<div style="grid-column:1/-1"><span style="color:var(--gray);font-weight:600">Observación:</span> ' + d.observacion + '</div>' : '') +
+      '</div>' +
+      '<div style="margin-top:14px">' +
+        '<label class="lbl">Teléfono</label>' +
+        '<div style="display:flex;gap:8px;margin-top:4px">' +
+          '<input type="text" id="df-telefono" value="' + (d.telefono||'') + '" style="flex:1;padding:9px;border:1px solid var(--gray-light);border-radius:9px;font-family:inherit;font-size:0.85rem">' +
+          '<button class="btn btn-primary" onclick="guardarTelefonoDocente()" style="padding:9px 16px;font-size:0.82rem">Guardar</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    (d.incluye_seguimientos ? '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Seguimientos por periodo</div><div id="df-seguimientos"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' : '') +
+    (d.incluye_llegadas_tarde ? '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Llegadas tarde</div><div id="df-llegadas"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' : '') +
+    '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Permisos</div><div id="df-permisos"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' +
+    '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Quejas</div><div id="df-quejas"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>';
+
+  if (d.incluye_seguimientos) loadFichaSeguimientos(d);
+  if (d.incluye_llegadas_tarde) loadFichaLlegadasTarde(d);
+  loadFichaPermisos(d);
+  loadFichaQuejas(d);
+}
+function guardarTelefonoDocente() {
+  if (!fichaDocenteActual) return;
+  var tel = document.getElementById('df-telefono').value.trim();
+  sb.from('docentes').update({ telefono: tel }).eq('id', fichaDocenteActual.id).then(function(res) {
+    if (res.error) { toast('Error al guardar', 'red'); return; }
+    fichaDocenteActual.telefono = tel;
+    var idx = docentesData.findIndex(function(x){ return x.id === fichaDocenteActual.id; });
+    if (idx >= 0) docentesData[idx].telefono = tel;
+    toast('Teléfono actualizado', 'ok');
+  });
+}
+function loadFichaSeguimientos(d) {
+  apiCall({ action: 'listSeguimientosDocente', nombre: d.nombre }).then(function(res) {
+    var el = document.getElementById('df-seguimientos');
+    if (!el) return;
+    var periodos = (res && res.periodos) || {};
+    var claves = ['I','II','III'];
+    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">';
+    claves.forEach(function(per) {
+      var p = periodos[per];
+      html += '<div style="background:var(--gray-bg);border-radius:10px;padding:12px">' +
+        '<div style="font-weight:700;color:var(--navy);font-size:0.85rem">Periodo ' + per + '</div>';
+      if (p) {
+        html += '<div style="font-size:0.75rem;color:var(--gray);margin-top:2px">' + (p.fecha||'') + '</div>' +
+          '<div style="margin-top:6px;font-size:0.8rem;line-height:1.6">' +
+            'Dominio curricular: <b>' + (p.dominioCurricular!=null?p.dominioCurricular:'—') + '</b><br>' +
+            'Pedagogía: <b>' + (p.pedagogia!=null?p.pedagogia:'—') + '</b><br>' +
+            'Procesos: <b>' + (p.procesos!=null?p.procesos:'—') + '</b>' +
+          '</div>' +
+          '<div style="margin-top:6px;font-size:0.95rem;font-weight:800;color:var(--blue)">Subtotal: ' + (p.subtotal!=null?p.subtotal:'—') + '</div>';
+      } else {
+        html += '<div style="font-size:0.8rem;color:var(--gray);margin-top:6px">Sin datos aún.</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    if (res && res.definitiva && res.definitiva.definitiva != null) {
+      html += '<div style="margin-top:12px;padding:12px;background:var(--blue-bg);border-radius:10px;display:flex;justify-content:space-between;align-items:center">' +
+        '<span style="font-weight:700;color:var(--blue-dark);font-size:0.85rem">Puntaje definitivo (promedio)</span>' +
+        '<span style="font-size:1.2rem;font-weight:800;color:var(--blue-dark)">' + res.definitiva.definitiva + '</span></div>';
+    }
+    el.innerHTML = html;
+  }).catch(function() {
+    var el = document.getElementById('df-seguimientos');
+    if (el) el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>';
+  });
+}
+function loadFichaLlegadasTarde(d) {
+  apiCall({ action: 'listLlegadasTardeDocente', nombre: d.nombre, jornada: d.jornada }).then(function(data) {
+    var el = document.getElementById('df-llegadas');
+    if (!el) return;
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin registros de ingreso.</div>'; return; }
+    var totalTarde = data.filter(function(r){ return r.esTarde; }).length;
+    var html = '<div style="font-size:0.82rem;color:var(--gray);margin-bottom:10px">' + totalTarde + ' llegada' + (totalTarde!==1?'s':'') + ' tarde de ' + data.length + ' ingresos registrados</div>';
+    html += '<div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">';
+    data.slice(0, 60).forEach(function(r) {
+      var tag = r.esTarde ? '<span class="tag tag-red" style="font-size:0.68rem">Tarde</span>' : '<span class="tag tag-green" style="font-size:0.68rem">A tiempo</span>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--gray-bg);border-radius:8px;font-size:0.8rem">' +
+        '<span>' + fmtD(r.fecha) + ' · ' + r.hora + '</span>' + tag + '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }).catch(function() {
+    var el = document.getElementById('df-llegadas');
+    if (el) el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>';
+  });
+}
+function loadFichaPermisos(d) {
+  sb.from('permisos').select('*').eq('docente_id', d.id).order('fecha', {ascending:false}).then(function(res) {
+    var el = document.getElementById('df-permisos');
+    if (!el) return;
+    var data = (res && res.data) || [];
+    if (!data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin permisos registrados.</div>'; return; }
+    el.innerHTML = data.map(function(p) {
+      return '<div style="padding:10px;background:var(--gray-bg);border-radius:8px;margin-bottom:8px;font-size:0.82rem">' +
+        '<div style="font-weight:700;color:var(--navy)">' + (p.fecha||'') + ' · ' + (p.duracion||'') + '</div>' +
+        '<div style="margin-top:2px">' + (p.motivo||'') + '</div>' +
+      '</div>';
+    }).join('');
+  });
+}
+function loadFichaQuejas(d) {
+  sb.from('quejas').select('*').order('fecha', {ascending:false}).then(function(res) {
+    var el = document.getElementById('df-quejas');
+    if (!el) return;
+    var data = (res && res.data) || [];
+    var wq = d.nombre.trim().toLowerCase();
+    var propias = data.filter(function(q){ return String(q.docente||'').trim().toLowerCase() === wq; });
+    if (!propias.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin quejas registradas.</div>'; return; }
+    el.innerHTML = propias.map(function(q) {
+      return '<div style="padding:10px;background:var(--gray-bg);border-radius:8px;margin-bottom:8px;font-size:0.82rem">' +
+        '<div style="font-weight:700;color:var(--navy)">' + (q.fecha||'') + '</div>' +
+        '<div style="margin-top:2px">' + (q.descripcion||'') + '</div>' +
+      '</div>';
+    }).join('');
+  });
+}
+
 function loadRevisionLibros() {
   var el = document.getElementById('rl-historial-list');
   sb.from('revision_libros').select('*, estudiantes(nombre)').order('fecha', {ascending:false}).then(function(res) {
