@@ -1116,7 +1116,7 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
 </div>
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM9vRxVteHfb5Y_yaYEAjOhEbUHgz1sgJSI_uej45ehAyJNJtrK_iOIGeyWyvxoZQ/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5k-0kqVW7cJAj6Kd6CYrk0mQr_mUhIRtlfTpHwMFsCibsbf7XeHh6iC5L1oI3Mq2w/exec";
 var SUPABASE_URL = "https://hhmcuhqqnybljaalaasq.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWN1aHFxbnlibGphYWxhYXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTQyODcsImV4cCI6MjA5NDc3MDI4N30.cucoepS9QHdwjOrX8ph9D-W7-OSGEifBAVqwUQvH7QM";
 var SUPABASE_BUCKET = "documentos";
@@ -6845,7 +6845,7 @@ function loadFichaSeguimientos(d) {
   });
 }
 function loadFichaLlegadasTarde(d) {
-  apiCall({ action: 'listLlegadasTardeDocente', nombre: d.nombre, jornada: d.jornada }).then(function(data) {
+  apiCall({ action: 'listLlegadasTardeDocente', nombre: d.nombre, horaManana: d.hora_ingreso_manana || '', horaTarde: d.hora_ingreso_tarde || '' }).then(function(data) {
     var el = document.getElementById('df-llegadas');
     if (!el) return;
     if (!Array.isArray(data) || !data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin registros de ingreso.</div>'; return; }
