@@ -189,6 +189,7 @@ textarea{resize:vertical;min-height:90px;}
 body.docente-mode #admin-app > nav,
 body.docente-mode #admin-app > .page{display:none !important;}
 body.form-publico-mode #admin-app{display:none !important;}
+body.admin-locked #admin-app{display:none !important;}
 .form-publico-screen{display:none;min-height:100vh;align-items:flex-start;justify-content:center;background:var(--bg);font-family:'DM Sans',sans-serif;padding:40px 16px;}
 .form-publico-screen.open{display:flex;}
 .form-publico-card{background:#fff;border-radius:16px;padding:30px 26px;max-width:460px;width:100%;box-shadow:0 4px 24px rgba(15,41,66,0.12);}
@@ -4809,11 +4810,32 @@ window.onload = function() {
     initFormAsistencia();
     return;
   }
+  document.body.classList.add('admin-locked');
+  if (sessionStorage.getItem('ri_admin_unlocked') === 'true') {
+    desbloquearAdmin();
+  } else {
+    document.getElementById('admin-login-screen').classList.add('open');
+  }
+};
+function iniciarAppAdmin() {
   loadCases();
   initEstudiantes();
   loadPanelExtras();
   loadSbEstudiantes();
-};
+}
+function desbloquearAdmin() {
+  sessionStorage.setItem('ri_admin_unlocked', 'true');
+  document.body.classList.remove('admin-locked');
+  document.getElementById('admin-login-screen').classList.remove('open');
+  iniciarAppAdmin();
+}
+function adminLogin() {
+  var pwd = document.getElementById('admin-login-pwd').value;
+  var errEl = document.getElementById('admin-login-err');
+  if (pwd !== DELETE_PWD) { errEl.textContent = 'Contrasena incorrecta'; return; }
+  errEl.textContent = '';
+  desbloquearAdmin();
+}
 
 // ============================================================
 // SUPABASE (migracion en curso: Casos ya usa Supabase, el resto sigue en Apps Script)
@@ -4934,9 +4956,10 @@ function docenteAbrirPerfil(nombre) {
 // ============================================================
 // FORMULARIO PUBLICO: LLEGADAS TARDE ESTUDIANTES
 // ============================================================
+var flDocenteSesion = '';
+var flContador = 0;
 function initFormLlegadas() {
   document.getElementById('form-llegadas-screen').classList.add('open');
-  document.getElementById('fl-fecha').valueAsDate = new Date();
   sb.from('estudiantes').select('id,nombre,grado,jornada').order('nombre').then(function(res) {
     if (res.error) { console.error(res.error); return; }
     studentsData = res.data || [];
@@ -4948,11 +4971,33 @@ function initFormLlegadas() {
   });
   sb.from('docentes').select('id,nombre').order('nombre').then(function(res) {
     if (res.error) { console.error(res.error); return; }
-    var sel = document.getElementById('fl-docente');
+    var sel = document.getElementById('fl-docente-sesion');
     (res.data || []).forEach(function(d) {
       var o = document.createElement('option'); o.value = d.nombre; o.textContent = d.nombre; sel.appendChild(o);
     });
   });
+}
+function iniciarSesionLlegadas() {
+  var docente = document.getElementById('fl-docente-sesion').value;
+  var errEl = document.getElementById('fl-sesion-err');
+  if (!docente) { errEl.textContent = 'Selecciona tu nombre para continuar.'; return; }
+  errEl.textContent = '';
+  flDocenteSesion = docente;
+  flContador = 0;
+  document.getElementById('fl-docente-nombre-activo').textContent = docente;
+  document.getElementById('fl-fecha').valueAsDate = new Date();
+  document.getElementById('fl-sesion-inicio').style.display = 'none';
+  document.getElementById('fl-sesion-activa').style.display = 'block';
+  document.getElementById('fl-contador').textContent = '';
+}
+function finalizarSesionLlegadas() {
+  flDocenteSesion = ''; flContador = 0;
+  document.getElementById('fl-docente-sesion').value = '';
+  document.getElementById('fl-grado').value = '';
+  document.getElementById('fl-select-wrap').style.display = 'none';
+  document.getElementById('fl-motivo').value = '';
+  document.getElementById('fl-sesion-activa').style.display = 'none';
+  document.getElementById('fl-sesion-inicio').style.display = 'block';
 }
 function filtrarEstFormLlegadas() {
   var grado = document.getElementById('fl-grado').value;
@@ -4969,22 +5014,22 @@ function submitFormLlegadas() {
   var errEl = document.getElementById('fl-err'); errEl.textContent = '';
   var fecha = document.getElementById('fl-fecha').value;
   var estudianteId = document.getElementById('fl-estudiante').value;
-  var motivo = document.getElementById('fl-motivo').value.trim();
-  var docente = document.getElementById('fl-docente').value;
-  if (!fecha || !estudianteId || !docente) { errEl.textContent = 'Completa fecha, estudiante y docente en vigilancia.'; return; }
+  var motivo = document.getElementById('fl-motivo').value;
+  if (!fecha || !estudianteId || !motivo) { errEl.textContent = 'Completa fecha, estudiante y motivo.'; return; }
   var btn = document.getElementById('fl-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   sb.from('llegadas_tarde_estudiantes').insert({
-    estudiante_id: estudianteId, fecha: fecha, motivo: motivo, docente_vigilancia: docente
+    estudiante_id: estudianteId, fecha: fecha, motivo: motivo, docente_vigilancia: flDocenteSesion
   }).then(function(res) {
     if (res.error) { errEl.textContent = 'Error al guardar. Intenta de nuevo.'; return; }
     document.getElementById('fl-grado').value = '';
     document.getElementById('fl-select-wrap').style.display = 'none';
     document.getElementById('fl-motivo').value = '';
-    document.getElementById('fl-fecha').valueAsDate = new Date();
-    errEl.style.color = 'var(--green)'; errEl.textContent = 'Registrado correctamente.';
-    setTimeout(function(){ errEl.textContent=''; errEl.style.color=''; }, 3000);
-  }).finally(function() { btn.disabled = false; btn.textContent = 'Registrar'; });
+    flContador++;
+    document.getElementById('fl-contador').textContent = flContador + ' estudiante' + (flContador!==1?'s':'') + ' registrado' + (flContador!==1?'s':'') + ' en esta sesion';
+    errEl.style.color = 'var(--green)'; errEl.textContent = 'Registrado. Listo para el siguiente.';
+    setTimeout(function(){ errEl.textContent=''; errEl.style.color=''; }, 2000);
+  }).finally(function() { btn.disabled = false; btn.textContent = 'Registrar y seguir'; });
 }
 
 // ============================================================
@@ -5009,14 +5054,16 @@ function selFaTipo(tipo) {
 function submitFormAsistencia() {
   var errEl = document.getElementById('fa-err'); errEl.textContent = '';
   var personaId = document.getElementById('fa-nombre').value;
+  var motivo = document.getElementById('fa-motivo').value.trim();
   if (!personaId || !faTipoActual) { errEl.textContent = 'Selecciona tu nombre y el tipo de registro.'; return; }
   var btn = document.getElementById('fa-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   sb.from('asistencia_personal').insert({
-    persona_id: personaId, tipo: faTipoActual
+    persona_id: personaId, tipo: faTipoActual, motivo: motivo
   }).then(function(res) {
     if (res.error) { errEl.textContent = 'Error al guardar. Intenta de nuevo.'; return; }
     document.getElementById('fa-nombre').value = '';
+    document.getElementById('fa-motivo').value = '';
     selFaTipo('');
     errEl.style.color = 'var(--green)'; errEl.textContent = 'Registrado correctamente.';
     setTimeout(function(){ errEl.textContent=''; errEl.style.color=''; }, 3000);
@@ -7554,20 +7601,45 @@ function exportQuejasPDF() {
         <div style="font-size:0.76rem;color:var(--gray)">Gimnasio ComfaCasanare</div>
       </div>
     </div>
-    <div class="field"><label class="lbl">Fecha</label><input type="date" id="fl-fecha"></div>
-    <div class="field"><label class="lbl">Grado</label>
-      <select id="fl-grado" onchange="filtrarEstFormLlegadas()"><option value="">Seleccionar grado...</option></select>
+
+    <!-- Paso 1: iniciar sesion -->
+    <div id="fl-sesion-inicio">
+      <div class="field"><label class="lbl">Docente en vigilancia que reporta</label>
+        <select id="fl-docente-sesion"><option value="">Seleccionar docente...</option></select>
+      </div>
+      <div class="ferr" id="fl-sesion-err" style="margin-bottom:10px"></div>
+      <button class="btn btn-primary" onclick="iniciarSesionLlegadas()" style="width:100%;padding:13px">Iniciar registro</button>
     </div>
-    <div class="field" id="fl-select-wrap" style="display:none">
-      <label class="lbl">Estudiante</label>
-      <select id="fl-estudiante"><option value="">Seleccionar...</option></select>
+
+    <!-- Paso 2: registrar en cadena -->
+    <div id="fl-sesion-activa" style="display:none">
+      <div style="background:var(--blue-bg);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:0.82rem;color:var(--blue-dark)">Registrando como <b id="fl-docente-nombre-activo"></b></div>
+        <span onclick="finalizarSesionLlegadas()" style="font-size:0.76rem;color:var(--blue-dark);font-weight:700;cursor:pointer;text-decoration:underline">Finalizar</span>
+      </div>
+      <div class="field"><label class="lbl">Fecha</label><input type="date" id="fl-fecha"></div>
+      <div class="field"><label class="lbl">Grado</label>
+        <select id="fl-grado" onchange="filtrarEstFormLlegadas()"><option value="">Seleccionar grado...</option></select>
+      </div>
+      <div class="field" id="fl-select-wrap" style="display:none">
+        <label class="lbl">Estudiante</label>
+        <select id="fl-estudiante"><option value="">Seleccionar...</option></select>
+      </div>
+      <div class="field"><label class="lbl">Motivo</label>
+        <select id="fl-motivo">
+          <option value="">Seleccionar motivo...</option>
+          <option value="Sin excusa">Sin excusa</option>
+          <option value="Ruta demorada">Ruta demorada</option>
+          <option value="Hermanos en otra sede">Hermanos en otra sede</option>
+          <option value="Entrenamiento deportivo">Entrenamiento deportivo</option>
+          <option value="Cita medica">Cita médica</option>
+          <option value="Calamidad domestica">Calamidad doméstica</option>
+        </select>
+      </div>
+      <div class="ferr" id="fl-err" style="margin-bottom:10px"></div>
+      <button class="btn btn-primary" id="fl-btn" onclick="submitFormLlegadas()" style="width:100%;padding:13px">Registrar y seguir</button>
+      <div id="fl-contador" style="text-align:center;font-size:0.76rem;color:var(--gray);margin-top:10px"></div>
     </div>
-    <div class="field"><label class="lbl">Motivo</label><textarea id="fl-motivo" placeholder="Motivo de la llegada tarde..." rows="2"></textarea></div>
-    <div class="field"><label class="lbl">Docente en vigilancia que reporta</label>
-      <select id="fl-docente"><option value="">Seleccionar docente...</option></select>
-    </div>
-    <div class="ferr" id="fl-err" style="margin-bottom:10px"></div>
-    <button class="btn btn-primary" id="fl-btn" onclick="submitFormLlegadas()" style="width:100%;padding:13px">Registrar</button>
   </div>
 </div>
 
@@ -7590,8 +7662,26 @@ function exportQuejasPDF() {
         <button class="type-btn" id="fa-btn-salida" onclick="selFaTipo('Salida')">Salida</button>
       </div>
     </div>
+    <div class="field"><label class="lbl">Motivo de entrada tarde, salida temporal o salida definitiva</label>
+      <textarea id="fa-motivo" placeholder="Opcional..." rows="2"></textarea>
+    </div>
     <div class="ferr" id="fa-err" style="margin-bottom:10px"></div>
     <button class="btn btn-primary" id="fa-btn" onclick="submitFormAsistencia()" style="width:100%;padding:13px">Registrar</button>
+  </div>
+</div>
+
+<!-- ACCESO ADMINISTRADOR -->
+<div id="admin-login-screen" class="form-publico-screen">
+  <div class="form-publico-card">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:56px;height:56px;background:var(--navy);color:var(--amber);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Playfair Display',serif;font-size:1.2rem;margin:0 auto 14px">RI</div>
+      <div class="serif" style="font-size:1.2rem;color:var(--navy);font-weight:700">Gimnasio ComfaCasanare</div>
+      <div style="font-size:0.85rem;color:var(--gray);margin-top:2px">Registro Integral · Acceso administrador</div>
+    </div>
+    <label class="lbl">Contraseña</label>
+    <input type="password" id="admin-login-pwd" style="width:100%;margin-top:4px;padding:11px;border:1px solid var(--gray-light);border-radius:10px;font-family:inherit;font-size:0.9rem" onkeydown="if(event.key==='Enter')adminLogin()">
+    <div id="admin-login-err" style="color:var(--red);font-size:0.8rem;margin-top:8px;min-height:18px"></div>
+    <button class="btn btn-primary" onclick="adminLogin()" style="width:100%;padding:13px;margin-top:6px">Ingresar</button>
   </div>
 </div>
 
