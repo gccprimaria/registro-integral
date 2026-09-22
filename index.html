@@ -188,6 +188,10 @@ textarea{resize:vertical;min-height:90px;}
 #docente-home-screen.open{display:block;position:fixed;inset:0;z-index:50;overflow-y:auto;}
 body.docente-mode #admin-app > nav,
 body.docente-mode #admin-app > .page{display:none !important;}
+body.form-publico-mode #admin-app{display:none !important;}
+.form-publico-screen{display:none;min-height:100vh;align-items:flex-start;justify-content:center;background:var(--bg);font-family:'DM Sans',sans-serif;padding:40px 16px;}
+.form-publico-screen.open{display:flex;}
+.form-publico-card{background:#fff;border-radius:16px;padding:30px 26px;max-width:460px;width:100%;box-shadow:0 4px 24px rgba(15,41,66,0.12);}
 .docente-result-card{background:#fff;border:1px solid var(--gray-light);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s;}
 .docente-result-card:hover{border-color:var(--amber);}
 body.docente-mode .admin-only{display:none !important;}
@@ -219,6 +223,7 @@ body.docente-mode .admin-only{display:none !important;}
     <button class="nav-tab" onclick="showPage('estudiantes')">👤 Estudiantes</button>
     <div class="side-group-label">Registros</div>
     <button class="nav-tab" onclick="showPage('nuevo-registro')">📝 Registro</button>
+    <button class="nav-tab" onclick="showPage('solicitudes-jornada')">🔄 Solicitudes jornada</button>
     <div class="side-group-label">Sistema</div>
     <button class="nav-tab no-print" onclick="showPage('config')">⚙️ Config</button>
   </div>
@@ -983,6 +988,7 @@ body.docente-mode .admin-only{display:none !important;}
       <button class="type-btn" id="nr-tab-comp-acad" onclick="selNRTipo('comp-acad')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Acad.</button>
       <button class="type-btn" id="nr-tab-comp-disc" onclick="selNRTipo('comp-disc')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Disc.</button>
       <button class="type-btn" id="nr-tab-hist-acad" onclick="selNRTipo('hist-acad')" style="flex:1;min-width:130px;font-size:0.8rem">Hist. Academico</button>
+      <button class="type-btn" id="nr-tab-jornada" onclick="selNRTipo('jornada')" style="flex:1;min-width:150px;font-size:0.8rem">Solicitud cambio jornada</button>
     </div>
 
     <!-- Formulario citacion -->
@@ -1093,7 +1099,38 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="field"><label class="lbl">Nota (escala 10-50)</label><input type="number" min="10" max="50" step="1" id="nr-ha-nota" placeholder="Ej: 31"><div class="ferr" id="nr-ha-ferr-nota"></div></div>
       <button class="btn btn-primary" id="nr-ha-btn" onclick="saveNRHistorialAcademico()" style="width:100%;padding:14px">Guardar historial academico</button>
     </div>
+
+    <!-- Formulario solicitud cambio de jornada -->
+    <div class="card form-section" id="nr-form-jornada" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Solicitud cambio de jornada</div>
+      <div class="field"><label class="lbl">Fecha de la solicitud</label><input type="date" id="nr-cj-fecha"><div class="ferr" id="nr-cj-ferr-fecha"></div></div>
+      <div class="field">
+        <label class="lbl">Jornada solicitada</label>
+        <div class="type-grid">
+          <button class="type-btn" id="nr-cj-jor-manana" onclick="selNRJornadaSolicitada('Manana')">Mañana</button>
+          <button class="type-btn" id="nr-cj-jor-tarde" onclick="selNRJornadaSolicitada('Tarde')">Tarde</button>
+        </div>
+        <div class="ferr" id="nr-cj-ferr-jornada"></div>
+      </div>
+      <div class="field"><label class="lbl">Motivo</label><textarea id="nr-cj-motivo" placeholder="Motivo de la solicitud..." rows="3"></textarea><div class="ferr" id="nr-cj-ferr-motivo"></div></div>
+      <div class="field">
+        <label class="lbl">Estado</label>
+        <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <button class="type-btn sel" id="nr-cj-est-pendiente" onclick="selNRCjEstado('pendiente')">Pendiente</button>
+          <button class="type-btn" id="nr-cj-est-aprobada" onclick="selNRCjEstado('aprobada')">Aprobada</button>
+          <button class="type-btn" id="nr-cj-est-rechazada" onclick="selNRCjEstado('rechazada')">Rechazada</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="nr-cj-btn" onclick="saveNRSolicitudJornada()" style="width:100%;padding:14px">Guardar solicitud</button>
+    </div>
   </div>
+</div>
+
+<!-- SOLICITUDES CAMBIO DE JORNADA -->
+<div class="page" id="page-solicitudes-jornada">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Solicitudes cambio de jornada</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Todas las solicitudes registradas, de la más reciente a la más antigua.</div>
+  <div id="sj-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
 </div>
 
 <!-- CONFIG -->
@@ -4762,6 +4799,16 @@ window.onload = function() {
     initDocenteAccess();
     return;
   }
+  if (params.has('llegadas')) {
+    document.body.classList.add('form-publico-mode');
+    initFormLlegadas();
+    return;
+  }
+  if (params.has('asistencia')) {
+    document.body.classList.add('form-publico-mode');
+    initFormAsistencia();
+    return;
+  }
   loadCases();
   initEstudiantes();
   loadPanelExtras();
@@ -4884,6 +4931,98 @@ function docenteAbrirPerfil(nombre) {
   if (s) openEstModal(s);
 }
 
+// ============================================================
+// FORMULARIO PUBLICO: LLEGADAS TARDE ESTUDIANTES
+// ============================================================
+function initFormLlegadas() {
+  document.getElementById('form-llegadas-screen').classList.add('open');
+  document.getElementById('fl-fecha').valueAsDate = new Date();
+  sb.from('estudiantes').select('id,nombre,grado,jornada').order('nombre').then(function(res) {
+    if (res.error) { console.error(res.error); return; }
+    studentsData = res.data || [];
+    var grados = Array.from(new Set(studentsData.map(function(s){ return s.grado; }).filter(Boolean))).sort();
+    var sel = document.getElementById('fl-grado');
+    grados.forEach(function(g) {
+      var o = document.createElement('option'); o.value = g; o.textContent = g; sel.appendChild(o);
+    });
+  });
+  sb.from('docentes').select('id,nombre').order('nombre').then(function(res) {
+    if (res.error) { console.error(res.error); return; }
+    var sel = document.getElementById('fl-docente');
+    (res.data || []).forEach(function(d) {
+      var o = document.createElement('option'); o.value = d.nombre; o.textContent = d.nombre; sel.appendChild(o);
+    });
+  });
+}
+function filtrarEstFormLlegadas() {
+  var grado = document.getElementById('fl-grado').value;
+  var wrap = document.getElementById('fl-select-wrap');
+  var sel = document.getElementById('fl-estudiante');
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  if (!grado) { wrap.style.display = 'none'; return; }
+  studentsData.filter(function(s){ return s.grado === grado; }).forEach(function(s) {
+    var o = document.createElement('option'); o.value = s.id; o.textContent = s.nombre; sel.appendChild(o);
+  });
+  wrap.style.display = 'block';
+}
+function submitFormLlegadas() {
+  var errEl = document.getElementById('fl-err'); errEl.textContent = '';
+  var fecha = document.getElementById('fl-fecha').value;
+  var estudianteId = document.getElementById('fl-estudiante').value;
+  var motivo = document.getElementById('fl-motivo').value.trim();
+  var docente = document.getElementById('fl-docente').value;
+  if (!fecha || !estudianteId || !docente) { errEl.textContent = 'Completa fecha, estudiante y docente en vigilancia.'; return; }
+  var btn = document.getElementById('fl-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('llegadas_tarde_estudiantes').insert({
+    estudiante_id: estudianteId, fecha: fecha, motivo: motivo, docente_vigilancia: docente
+  }).then(function(res) {
+    if (res.error) { errEl.textContent = 'Error al guardar. Intenta de nuevo.'; return; }
+    document.getElementById('fl-grado').value = '';
+    document.getElementById('fl-select-wrap').style.display = 'none';
+    document.getElementById('fl-motivo').value = '';
+    document.getElementById('fl-fecha').valueAsDate = new Date();
+    errEl.style.color = 'var(--green)'; errEl.textContent = 'Registrado correctamente.';
+    setTimeout(function(){ errEl.textContent=''; errEl.style.color=''; }, 3000);
+  }).finally(function() { btn.disabled = false; btn.textContent = 'Registrar'; });
+}
+
+// ============================================================
+// FORMULARIO PUBLICO: ENTRADA/SALIDA PERSONAL
+// ============================================================
+var faTipoActual = '';
+function initFormAsistencia() {
+  document.getElementById('form-asistencia-screen').classList.add('open');
+  sb.from('docentes').select('id,nombre').eq('incluye_llegadas_tarde', true).order('nombre').then(function(res) {
+    if (res.error) { console.error(res.error); return; }
+    var sel = document.getElementById('fa-nombre');
+    (res.data || []).forEach(function(d) {
+      var o = document.createElement('option'); o.value = d.id; o.textContent = d.nombre; sel.appendChild(o);
+    });
+  });
+}
+function selFaTipo(tipo) {
+  faTipoActual = tipo;
+  document.getElementById('fa-btn-ingreso').className = 'type-btn' + (tipo === 'Ingreso' ? ' sel' : '');
+  document.getElementById('fa-btn-salida').className = 'type-btn' + (tipo === 'Salida' ? ' sel' : '');
+}
+function submitFormAsistencia() {
+  var errEl = document.getElementById('fa-err'); errEl.textContent = '';
+  var personaId = document.getElementById('fa-nombre').value;
+  if (!personaId || !faTipoActual) { errEl.textContent = 'Selecciona tu nombre y el tipo de registro.'; return; }
+  var btn = document.getElementById('fa-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('asistencia_personal').insert({
+    persona_id: personaId, tipo: faTipoActual
+  }).then(function(res) {
+    if (res.error) { errEl.textContent = 'Error al guardar. Intenta de nuevo.'; return; }
+    document.getElementById('fa-nombre').value = '';
+    selFaTipo('');
+    errEl.style.color = 'var(--green)'; errEl.textContent = 'Registrado correctamente.';
+    setTimeout(function(){ errEl.textContent=''; errEl.style.color=''; }, 3000);
+  }).finally(function() { btn.disabled = false; btn.textContent = 'Registrar'; });
+}
+
 function apiCall(params) {
   var url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
   var controller = new AbortController();
@@ -4949,7 +5088,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","config"];
+  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","solicitudes-jornada","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -4961,6 +5100,7 @@ function showPage(name) {
   if(name==="stats") renderStats();
   if(name==="estudiantes") renderEstudiantes();
   if(name==="nuevo-registro") initNuevoRegistro();
+  if(name==="solicitudes-jornada") loadSolicitudesJornadaPage();
   window.scrollTo(0,0);
 }
 
@@ -6038,6 +6178,11 @@ function openEstModal(s) {
   histHTML += '<div id="est-anotaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
+  // Solicitudes cambio de jornada
+  histHTML += '<div class="hist-section"><div class="hist-title-badge">Solicitudes cambio de jornada</div>';
+  histHTML += '<div id="est-solicitudes-jornada-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '</div>';
+
   // Academic history (live + legacy, con corte/final)
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Historial academico (materias con dificultad)</div>';
   histHTML += '<div id="est-histacad-content"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
@@ -6070,6 +6215,7 @@ function openEstModal(s) {
   loadLlegadasTarde(s.nombre, s.grado);
   loadHistorialAcademico(s.nombre);
   loadAnotaciones(s.nombre);
+  loadSolicitudesJornadaEstudiante(s.nombre);
   loadRegistros('citacion', s.nombre, 'est-citaciones-list');
   loadRegistros('citacion_estudiante', s.nombre, 'est-citaciones-estudiante-list');
   loadRegistros('reparacion', s.nombre, 'est-reparaciones-list');
@@ -7048,7 +7194,7 @@ function selEstNR() {
 
 function selNRTipo(tipo) {
   nrTipo = tipo;
-  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc','hist-acad'];
+  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc','hist-acad','jornada'];
   tipos.forEach(function(t) {
     var tab = document.getElementById('nr-tab-' + t);
     var form = document.getElementById('nr-form-' + t);
@@ -7207,6 +7353,85 @@ function saveNRHistorialAcademico() {
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar historial academico'; });
 }
 
+var nrCjJornada = '';
+var nrCjEstado = 'pendiente';
+function selNRJornadaSolicitada(j) {
+  nrCjJornada = j;
+  document.getElementById('nr-cj-jor-manana').className = 'type-btn' + (j === 'Manana' ? ' sel' : '');
+  document.getElementById('nr-cj-jor-tarde').className = 'type-btn' + (j === 'Tarde' ? ' sel' : '');
+}
+function selNRCjEstado(est) {
+  nrCjEstado = est;
+  ['pendiente','aprobada','rechazada'].forEach(function(s) {
+    document.getElementById('nr-cj-est-' + s).className = 'type-btn' + (s === est ? ' sel' : '');
+  });
+}
+function saveNRSolicitudJornada() {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  clearNRFerr('cj', ['fecha','jornada','motivo']);
+  var fecha = document.getElementById('nr-cj-fecha').value;
+  var motivo = document.getElementById('nr-cj-motivo').value.trim();
+  var ok = true;
+  if (!fecha) { document.getElementById('nr-cj-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!nrCjJornada) { document.getElementById('nr-cj-ferr-jornada').textContent = 'Selecciona la jornada solicitada'; ok = false; }
+  if (!motivo) { document.getElementById('nr-cj-ferr-motivo').textContent = 'Escribe el motivo'; ok = false; }
+  if (!ok) return;
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var btn = document.getElementById('nr-cj-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('solicitudes_jornada').insert({
+    estudiante_id: estId, fecha: fecha, jornada_actual: nrCurrentStudent.jornada,
+    jornada_solicitada: nrCjJornada, motivo: motivo, estado: nrCjEstado
+  }).then(function(res) {
+    if (res.error) throw res.error;
+    document.getElementById('nr-cj-motivo').value = '';
+    document.getElementById('nr-cj-fecha').value = '';
+    nrCjJornada = '';
+    document.getElementById('nr-cj-jor-manana').className = 'type-btn';
+    document.getElementById('nr-cj-jor-tarde').className = 'type-btn';
+    selNRCjEstado('pendiente');
+    toast('Solicitud guardada', 'ok');
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar solicitud'; });
+}
+
+function renderSolicitudesJornadaList(el, data, mostrarEstudiante) {
+  if (!el) return;
+  if (!data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin solicitudes registradas.</div>'; return; }
+  var colores = { pendiente: 'var(--amber)', aprobada: 'var(--green)', rechazada: 'var(--red)' };
+  el.innerHTML = data.map(function(s) {
+    var color = colores[s.estado] || 'var(--gray)';
+    var nombreLine = (mostrarEstudiante && s.estudiantes)
+      ? '<div style="font-weight:700;color:var(--navy)">' + s.estudiantes.nombre + (s.estudiantes.grado ? ' (' + s.estudiantes.grado + ')' : '') + '</div>'
+      : '<div></div>';
+    return '<div class="card" style="border-left:4px solid ' + color + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+        nombreLine +
+        '<span class="tag" style="background:' + color + ';color:#fff;font-size:0.68rem;text-transform:capitalize">' + (s.estado || 'pendiente') + '</span>' +
+      '</div>' +
+      '<div style="font-size:0.82rem;color:var(--gray);margin-top:4px">' + fmtD(s.fecha) + ' · ' + (s.jornada_actual || '?') + ' → ' + (s.jornada_solicitada || '?') + '</div>' +
+      (s.motivo ? '<div style="font-size:0.85rem;margin-top:6px">' + s.motivo + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+function loadSolicitudesJornadaPage() {
+  var el = document.getElementById('sj-list');
+  sb.from('solicitudes_jornada').select('*, estudiantes(nombre,grado)').order('fecha', { ascending: false }).then(function(res) {
+    if (res.error) { console.error(res.error); el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Error al cargar.</div>'; return; }
+    renderSolicitudesJornadaList(el, res.data || [], true);
+  });
+}
+function loadSolicitudesJornadaEstudiante(nombre) {
+  var el = document.getElementById('est-solicitudes-jornada-list');
+  if (!el) return;
+  var estId = resolveEstudianteId(nombre);
+  if (!estId) { renderSolicitudesJornadaList(el, [], false); return; }
+  sb.from('solicitudes_jornada').select('*').eq('estudiante_id', estId).order('fecha', { ascending: false }).then(function(res) {
+    renderSolicitudesJornadaList(el, res.data || [], false);
+  }).catch(function() { renderSolicitudesJornadaList(el, [], false); });
+}
+
 function exportStudentPDF() {
   var s = studentsData[currentEstIndex];
   if (!s) return;
@@ -7316,6 +7541,57 @@ function exportQuejasPDF() {
       <input type="text" id="docente-search" placeholder="Escribe el nombre..." style="width:100%;margin-top:4px;padding:11px;border:1px solid var(--gray-light);border-radius:10px;font-family:inherit;font-size:0.9rem" oninput="filtrarEstDocente()">
       <div id="docente-search-results" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
     </div>
+  </div>
+</div>
+
+<!-- FORMULARIO LLEGADAS TARDE ESTUDIANTES (publico) -->
+<div id="form-llegadas-screen" class="form-publico-screen">
+  <div class="form-publico-card">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:20px">
+      <div style="width:40px;height:40px;background:var(--navy);color:var(--amber);border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Playfair Display',serif">RI</div>
+      <div>
+        <div class="serif" style="font-size:1.05rem;color:var(--navy);font-weight:700">Registro de llegada tarde</div>
+        <div style="font-size:0.76rem;color:var(--gray)">Gimnasio ComfaCasanare</div>
+      </div>
+    </div>
+    <div class="field"><label class="lbl">Fecha</label><input type="date" id="fl-fecha"></div>
+    <div class="field"><label class="lbl">Grado</label>
+      <select id="fl-grado" onchange="filtrarEstFormLlegadas()"><option value="">Seleccionar grado...</option></select>
+    </div>
+    <div class="field" id="fl-select-wrap" style="display:none">
+      <label class="lbl">Estudiante</label>
+      <select id="fl-estudiante"><option value="">Seleccionar...</option></select>
+    </div>
+    <div class="field"><label class="lbl">Motivo</label><textarea id="fl-motivo" placeholder="Motivo de la llegada tarde..." rows="2"></textarea></div>
+    <div class="field"><label class="lbl">Docente en vigilancia que reporta</label>
+      <select id="fl-docente"><option value="">Seleccionar docente...</option></select>
+    </div>
+    <div class="ferr" id="fl-err" style="margin-bottom:10px"></div>
+    <button class="btn btn-primary" id="fl-btn" onclick="submitFormLlegadas()" style="width:100%;padding:13px">Registrar</button>
+  </div>
+</div>
+
+<!-- FORMULARIO ENTRADA/SALIDA PERSONAL (publico) -->
+<div id="form-asistencia-screen" class="form-publico-screen">
+  <div class="form-publico-card">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:20px">
+      <div style="width:40px;height:40px;background:var(--navy);color:var(--amber);border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Playfair Display',serif">RI</div>
+      <div>
+        <div class="serif" style="font-size:1.05rem;color:var(--navy);font-weight:700">Registro de entrada y salida</div>
+        <div style="font-size:0.76rem;color:var(--gray)">Gimnasio ComfaCasanare</div>
+      </div>
+    </div>
+    <div class="field"><label class="lbl">Nombre</label>
+      <select id="fa-nombre"><option value="">Seleccionar...</option></select>
+    </div>
+    <div class="field"><label class="lbl">Registro</label>
+      <div class="type-grid">
+        <button class="type-btn" id="fa-btn-ingreso" onclick="selFaTipo('Ingreso')">Ingreso</button>
+        <button class="type-btn" id="fa-btn-salida" onclick="selFaTipo('Salida')">Salida</button>
+      </div>
+    </div>
+    <div class="ferr" id="fa-err" style="margin-bottom:10px"></div>
+    <button class="btn btn-primary" id="fa-btn" onclick="submitFormAsistencia()" style="width:100%;padding:13px">Registrar</button>
   </div>
 </div>
 
