@@ -7263,11 +7263,43 @@ function loadFichaSeguimientos(d) {
     if (el) el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>';
   });
 }
+function aMinutosLocal(horaStr) {
+  var p = String(horaStr||'').split(':');
+  if (p.length < 2) return null;
+  return parseInt(p[0],10)*60 + parseInt(p[1],10);
+}
 function loadFichaLlegadasTarde(d) {
-  apiCall({ action: 'listLlegadasTardeDocente', nombre: d.nombre, horaManana: d.hora_ingreso_manana || '', horaTarde: d.hora_ingreso_tarde || '' }).then(function(data) {
+  sb.from('asistencia_personal').select('*').eq('persona_id', d.id).eq('tipo', 'Ingreso').order('fecha', { ascending: false }).then(function(res) {
     var el = document.getElementById('df-llegadas');
     if (!el) return;
-    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin registros de ingreso.</div>'; return; }
+    if (res.error) { console.error(res.error); el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>'; return; }
+
+    var umbrales = [];
+    var um1 = aMinutosLocal(d.hora_ingreso_manana), um2 = aMinutosLocal(d.hora_ingreso_tarde);
+    if (um1 !== null) umbrales.push(um1);
+    if (um2 !== null) umbrales.push(um2);
+
+    var data = (res.data || []).filter(function(r){ return !r.motivo; }).map(function(r) {
+      var fechaObj = new Date(r.fecha);
+      var minutosReales = fechaObj.getHours()*60 + fechaObj.getMinutes();
+      var esTarde = false;
+      if (umbrales.length) {
+        var masCercano = umbrales[0], menorDist = Math.abs(minutosReales - umbrales[0]);
+        for (var u = 1; u < umbrales.length; u++) {
+          var dist = Math.abs(minutosReales - umbrales[u]);
+          if (dist < menorDist) { menorDist = dist; masCercano = umbrales[u]; }
+        }
+        esTarde = minutosReales > masCercano;
+      }
+      var pad = function(n){ return (n<10?'0':'')+n; };
+      return {
+        fecha: fechaObj.getFullYear()+'-'+pad(fechaObj.getMonth()+1)+'-'+pad(fechaObj.getDate()),
+        hora: pad(fechaObj.getHours())+':'+pad(fechaObj.getMinutes()),
+        esTarde: esTarde
+      };
+    });
+
+    if (!data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin registros de ingreso.</div>'; return; }
     var totalTarde = data.filter(function(r){ return r.esTarde; }).length;
     var html = '<div style="font-size:0.82rem;color:var(--gray);margin-bottom:10px">' + totalTarde + ' llegada' + (totalTarde!==1?'s':'') + ' tarde de ' + data.length + ' ingresos registrados</div>';
     html += '<div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">';
@@ -7278,9 +7310,6 @@ function loadFichaLlegadasTarde(d) {
     });
     html += '</div>';
     el.innerHTML = html;
-  }).catch(function() {
-    var el = document.getElementById('df-llegadas');
-    if (el) el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>';
   });
 }
 function loadFichaPermisos(d) {
