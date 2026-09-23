@@ -7061,31 +7061,28 @@ function loadHistorialAcademico(nombre) {
 
 function loadLlegadasTarde(nombre, grado) {
   var el = document.getElementById('est-llegadas-list');
-  apiCall({ action: 'listLlegadasTarde', nombre: nombre, grado: grado || '' }).then(function(data) {
+  var estId = resolveEstudianteId(nombre);
+  if (!estId) { if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde registradas.</div>'; return; }
+  sb.from('llegadas_tarde_estudiantes').select('*').eq('estudiante_id', estId).order('fecha', {ascending:false}).then(function(res) {
     if (!el) return;
-    if (!Array.isArray(data)) data = [];
+    if (res.error) throw res.error;
+    var data = res.data || [];
     if (!data.length) { el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin llegadas tarde registradas.</div>'; return; }
     el.innerHTML = data.map(function(r) {
-      var raw = r.fecha || r.hora || '';
-      var d = raw ? new Date(raw) : null;
-      var dateLabel, timeLabel;
-      if (d && !isNaN(d.getTime())) {
-        dateLabel = d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Bogota' });
-        dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
-        timeLabel = d.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
-      } else {
-        dateLabel = raw || '-';
-        timeLabel = r.hora || '';
-      }
-      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--white);border:1.5px solid var(--gray-light);border-radius:12px;padding:11px 14px;margin-bottom:8px">'
+      var dateLabel = fmtD(r.fecha);
+      return '<div style="background:var(--white);border:1.5px solid var(--gray-light);border-radius:12px;padding:11px 14px;margin-bottom:8px">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">'
         + '<div style="display:flex;align-items:center;gap:10px">'
         + '<div style="width:32px;height:32px;border-radius:9px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0">⏰</div>'
         + '<div style="font-size:0.85rem;font-weight:600;color:var(--text)">' + dateLabel + '</div>'
         + '</div>'
-        + (timeLabel ? '<span class="tag tag-amber">' + timeLabel + '</span>' : '')
+        + (r.motivo ? '<span class="tag tag-amber">' + r.motivo + '</span>' : '')
+        + '</div>'
+        + (r.docente_vigilancia ? '<div style="font-size:0.76rem;color:var(--gray);margin-top:6px;margin-left:42px">Reportado por: ' + r.docente_vigilancia + '</div>' : '')
         + '</div>';
     }).join('');
-  }).catch(function() {
+  }).catch(function(err) {
+    console.error(err);
     if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin datos de llegadas tarde.</div>';
   });
 }
