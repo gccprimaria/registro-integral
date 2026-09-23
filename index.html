@@ -7228,39 +7228,72 @@ function guardarTelefonoDocente() {
   });
 }
 function loadFichaSeguimientos(d) {
-  apiCall({ action: 'listSeguimientosDocente', nombre: d.nombre }).then(function(res) {
+  sb.from('seguimientos_docente').select('*').eq('docente_id', d.id).then(function(res) {
     var el = document.getElementById('df-seguimientos');
     if (!el) return;
-    var periodos = (res && res.periodos) || {};
-    var claves = ['I','II','III'];
-    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">';
-    claves.forEach(function(per) {
-      var p = periodos[per];
-      html += '<div style="background:var(--gray-bg);border-radius:10px;padding:12px">' +
-        '<div style="font-weight:700;color:var(--navy);font-size:0.85rem">Periodo ' + per + '</div>';
-      if (p) {
-        html += '<div style="font-size:0.75rem;color:var(--gray);margin-top:2px">' + (p.fecha||'') + '</div>' +
-          '<div style="margin-top:6px;font-size:0.8rem;line-height:1.6">' +
-            'Dominio curricular: <b>' + (p.dominioCurricular!=null?p.dominioCurricular:'—') + '</b><br>' +
-            'Pedagogía: <b>' + (p.pedagogia!=null?p.pedagogia:'—') + '</b><br>' +
-            'Procesos: <b>' + (p.procesos!=null?p.procesos:'—') + '</b>' +
-          '</div>' +
-          '<div style="margin-top:6px;font-size:0.95rem;font-weight:800;color:var(--blue)">Subtotal: ' + (p.subtotal!=null?p.subtotal:'—') + '</div>';
-      } else {
-        html += '<div style="font-size:0.8rem;color:var(--gray);margin-top:6px">Sin datos aún.</div>';
-      }
-      html += '</div>';
-    });
-    html += '</div>';
-    if (res && res.definitiva && res.definitiva.definitiva != null) {
-      html += '<div style="margin-top:12px;padding:12px;background:var(--blue-bg);border-radius:10px;display:flex;justify-content:space-between;align-items:center">' +
-        '<span style="font-weight:700;color:var(--blue-dark);font-size:0.85rem">Puntaje definitivo (promedio)</span>' +
-        '<span style="font-size:1.2rem;font-weight:800;color:var(--blue-dark)">' + res.definitiva.definitiva + '</span></div>';
-    }
-    el.innerHTML = html;
-  }).catch(function() {
-    var el = document.getElementById('df-seguimientos');
-    if (el) el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>';
+    if (res.error) { console.error(res.error); el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">No se pudo cargar.</div>'; return; }
+    var porPeriodo = {};
+    (res.data || []).forEach(function(r) { porPeriodo[r.periodo] = r; });
+    renderFichaSeguimientos(d, porPeriodo);
+  });
+}
+function renderFichaSeguimientos(d, porPeriodo) {
+  var el = document.getElementById('df-seguimientos');
+  if (!el) return;
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">';
+  ['I','II','III'].forEach(function(per) {
+    var p = porPeriodo[per] || {};
+    var subtotal = (p.dominio_curricular!=null && p.pedagogia!=null && p.procesos!=null)
+      ? (Number(p.dominio_curricular)+Number(p.pedagogia)+Number(p.procesos)) : null;
+    html += '<div style="background:var(--gray-bg);border-radius:10px;padding:12px">' +
+      '<div style="font-weight:700;color:var(--navy);font-size:0.85rem;margin-bottom:6px">Periodo ' + per + '</div>' +
+      '<label class="lbl" style="font-size:0.68rem">Fecha</label>' +
+      '<input type="date" id="seg-' + per + '-fecha" value="' + (p.fecha||'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem;margin-bottom:6px">' +
+      '<label class="lbl" style="font-size:0.68rem">Dominio curricular</label>' +
+      '<input type="number" step="0.1" id="seg-' + per + '-dominio" value="' + (p.dominio_curricular!=null?p.dominio_curricular:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem;margin-bottom:6px">' +
+      '<label class="lbl" style="font-size:0.68rem">Pedagogía</label>' +
+      '<input type="number" step="0.1" id="seg-' + per + '-pedagogia" value="' + (p.pedagogia!=null?p.pedagogia:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem;margin-bottom:6px">' +
+      '<label class="lbl" style="font-size:0.68rem">Procesos</label>' +
+      '<input type="number" step="0.1" id="seg-' + per + '-procesos" value="' + (p.procesos!=null?p.procesos:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem;margin-bottom:8px">' +
+      '<div style="font-size:0.85rem;font-weight:800;color:var(--blue);margin-bottom:8px">Subtotal: ' + (subtotal!=null?subtotal:'—') + '</div>' +
+      '<button class="btn btn-primary" onclick="guardarSeguimiento(\'' + d.id + '\',\'' + per + '\')" style="width:100%;padding:8px;font-size:0.78rem">Guardar</button>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  var pd = porPeriodo['DEFINITIVA'] || {};
+  html += '<div style="background:var(--blue-bg);border-radius:10px;padding:12px;margin-top:12px">' +
+    '<div style="font-weight:700;color:var(--blue-dark);font-size:0.85rem;margin-bottom:6px">Definitiva</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">' +
+      '<div><label class="lbl" style="font-size:0.68rem">Dominio curricular</label><input type="number" step="0.1" id="seg-DEFINITIVA-dominio" value="' + (pd.dominio_curricular!=null?pd.dominio_curricular:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem"></div>' +
+      '<div><label class="lbl" style="font-size:0.68rem">Pedagogía</label><input type="number" step="0.1" id="seg-DEFINITIVA-pedagogia" value="' + (pd.pedagogia!=null?pd.pedagogia:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem"></div>' +
+      '<div><label class="lbl" style="font-size:0.68rem">Procesos</label><input type="number" step="0.1" id="seg-DEFINITIVA-procesos" value="' + (pd.procesos!=null?pd.procesos:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem"></div>' +
+      '<div><label class="lbl" style="font-size:0.68rem">Puntaje definitivo</label><input type="number" step="0.1" id="seg-DEFINITIVA-valorfinal" value="' + (pd.valor_final!=null?pd.valor_final:'') + '" style="width:100%;padding:6px;border:1px solid var(--gray-light);border-radius:7px;font-size:0.78rem;font-weight:800"></div>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="guardarSeguimiento(\'' + d.id + '\',\'DEFINITIVA\')" style="width:100%;padding:9px;margin-top:10px;font-size:0.82rem">Guardar definitiva</button>' +
+  '</div>';
+
+  el.innerHTML = html;
+}
+function guardarSeguimiento(docenteId, periodo) {
+  var payload = { docente_id: docenteId, periodo: periodo };
+  if (periodo !== 'DEFINITIVA') {
+    payload.fecha = document.getElementById('seg-' + periodo + '-fecha').value || null;
+  }
+  var dominio = document.getElementById('seg-' + periodo + '-dominio').value;
+  var pedagogia = document.getElementById('seg-' + periodo + '-pedagogia').value;
+  var procesos = document.getElementById('seg-' + periodo + '-procesos').value;
+  payload.dominio_curricular = dominio === '' ? null : Number(dominio);
+  payload.pedagogia = pedagogia === '' ? null : Number(pedagogia);
+  payload.procesos = procesos === '' ? null : Number(procesos);
+  if (periodo === 'DEFINITIVA') {
+    var vf = document.getElementById('seg-DEFINITIVA-valorfinal').value;
+    payload.valor_final = vf === '' ? null : Number(vf);
+  }
+  sb.from('seguimientos_docente').upsert(payload, { onConflict: 'docente_id,periodo' }).then(function(res) {
+    if (res.error) { toast('Error al guardar', 'red'); console.error(res.error); return; }
+    toast('Seguimiento guardado', 'ok');
+    if (fichaDocenteActual && fichaDocenteActual.id === docenteId) loadFichaSeguimientos(fichaDocenteActual);
   });
 }
 function aMinutosLocal(horaStr) {
