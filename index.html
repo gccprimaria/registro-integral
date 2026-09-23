@@ -6856,14 +6856,62 @@ function renderRegistrosList(el, list, tipo, elId) {
     if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + '</div>';
     if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
     if (r.bool1) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
-    return '<div style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
+    var editarBtn = tipo === 'citacion' ? ('<button class="admin-only" onclick="editarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;margin-right:14px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Editar</button>') : '';
+    return '<div id="reg-row-' + r.id + '" style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
       + '<div style="font-size:0.78rem;color:var(--gray)">' + fechaLabel + '</div>'
       + '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5">' + (r.motivo || '') + '</div>'
       + (r.desc ? '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + r.desc + '</div>' : '')
       + extra
+      + editarBtn
       + '<button class="admin-only" onclick="eliminarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
       + '</div>';
   }).join('');
+}
+
+function editarRegistro(id, tipo, elId) {
+  var row = document.getElementById('reg-row-' + id);
+  if (!row) return;
+  sb.from('registros').select('*').eq('id', id).single().then(function(res) {
+    if (res.error || !res.data) { toast('No se pudo cargar el registro', 'red'); return; }
+    var r = res.data;
+    row.innerHTML =
+      '<div class="field"><label class="lbl" style="font-size:0.7rem">Fecha</label>' +
+        '<input type="date" id="er-fecha-' + id + '" value="' + (r.fecha||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>' +
+      '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Motivo</label>' +
+        '<textarea id="er-motivo-' + id + '" rows="2" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px">' + (r.motivo||'') + '</textarea></div>' +
+      '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Responsable</label>' +
+        '<input type="text" id="er-atencion-' + id + '" value="' + (r.atencion||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>' +
+      '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">¿Asistió el acudiente?</label>' +
+        '<div class="type-grid" style="margin-top:2px">' +
+          '<button type="button" class="type-btn' + (r.asistio==='si'?' sel':'') + '" id="er-asis-si-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'si\')">Si</button>' +
+          '<button type="button" class="type-btn' + (r.asistio==='no'?' sel':'') + '" id="er-asis-no-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'no\')">No</button>' +
+        '</div></div>' +
+      '<div class="btn-row" style="margin-top:10px">' +
+        '<button class="btn btn-ghost" onclick="loadRegistros(\'' + tipo + '\', currentEstNombre, \'' + elId + '\')" style="flex:1;padding:8px;font-size:0.8rem">Cancelar</button>' +
+        '<button class="btn btn-primary" onclick="guardarEdicionRegistro(\'' + id + '\',\'' + tipo + '\',\'' + elId + '\')" style="flex:1;padding:8px;font-size:0.8rem">Guardar</button>' +
+      '</div>';
+    row.dataset.asistio = r.asistio || '';
+  });
+}
+function selEditarAsistio(id, v) {
+  var row = document.getElementById('reg-row-' + id);
+  if (row) row.dataset.asistio = v;
+  document.getElementById('er-asis-si-' + id).className = 'type-btn' + (v==='si'?' sel':'');
+  document.getElementById('er-asis-no-' + id).className = 'type-btn' + (v==='no'?' sel':'');
+}
+function guardarEdicionRegistro(id, tipo, elId) {
+  var row = document.getElementById('reg-row-' + id);
+  var payload = {
+    fecha: document.getElementById('er-fecha-' + id).value,
+    motivo: document.getElementById('er-motivo-' + id).value.trim(),
+    atencion: document.getElementById('er-atencion-' + id).value.trim(),
+    asistio: (row && row.dataset.asistio) || ''
+  };
+  sb.from('registros').update(payload).eq('id', id).then(function(res) {
+    if (res.error) { toast('Error al guardar', 'red'); return; }
+    toast('Citación actualizada', 'ok');
+    loadRegistros(tipo, currentEstNombre, elId);
+  });
 }
 
 function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
