@@ -224,6 +224,7 @@ body.docente-mode .admin-only{display:none !important;}
     <button class="nav-tab" onclick="showPage('estudiantes')">👤 Estudiantes</button>
     <div class="side-group-label">Registros</div>
     <button class="nav-tab" onclick="showPage('nuevo-registro')">📝 Registro</button>
+    <button class="nav-tab" onclick="showPage('permisos-general')">🗂️ Permisos en general</button>
     <button class="nav-tab" onclick="showPage('solicitudes-jornada')">🔄 Solicitudes jornada</button>
     <div class="side-group-label">Sistema</div>
     <button class="nav-tab no-print" onclick="showPage('config')">⚙️ Config</button>
@@ -500,41 +501,35 @@ body.docente-mode .admin-only{display:none !important;}
     <button class="type-btn" id="dtab-quejas" onclick="selDocTab('quejas')" style="flex:1;padding:10px;min-width:100px">Quejas</button>
     <button class="type-btn" id="dtab-libros" onclick="selDocTab('libros')" style="flex:1;padding:10px;min-width:100px">Revisión de libros</button>
     <button class="type-btn" id="dtab-ficha" onclick="selDocTab('ficha')" style="flex:1;padding:10px;min-width:100px">Ficha docente</button>
+    <button class="type-btn" id="dtab-anotaciones" onclick="selDocTab('anotaciones')" style="flex:1;padding:10px;min-width:100px">Anotaciones</button>
     <button class="type-btn" id="dtab-panel" onclick="selDocTab('panel')" style="flex:1;padding:10px;min-width:100px">Panel</button>
   </div>
 
   <div id="dpanel-permisos" style="display:flex;flex-direction:column;gap:20px">
     <div class="card form-section">
-      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar permiso</div>
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar permiso o incapacidad</div>
       <div class="field">
-        <label class="lbl">Docente</label>
-        <select id="dp-teacher" onchange="chkPermisoOther()">
-          <option value="">Seleccionar docente...</option>
-          <optgroup label="Manana">
-            <option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option>
-            <option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option>
-            <option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option>
-            <option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option>
-            <option>Sofia Lesmes</option>
-          </optgroup>
-          <optgroup label="Tarde">
-            <option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option>
-            <option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option>
-            <option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option>
-            <option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option>
-            <option>Steve Bayona</option>
-          </optgroup>
-          <option>Otro docente</option>
-        </select>
-        <div class="ferr" id="ep-teacher"></div>
-        <input type="text" id="dp-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
+        <label class="lbl">Tipo</label>
+        <div class="type-grid">
+          <button class="type-btn sel" id="dp-tipo-permiso" onclick="selPermisoTipo('permiso')">Permiso</button>
+          <button class="type-btn" id="dp-tipo-incapacidad" onclick="selPermisoTipo('incapacidad')">Incapacidad</button>
+        </div>
       </div>
       <div class="field">
-        <label class="lbl">Fecha del permiso</label>
+        <label class="lbl">Docente</label>
+        <select id="dp-teacher"><option value="">Seleccionar docente...</option></select>
+        <div class="ferr" id="ep-teacher"></div>
+      </div>
+      <div class="field">
+        <label class="lbl" id="dp-fecha-lbl">Fecha del permiso</label>
         <input type="date" id="dp-fecha">
         <div class="ferr" id="ep-fecha"></div>
       </div>
-      <div class="field">
+      <div class="field" id="dp-campo-fechafin" style="display:none">
+        <label class="lbl">Fecha de fin (si se conoce)</label>
+        <input type="date" id="dp-fechafin">
+      </div>
+      <div class="field" id="dp-campo-duracion">
         <label class="lbl">Duracion</label>
         <div class="type-grid">
           <button class="type-btn sel" id="dp-btn-dia" onclick="selPermisoDuracion('dia')">Todo el dia</button>
@@ -547,15 +542,15 @@ body.docente-mode .admin-only{display:none !important;}
       </div>
       <div class="field">
         <label class="lbl">Motivo</label>
-        <textarea id="dp-motivo" placeholder="Describe el motivo del permiso..."></textarea>
+        <textarea id="dp-motivo" placeholder="Describe el motivo..."></textarea>
         <div class="ferr" id="ep-motivo"></div>
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="clearPermisoForm()">Limpiar</button>
-        <button class="btn btn-primary" id="dp-btn-submit" onclick="submitPermiso()" style="flex:2">Registrar permiso</button>
+        <button class="btn btn-primary" id="dp-btn-submit" onclick="submitPermiso()" style="flex:2">Registrar</button>
       </div>
     </div>
-    <div><div class="slbl" style="margin-bottom:12px">Permisos registrados</div><div id="permisos-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
+    <div><div class="slbl" style="margin-bottom:12px">Permisos e incapacidades registradas</div><div id="permisos-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
   </div>
 
   <div id="dpanel-quejas" style="display:none;flex-direction:column;gap:20px">
@@ -707,6 +702,22 @@ body.docente-mode .admin-only{display:none !important;}
       <div id="df-search-results" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div id="df-content"></div>
+  </div>
+
+  <!-- ANOTACIONES DOCENTE -->
+  <div id="dpanel-anotaciones" style="display:none;flex-direction:column;gap:20px">
+    <div class="card form-section">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Nueva anotación</div>
+      <div class="field">
+        <label class="lbl">Docente</label>
+        <select id="ad-docente"><option value="">Seleccionar...</option></select>
+        <div class="ferr" id="ad-ferr-docente"></div>
+      </div>
+      <div class="field"><label class="lbl">Fecha</label><input type="date" id="ad-fecha"><div class="ferr" id="ad-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Anotación</label><textarea id="ad-nota" placeholder="Escribe la anotación..." rows="3"></textarea><div class="ferr" id="ad-ferr-nota"></div></div>
+      <button class="btn btn-primary" id="ad-btn-submit" onclick="submitAnotacionDocente()" style="width:100%;padding:14px">Guardar anotación</button>
+    </div>
+    <div><div class="slbl" style="margin-bottom:12px">Anotaciones registradas</div><div id="ad-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
   </div>
 
   <!-- PANEL DOCENTE -->
@@ -1125,6 +1136,57 @@ body.docente-mode .admin-only{display:none !important;}
       <button class="btn btn-primary" id="nr-cj-btn" onclick="saveNRSolicitudJornada()" style="width:100%;padding:14px">Guardar solicitud</button>
     </div>
   </div>
+</div>
+
+<!-- PERMISOS EN GENERAL (aseadoras, enfermera) -->
+<div class="page" id="page-permisos-general">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Permisos en general</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Permisos e incapacidades del personal de apoyo (aseo, enfermería).</div>
+  <div class="card form-section" style="margin-top:16px">
+    <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar permiso o incapacidad</div>
+    <div class="field">
+      <label class="lbl">Tipo</label>
+      <div class="type-grid">
+        <button class="type-btn sel" id="pg-tipo-permiso" onclick="selPgTipo('permiso')">Permiso</button>
+        <button class="type-btn" id="pg-tipo-incapacidad" onclick="selPgTipo('incapacidad')">Incapacidad</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="lbl">Nombre</label>
+      <select id="pg-persona"><option value="">Seleccionar...</option></select>
+      <div class="ferr" id="pg-ferr-persona"></div>
+    </div>
+    <div class="field">
+      <label class="lbl" id="pg-fecha-lbl">Fecha del permiso</label>
+      <input type="date" id="pg-fecha">
+      <div class="ferr" id="pg-ferr-fecha"></div>
+    </div>
+    <div class="field" id="pg-campo-fechafin" style="display:none">
+      <label class="lbl">Fecha de fin (si se conoce)</label>
+      <input type="date" id="pg-fechafin">
+    </div>
+    <div class="field" id="pg-campo-duracion">
+      <label class="lbl">Duracion</label>
+      <div class="type-grid">
+        <button class="type-btn sel" id="pg-btn-dia" onclick="selPgDuracion('dia')">Todo el dia</button>
+        <button class="type-btn" id="pg-btn-horas" onclick="selPgDuracion('horas')">Parcial</button>
+      </div>
+    </div>
+    <div class="field" id="pg-campo-horas" style="display:none">
+      <label class="lbl">Cuantas horas?</label>
+      <input type="number" id="pg-horas" placeholder="Ej: 2" min="1" max="8">
+    </div>
+    <div class="field">
+      <label class="lbl">Motivo</label>
+      <textarea id="pg-motivo" placeholder="Describe el motivo..."></textarea>
+      <div class="ferr" id="pg-ferr-motivo"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="clearPgForm()">Limpiar</button>
+      <button class="btn btn-primary" id="pg-btn-submit" onclick="submitPermisoGeneral()" style="flex:2">Registrar</button>
+    </div>
+  </div>
+  <div style="margin-top:20px"><div class="slbl" style="margin-bottom:12px">Registros</div><div id="pg-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
 </div>
 
 <!-- SOLICITUDES CAMBIO DE JORNADA -->
@@ -5135,7 +5197,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","solicitudes-jornada","config"];
+  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","permisos-general","solicitudes-jornada","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -5147,6 +5209,7 @@ function showPage(name) {
   if(name==="stats") renderStats();
   if(name==="estudiantes") renderEstudiantes();
   if(name==="nuevo-registro") initNuevoRegistro();
+  if(name==="permisos-general") loadPermisosGeneral();
   if(name==="solicitudes-jornada") loadSolicitudesJornadaPage();
   window.scrollTo(0,0);
 }
@@ -5475,13 +5538,14 @@ function renderHistorial(){
 // DOCENTES
 function selDocTab(tab){
   curDocTab=tab;
-  ["permisos","quejas","libros","ficha","panel"].forEach(function(t){
+  ["permisos","quejas","libros","ficha","anotaciones","panel"].forEach(function(t){
     document.getElementById("dtab-"+t).className="type-btn"+(tab===t?" sel":"");
     document.getElementById("dpanel-"+t).style.display=tab===t?"flex":"none";
   });
   if(tab==="panel") renderPanelDocente();
   if(tab==="libros") loadRevisionLibros();
   if(tab==="ficha") loadDocentesFicha();
+  if(tab==="anotaciones") loadAnotacionesDocentesTab();
 }
 
 var allCompromisos = [];
@@ -5622,9 +5686,19 @@ function convertirReporteACaso(idx){
 }
 
 function loadPermisos(){
-  apiCall({action:"listPermisos"}).then(function(data){
-    permisos=Array.isArray(data)?data.map(function(p){return{id:String(p.id||""),teacher:String(p.teacher||""),fecha:String(p.fecha||""),duracion:String(p.duracion||""),horas:String(p.horas||""),motivo:String(p.motivo||""),adjunto:String(p.adjunto||""),date:String(p.date||"")};}):[]; renderPermisos();
-  }).catch(function(){toast("Error cargando permisos","red");});
+  sb.from('docentes').select('id,nombre,rol').eq('rol','docente').order('nombre').then(function(res){
+    var sel = document.getElementById('dp-teacher');
+    if (sel && res.data) {
+      sel.innerHTML = '<option value="">Seleccionar docente...</option>' +
+        res.data.map(function(d){ return '<option value="'+d.id+'">'+d.nombre+'</option>'; }).join('');
+    }
+  });
+  sb.from('permisos').select('*, docentes(nombre,rol)').order('fecha', {ascending:false}).then(function(res){
+    if (res.error) { toast("Error cargando permisos","red"); return; }
+    var el = document.getElementById('permisos-list');
+    var soloDocentes = (res.data||[]).filter(function(p){ return p.docentes && p.docentes.rol === 'docente'; });
+    renderPermisosList(el, soloDocentes, true);
+  });
 }
 function loadQuejas(){
   sb.from('quejas').select('*').order('fecha', {ascending:false}).then(function(res){
@@ -5643,6 +5717,16 @@ function loadQuejas(){
 }
 
 function selPermisoDuracion(v){curPermisoDuracion=v;document.getElementById("dp-btn-dia").className="type-btn"+(v==="dia"?" sel":"");document.getElementById("dp-btn-horas").className="type-btn"+(v==="horas"?" sel":"");document.getElementById("dp-campo-horas").style.display=v==="horas"?"flex":"none";}
+var curPermisoTipo = "permiso";
+function selPermisoTipo(v){
+  curPermisoTipo = v;
+  document.getElementById("dp-tipo-permiso").className = "type-btn" + (v==="permiso"?" sel":"");
+  document.getElementById("dp-tipo-incapacidad").className = "type-btn" + (v==="incapacidad"?" sel":"");
+  document.getElementById("dp-fecha-lbl").textContent = v==="incapacidad" ? "Fecha de inicio" : "Fecha del permiso";
+  document.getElementById("dp-campo-fechafin").style.display = v==="incapacidad" ? "block" : "none";
+  document.getElementById("dp-campo-duracion").style.display = v==="incapacidad" ? "none" : "block";
+  if (v==="incapacidad") document.getElementById("dp-campo-horas").style.display = "none";
+}
 function selVerbal(v){curVerbal=v;document.getElementById("dq-btn-verbal-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("dq-btn-verbal-no").className="type-btn"+(v==="no"?" sel":"");}
 function selEscrito(v){curEscrito=v;document.getElementById("dq-btn-escrito-si").className="type-btn"+(v==="si"?" sel":"");document.getElementById("dq-btn-escrito-no").className="type-btn"+(v==="no"?" sel":"");}
 var curQuejaCitacion = "";
@@ -5666,40 +5750,180 @@ function chkPermisoOther(){document.getElementById("dp-teacher-other").style.dis
 function chkQuejaOther(){document.getElementById("dq-teacher-other").style.display=document.getElementById("dq-teacher").value==="Otro docente"?"block":"none";}
 
 function clearPermisoForm(){
-  document.getElementById("dp-teacher").value=""; document.getElementById("dp-teacher-other").value=""; document.getElementById("dp-teacher-other").style.display="none";
-  document.getElementById("dp-fecha").value=""; document.getElementById("dp-motivo").value=""; document.getElementById("dp-horas").value="";
+  document.getElementById("dp-teacher").value="";
+  document.getElementById("dp-fecha").value=""; document.getElementById("dp-fechafin").value=""; document.getElementById("dp-motivo").value=""; document.getElementById("dp-horas").value="";
   curPermisoDuracion="dia"; document.getElementById("dp-btn-dia").className="type-btn sel"; document.getElementById("dp-btn-horas").className="type-btn"; document.getElementById("dp-campo-horas").style.display="none";
+  selPermisoTipo("permiso");
   ["ep-teacher","ep-fecha","ep-motivo"].forEach(function(id){document.getElementById(id).textContent="";});
 }
 
 function submitPermiso(){
-  var teacher=document.getElementById("dp-teacher").value; var fecha=document.getElementById("dp-fecha").value; var motivo=document.getElementById("dp-motivo").value.trim();
+  var docenteId=document.getElementById("dp-teacher").value; var fecha=document.getElementById("dp-fecha").value; var motivo=document.getElementById("dp-motivo").value.trim();
   var ok=true;
-  if(!teacher){document.getElementById("ep-teacher").textContent="Selecciona el docente";ok=false;}
+  if(!docenteId){document.getElementById("ep-teacher").textContent="Selecciona el docente";ok=false;}
   if(!fecha){document.getElementById("ep-fecha").textContent="Selecciona la fecha";ok=false;}
   if(!motivo){document.getElementById("ep-motivo").textContent="Escribe el motivo";ok=false;}
   if(!ok) return;
-  if(teacher==="Otro docente") teacher=document.getElementById("dp-teacher-other").value.trim()||"Otro docente";
-  var p={id:Date.now().toString(36),teacher:teacher,fecha:fecha,duracion:curPermisoDuracion,horas:curPermisoDuracion==="horas"?document.getElementById("dp-horas").value:"",motivo:motivo,date:new Date().toISOString()};
+  var payload = {
+    docente_id: docenteId, tipo: curPermisoTipo, fecha: fecha, motivo: motivo,
+    duracion: curPermisoTipo==="incapacidad" ? "" : curPermisoDuracion,
+    horas: (curPermisoTipo==="permiso" && curPermisoDuracion==="horas") ? document.getElementById("dp-horas").value : "",
+    fecha_fin: curPermisoTipo==="incapacidad" ? (document.getElementById("dp-fechafin").value || null) : null
+  };
   var btn=document.getElementById("dp-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
-  apiCall(Object.assign({action:"addPermiso"},p)).then(function(){permisos.unshift(p);clearPermisoForm();renderPermisos();toast("Permiso registrado","ok");}).catch(function(){toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar permiso";});
+  sb.from('permisos').insert(payload).then(function(res){
+    if(res.error){ toast("Error al guardar","red"); return; }
+    clearPermisoForm(); loadPermisos(); toast((curPermisoTipo==="incapacidad"?"Incapacidad":"Permiso")+" registrado","ok");
+  }).finally(function(){btn.disabled=false;btn.textContent="Registrar";});
 }
 
-function renderPermisos(){
-  var list=document.getElementById("permisos-list");
-  if(!permisos.length){list.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>No hay permisos registrados</p></div>';return;}
-  list.innerHTML="";
-  permisos.forEach(function(p,idx){
-    var div=document.createElement("div"); div.className="doc-card";
-    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+p.teacher+'</div><span class="tag tag-amber">'+p.fecha+"</span></div>"+'<div class="tags" style="margin-top:8px"><span class="tag tag-gray">'+(p.duracion==="dia"?"Todo el dia":p.horas+" hora(s)")+"</span></div>"+'<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+p.motivo+"</div>"+'<button onclick="deletePermiso('+idx+')" style="margin-top:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button>';
-    list.appendChild(div);
+function renderPermisosList(el, data, mostrarNombre){
+  if(!el) return;
+  if(!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>No hay registros</p></div>';return;}
+  el.innerHTML = data.map(function(p){
+    var esInc = p.tipo === 'incapacidad';
+    var nombreLine = (mostrarNombre && p.docentes) ? '<div style="font-weight:700;color:var(--navy)">'+p.docentes.nombre+'</div>' : '<div></div>';
+    var fechaTxt = esInc ? (fmtD(p.fecha) + (p.fecha_fin ? ' → ' + fmtD(p.fecha_fin) : ' (sin fecha de fin)')) : fmtD(p.fecha);
+    var dupTag = esInc ? '<span class="tag tag-red">Incapacidad</span>' : '<span class="tag tag-amber">Permiso</span>';
+    var duracionTag = (!esInc) ? '<span class="tag tag-gray">'+(p.duracion==="dia"?"Todo el dia":(p.horas||'')+" hora(s)")+'</span>' : '';
+    return '<div class="doc-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'+nombreLine+dupTag+'</div>'+
+      '<div style="font-size:0.82rem;color:var(--gray);margin-top:6px">'+fechaTxt+'</div>'+
+      (duracionTag ? '<div class="tags" style="margin-top:6px">'+duracionTag+'</div>' : '') +
+      '<div style="font-size:0.88rem;color:#475569;margin-top:8px;line-height:1.5">'+(p.motivo||'')+'</div>'+
+      '<button onclick="deletePermisoRow(\''+p.id+'\')" style="margin-top:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button></div>';
+  }).join('');
+}
+
+function deletePermisoRow(id){
+  var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
+  sb.from('permisos').delete().eq('id', id).then(function(res){
+    if(res.error){ toast("Error al eliminar","red"); return; }
+    toast("Eliminado","red");
+    if (document.getElementById('dpanel-permisos') && document.getElementById('dpanel-permisos').style.display !== 'none') loadPermisos();
+    if (document.getElementById('page-permisos-general') && document.getElementById('page-permisos-general').classList.contains('visible')) loadPermisosGeneral();
   });
 }
 
-function deletePermiso(idx){
-  var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  var p=permisos[idx];
-  apiCall({action:"deletePermiso",id:p.id}).then(function(){permisos.splice(idx,1);renderPermisos();toast("Permiso eliminado","red");}).catch(function(){toast("Error al eliminar","red");});
+// ============================================================
+// PERMISOS EN GENERAL (aseadoras, enfermera)
+// ============================================================
+var curPgDuracion = "dia";
+var curPgTipo = "permiso";
+function selPgDuracion(v){curPgDuracion=v;document.getElementById("pg-btn-dia").className="type-btn"+(v==="dia"?" sel":"");document.getElementById("pg-btn-horas").className="type-btn"+(v==="horas"?" sel":"");document.getElementById("pg-campo-horas").style.display=v==="horas"?"flex":"none";}
+function selPgTipo(v){
+  curPgTipo = v;
+  document.getElementById("pg-tipo-permiso").className = "type-btn" + (v==="permiso"?" sel":"");
+  document.getElementById("pg-tipo-incapacidad").className = "type-btn" + (v==="incapacidad"?" sel":"");
+  document.getElementById("pg-fecha-lbl").textContent = v==="incapacidad" ? "Fecha de inicio" : "Fecha del permiso";
+  document.getElementById("pg-campo-fechafin").style.display = v==="incapacidad" ? "block" : "none";
+  document.getElementById("pg-campo-duracion").style.display = v==="incapacidad" ? "none" : "block";
+  if (v==="incapacidad") document.getElementById("pg-campo-horas").style.display = "none";
+}
+function clearPgForm(){
+  document.getElementById("pg-persona").value="";
+  document.getElementById("pg-fecha").value=""; document.getElementById("pg-fechafin").value=""; document.getElementById("pg-motivo").value=""; document.getElementById("pg-horas").value="";
+  curPgDuracion="dia"; document.getElementById("pg-btn-dia").className="type-btn sel"; document.getElementById("pg-btn-horas").className="type-btn"; document.getElementById("pg-campo-horas").style.display="none";
+  selPgTipo("permiso");
+  ["pg-ferr-persona","pg-ferr-fecha","pg-ferr-motivo"].forEach(function(id){document.getElementById(id).textContent="";});
+}
+function submitPermisoGeneral(){
+  var docenteId=document.getElementById("pg-persona").value; var fecha=document.getElementById("pg-fecha").value; var motivo=document.getElementById("pg-motivo").value.trim();
+  var ok=true;
+  if(!docenteId){document.getElementById("pg-ferr-persona").textContent="Selecciona el nombre";ok=false;}
+  if(!fecha){document.getElementById("pg-ferr-fecha").textContent="Selecciona la fecha";ok=false;}
+  if(!motivo){document.getElementById("pg-ferr-motivo").textContent="Escribe el motivo";ok=false;}
+  if(!ok) return;
+  var payload = {
+    docente_id: docenteId, tipo: curPgTipo, fecha: fecha, motivo: motivo,
+    duracion: curPgTipo==="incapacidad" ? "" : curPgDuracion,
+    horas: (curPgTipo==="permiso" && curPgDuracion==="horas") ? document.getElementById("pg-horas").value : "",
+    fecha_fin: curPgTipo==="incapacidad" ? (document.getElementById("pg-fechafin").value || null) : null
+  };
+  var btn=document.getElementById("pg-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
+  sb.from('permisos').insert(payload).then(function(res){
+    if(res.error){ toast("Error al guardar","red"); return; }
+    clearPgForm(); loadPermisosGeneral(); toast((curPgTipo==="incapacidad"?"Incapacidad":"Permiso")+" registrado","ok");
+  }).finally(function(){btn.disabled=false;btn.textContent="Registrar";});
+}
+function loadPermisosGeneral(){
+  sb.from('docentes').select('id,nombre,rol').in('rol',['aseadora','enfermera']).order('nombre').then(function(res){
+    var sel = document.getElementById('pg-persona');
+    if (sel && res.data) {
+      sel.innerHTML = '<option value="">Seleccionar...</option>' +
+        res.data.map(function(d){ return '<option value="'+d.id+'">'+d.nombre+' ('+d.rol+')</option>'; }).join('');
+    }
+  });
+  sb.from('permisos').select('*, docentes(nombre,rol)').order('fecha', {ascending:false}).then(function(res){
+    if (res.error) { toast("Error cargando permisos","red"); return; }
+    var el = document.getElementById('pg-list');
+    var soloApoyo = (res.data||[]).filter(function(p){ return p.docentes && (p.docentes.rol === 'aseadora' || p.docentes.rol === 'enfermera'); });
+    renderPermisosList(el, soloApoyo, true);
+  });
+}
+
+// ============================================================
+// ANOTACIONES DOCENTE
+// ============================================================
+function renderAnotacionesDocenteList(el, data, mostrarNombre){
+  if(!el) return;
+  if(!data.length){ el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin anotaciones registradas.</div>'; return; }
+  el.innerHTML = data.map(function(a){
+    var nombreLine = (mostrarNombre && a.docentes) ? '<div style="font-weight:700;color:var(--navy)">'+a.docentes.nombre+'</div>' : '';
+    return '<div class="doc-card">' + nombreLine +
+      '<div style="font-size:0.78rem;color:var(--gray)'+(mostrarNombre?';margin-top:4px':'')+'">'+fmtD(a.fecha)+'</div>' +
+      '<div style="font-size:0.88rem;margin-top:4px;line-height:1.5">'+(a.nota||'')+'</div>' +
+      '<button onclick="deleteAnotacionDocente(\''+a.id+'\')" style="margin-top:8px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:\'DM Sans\',sans-serif;font-weight:600">Eliminar</button>' +
+    '</div>';
+  }).join('');
+}
+function loadAnotacionesDocentesTab(){
+  sb.from('docentes').select('id,nombre').order('nombre').then(function(res){
+    var sel = document.getElementById('ad-docente');
+    if (sel && res.data) {
+      sel.innerHTML = '<option value="">Seleccionar...</option>' +
+        res.data.map(function(d){ return '<option value="'+d.id+'">'+d.nombre+'</option>'; }).join('');
+    }
+  });
+  sb.from('anotaciones_docente').select('*, docentes(nombre)').order('fecha', {ascending:false}).then(function(res){
+    if (res.error) { console.error(res.error); return; }
+    renderAnotacionesDocenteList(document.getElementById('ad-list'), res.data || [], true);
+  });
+}
+function submitAnotacionDocente(){
+  var docenteId = document.getElementById('ad-docente').value;
+  var fecha = document.getElementById('ad-fecha').value;
+  var nota = document.getElementById('ad-nota').value.trim();
+  ['ad-ferr-docente','ad-ferr-fecha','ad-ferr-nota'].forEach(function(id){ document.getElementById(id).textContent=''; });
+  var ok = true;
+  if (!docenteId) { document.getElementById('ad-ferr-docente').textContent = 'Selecciona el docente'; ok=false; }
+  if (!fecha) { document.getElementById('ad-ferr-fecha').textContent = 'Selecciona la fecha'; ok=false; }
+  if (!nota) { document.getElementById('ad-ferr-nota').textContent = 'Escribe la anotación'; ok=false; }
+  if (!ok) return;
+  var btn = document.getElementById('ad-btn-submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('anotaciones_docente').insert({ docente_id: docenteId, fecha: fecha, nota: nota }).then(function(res){
+    if (res.error) { toast('Error al guardar', 'red'); return; }
+    document.getElementById('ad-fecha').value = '';
+    document.getElementById('ad-nota').value = '';
+    loadAnotacionesDocentesTab();
+    toast('Anotación guardada', 'ok');
+  }).finally(function(){ btn.disabled = false; btn.textContent = 'Guardar anotación'; });
+}
+function deleteAnotacionDocente(id){
+  var pwd = prompt('Ingresa la contrasena para eliminar:'); if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  sb.from('anotaciones_docente').delete().eq('id', id).then(function(res){
+    if (res.error) { toast('Error al eliminar', 'red'); return; }
+    toast('Anotación eliminada', 'red');
+    loadAnotacionesDocentesTab();
+    if (fichaDocenteActual) loadFichaAnotacionesDocente(fichaDocenteActual);
+  });
+}
+function loadFichaAnotacionesDocente(d){
+  var el = document.getElementById('df-anotaciones');
+  if (!el) return;
+  sb.from('anotaciones_docente').select('*').eq('docente_id', d.id).order('fecha', {ascending:false}).then(function(res){
+    renderAnotacionesDocenteList(el, res.data || [], false);
+  });
 }
 
 var editingQuejaIdx = -1;
@@ -6982,11 +7206,13 @@ function abrirFichaDocente(id) {
     '</div>' +
     (d.incluye_seguimientos ? '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Seguimientos por periodo</div><div id="df-seguimientos"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' : '') +
     (d.incluye_llegadas_tarde ? '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Llegadas tarde</div><div id="df-llegadas"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' : '') +
+    '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Anotaciones</div><div id="df-anotaciones"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' +
     '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Permisos</div><div id="df-permisos"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>' +
     '<div class="card" style="margin-top:14px"><div class="slbl" style="margin-bottom:10px">Quejas</div><div id="df-quejas"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div></div>';
 
   if (d.incluye_seguimientos) loadFichaSeguimientos(d);
   if (d.incluye_llegadas_tarde) loadFichaLlegadasTarde(d);
+  loadFichaAnotacionesDocente(d);
   loadFichaPermisos(d);
   loadFichaQuejas(d);
 }
@@ -7060,15 +7286,7 @@ function loadFichaLlegadasTarde(d) {
 function loadFichaPermisos(d) {
   sb.from('permisos').select('*').eq('docente_id', d.id).order('fecha', {ascending:false}).then(function(res) {
     var el = document.getElementById('df-permisos');
-    if (!el) return;
-    var data = (res && res.data) || [];
-    if (!data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin permisos registrados.</div>'; return; }
-    el.innerHTML = data.map(function(p) {
-      return '<div style="padding:10px;background:var(--gray-bg);border-radius:8px;margin-bottom:8px;font-size:0.82rem">' +
-        '<div style="font-weight:700;color:var(--navy)">' + (p.fecha||'') + ' · ' + (p.duracion||'') + '</div>' +
-        '<div style="margin-top:2px">' + (p.motivo||'') + '</div>' +
-      '</div>';
-    }).join('');
+    renderPermisosList(el, (res && res.data) || [], false);
   });
 }
 function loadFichaQuejas(d) {
