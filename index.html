@@ -4879,6 +4879,7 @@ var modalIndex = -1;
 window.onload = function() {
   var params = new URLSearchParams(window.location.search);
   if (params.has('docentes')) {
+    try { history.replaceState(null, '', '/docentes/'); } catch(e) {}
     document.body.classList.add('docente-mode');
     initDocenteAccess();
     return;
@@ -4984,7 +4985,7 @@ function docenteLogin() {
 }
 function docenteLogout() {
   sb.auth.signOut().then(function() {
-    window.location.href = window.location.pathname + '?docentes=1';
+    window.location.href = '/docentes/';
   });
 }
 function showDocenteHome() {
