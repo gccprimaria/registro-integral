@@ -4890,6 +4890,7 @@ window.onload = function() {
     return;
   }
   if (params.has('asistencia')) {
+    try { history.replaceState(null, '', '/asistencia/'); } catch(e) {}
     document.body.classList.add('form-publico-mode');
     initFormAsistencia();
     return;
