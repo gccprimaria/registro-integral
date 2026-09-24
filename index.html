@@ -7095,12 +7095,29 @@ function loadLlegadasTarde(nombre, grado) {
         + '</div>'
         + (r.motivo ? '<span class="tag tag-amber">' + r.motivo + '</span>' : '')
         + '</div>'
-        + (r.docente_vigilancia ? '<div style="font-size:0.76rem;color:var(--gray);margin-top:6px;margin-left:42px">Reportado por: ' + r.docente_vigilancia + '</div>' : '')
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;margin-left:42px">'
+        + '<div style="font-size:0.76rem;color:var(--gray)">' + (r.docente_vigilancia ? 'Reportado por: ' + r.docente_vigilancia : '') + '</div>'
+        + '<button class="admin-only" onclick="eliminarLlegadaTarde(\'' + r.id + '\',\'' + dateLabel + '\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.76rem;font-family:\'DM Sans\',sans-serif;font-weight:600;padding:0;white-space:nowrap">🗑 Eliminar</button>'
+        + '</div>'
         + '</div>';
     }).join('');
   }).catch(function(err) {
     console.error(err);
     if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin datos de llegadas tarde.</div>';
+  });
+}
+
+function eliminarLlegadaTarde(id, fechaLabel) {
+  if (!confirm('¿Eliminar la llegada tarde del ' + fechaLabel + '?\nEsta accion no se puede deshacer.')) return;
+  var pwd = prompt('Ingresa la contrasena para eliminar:');
+  if (pwd === null) return;
+  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  sb.from('llegadas_tarde_estudiantes').delete().eq('id', id).select().then(function(res) {
+    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+    toast('Llegada tarde eliminada', 'red');
+    llegadasTardeLoaded = false;
+    loadLlegadasTarde(currentEstNombre);
   });
 }
 
