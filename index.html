@@ -8,6 +8,14 @@
 <title>Registro Integral · Gimnasio ComfaCasanare</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.addEventListener('load', function() {
+  if (typeof window.supabase === 'undefined') {
+    var b = document.getElementById('conexion-error-banner');
+    if (b) b.style.display = 'flex';
+  }
+});
+</script>
 <style>
 :root{--navy:#0F2942;--navy-deep:#0A1E33;--navy-light:#1B4F72;--cream:#F7F4EF;--bg:#F8FAFC;--white:#FFFFFF;--amber:#F59E0B;--amber-dark:#B45309;--green:#10B981;--green-dark:#065F46;--green-bg:#D1FAE5;--red:#EF4444;--red-dark:#991B1B;--red-bg:#FEE2E2;--blue:#3B82F6;--blue-dark:#1E40AF;--blue-bg:#DBEAFE;--gray:#64748B;--gray-light:#E2E8F0;--gray-bg:#F1F5F9;--text:#1E293B;--shadow:0 2px 14px rgba(15,41,66,0.06);--shadow-md:0 10px 30px rgba(15,41,66,0.10);--radius:15px;--radius-lg:20px;--sidebar-w:258px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -199,6 +207,15 @@ body.docente-mode .admin-only{display:none !important;}
 </style>
 </head>
 <body>
+
+<div id="conexion-error-banner" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:24px;font-family:'DM Sans',sans-serif">
+  <div style="background:#fff;border-radius:16px;padding:30px 26px;max-width:420px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(15,41,66,0.15)">
+    <div style="font-size:2.2rem;margin-bottom:10px">📶</div>
+    <div style="font-weight:700;color:var(--navy);font-size:1.05rem;margin-bottom:8px">No se pudo cargar la conexión</div>
+    <div style="font-size:0.88rem;color:var(--gray);line-height:1.5;margin-bottom:20px">Tu conexión a internet no permitió cargar todo lo necesario. Verifica tu señal (datos móviles o wifi) e intenta de nuevo.</div>
+    <button onclick="window.location.reload()" style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">Reintentar</button>
+  </div>
+</div>
 <div id="admin-app">
 
 <nav>
@@ -4906,7 +4923,7 @@ function adminLogin() {
 // ============================================================
 // SUPABASE (migracion en curso: Casos ya usa Supabase, el resto sigue en Apps Script)
 // ============================================================
-var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var sb = (typeof window.supabase !== 'undefined') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 var sbEstudiantes = [];
 function loadSbEstudiantes() {
