@@ -4912,7 +4912,14 @@ function desbloquearAdmin() {
   sessionStorage.setItem('ri_admin_unlocked', 'true');
   document.body.classList.remove('admin-locked');
   document.getElementById('admin-login-screen').classList.remove('open');
-  iniciarAppAdmin();
+  // Si en este navegador quedo abierta la sesion de la cuenta de docentes,
+  // se cierra localmente para que el administrador no herede sus restricciones.
+  var arrancar = function() { iniciarAppAdmin(); };
+  if (sb && sb.auth) {
+    sb.auth.signOut({ scope: 'local' }).then(arrancar, arrancar);
+  } else {
+    arrancar();
+  }
 }
 function adminLogin() {
   var pwd = document.getElementById('admin-login-pwd').value;
