@@ -1161,7 +1161,7 @@ body.docente-mode .admin-only{display:none !important;}
     <!-- Formulario informe por asignatura -->
     <div class="card form-section" id="nr-form-informe" style="display:none">
       <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Informe por asignatura</div>
-      <div style="font-size:0.8rem;color:var(--gray);margin-top:-4px">Resumen del informe que entrega el docente sobre el desempeño del estudiante en su asignatura.</div>
+      <div style="font-size:0.8rem;color:var(--gray);margin-top:-4px">Resumen de los informes que entregan los docentes sobre el desempeño del estudiante.</div>
       <div class="field">
         <label class="lbl">Periodo</label>
         <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
@@ -1171,19 +1171,9 @@ body.docente-mode .admin-only{display:none !important;}
         </div>
         <div class="ferr" id="nr-inf-ferr-periodo"></div>
       </div>
-      <div class="field"><label class="lbl">Asignatura</label>
-        <input type="text" id="nr-inf-asignatura" list="nr-inf-asignaturas-list" placeholder="Escribe o elige la asignatura">
-        <datalist id="nr-inf-asignaturas-list">
-          <option value="Matematicas"><option value="Lengua Castellana"><option value="Ingles">
-          <option value="Ciencias Naturales"><option value="Ciencias Sociales"><option value="Tecnologia e Informatica">
-          <option value="Educacion Artistica"><option value="Educacion Fisica"><option value="Etica y Valores">
-          <option value="Educacion Religiosa"><option value="Fundamentos del Ser"><option value="Lectura Critica">
-        </datalist>
-        <div class="ferr" id="nr-inf-ferr-asignatura"></div>
-      </div>
-      <div class="field"><label class="lbl">Docente que entrega el informe</label>
-        <select id="nr-inf-docente"><option value="">Seleccionar docente...</option></select>
-        <div class="ferr" id="nr-inf-ferr-docente"></div>
+      <div class="field"><label class="lbl">Motivo del informe</label>
+        <textarea id="nr-inf-motivo" rows="2" placeholder="Por que se solicito el informe (ej: bajo rendimiento, seguimiento, solicitud del acudiente...)"></textarea>
+        <div class="ferr" id="nr-inf-ferr-motivo"></div>
       </div>
       <div class="field"><label class="lbl">Fecha del informe</label><input type="date" id="nr-inf-fecha"><div class="ferr" id="nr-inf-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Resumen del informe</label>
@@ -7678,7 +7668,6 @@ function selEstNR() {
 function selNRTipo(tipo) {
   nrTipo = tipo;
   var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc','hist-acad','jornada','informe'];
-  if (tipo === 'informe') cargarDocentesInforme();
   tipos.forEach(function(t) {
     var tab = document.getElementById('nr-tab-' + t);
     var form = document.getElementById('nr-form-' + t);
@@ -7767,19 +7756,8 @@ function saveNRRegistro(tipo) {
 
 // ===== INFORME POR ASIGNATURA =====
 var nrInfPeriodo = '';
-var docentesInformeCargados = false;
 function escInf(t) {
   return String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function cargarDocentesInforme() {
-  if (docentesInformeCargados) return;
-  sb.from('docentes').select('id,nombre').order('nombre').then(function(res) {
-    if (res.error || !res.data || !res.data.length) return;
-    var sel = document.getElementById('nr-inf-docente');
-    sel.innerHTML = '<option value="">Seleccionar docente...</option>' +
-      res.data.map(function(d){ return '<option value="' + escInf(d.nombre) + '">' + escInf(d.nombre) + '</option>'; }).join('');
-    docentesInformeCargados = true;
-  });
 }
 function selNRInfPeriodo(p) {
   nrInfPeriodo = p;
@@ -7788,15 +7766,13 @@ function selNRInfPeriodo(p) {
 }
 function saveNRInforme() {
   if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
-  clearNRFerr('inf', ['periodo','asignatura','docente','fecha','resumen']);
-  var asignatura = document.getElementById('nr-inf-asignatura').value.trim();
-  var docente = document.getElementById('nr-inf-docente').value;
+  clearNRFerr('inf', ['periodo','motivo','fecha','resumen']);
+  var motivo = document.getElementById('nr-inf-motivo').value.trim();
   var fecha = document.getElementById('nr-inf-fecha').value;
   var resumen = document.getElementById('nr-inf-resumen').value.trim();
   var ok = true;
   if (!nrInfPeriodo) { document.getElementById('nr-inf-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
-  if (!asignatura) { document.getElementById('nr-inf-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
-  if (!docente) { document.getElementById('nr-inf-ferr-docente').textContent = 'Selecciona el docente'; ok = false; }
+  if (!motivo) { document.getElementById('nr-inf-ferr-motivo').textContent = 'Escribe el motivo del informe'; ok = false; }
   if (!fecha) { document.getElementById('nr-inf-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
   if (!resumen) { document.getElementById('nr-inf-ferr-resumen').textContent = 'Escribe el resumen del informe'; ok = false; }
   if (!ok) return;
@@ -7805,13 +7781,13 @@ function saveNRInforme() {
   var btn = document.getElementById('nr-inf-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   sb.from('informes_asignatura').insert({
-    estudiante_id: estId, periodo: nrInfPeriodo, asignatura: asignatura,
-    docente: docente, fecha: fecha, resumen: resumen
+    estudiante_id: estId, periodo: nrInfPeriodo, motivo: motivo,
+    fecha: fecha, resumen: resumen
   }).then(function(res) {
     if (res.error) throw res.error;
-    document.getElementById('nr-inf-asignatura').value = '';
+    document.getElementById('nr-inf-motivo').value = '';
+    document.getElementById('nr-inf-fecha').value = '';
     document.getElementById('nr-inf-resumen').value = '';
-    document.getElementById('nr-inf-docente').value = '';
     toast('Informe guardado', 'ok');
   }).catch(function(err) { console.error(err); toast('Error al guardar el informe', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar informe'; });
@@ -7834,10 +7810,9 @@ function loadInformesAsignatura(nombre) {
       html += items.map(function(r) {
         return '<div style="padding:10px 12px;background:white;border-left:3px solid var(--blue);border-radius:8px;margin-bottom:8px">'
           + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
-          +   '<div style="font-weight:700;font-size:0.88rem;color:var(--navy)">' + escInf(r.asignatura) + '</div>'
+          +   '<div style="font-weight:700;font-size:0.88rem;color:var(--navy)">' + escInf(r.motivo) + '</div>'
           +   '<div style="font-size:0.76rem;color:var(--gray)">' + fmtD(r.fecha || '') + '</div>'
           + '</div>'
-          + '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Docente: ' + escInf(r.docente) + '</div>'
           + '<div style="font-size:0.85rem;color:var(--text);margin-top:6px;line-height:1.55;white-space:pre-line">' + escInf(r.resumen) + '</div>'
           + '<button class="admin-only" onclick="eliminarInformeAsignatura(\'' + r.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
           + '</div>';
