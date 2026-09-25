@@ -1022,6 +1022,7 @@ body.docente-mode .admin-only{display:none !important;}
       <button class="type-btn" id="nr-tab-comp-disc" onclick="selNRTipo('comp-disc')" style="flex:1;min-width:120px;font-size:0.8rem">Comp. Disc.</button>
       <button class="type-btn" id="nr-tab-hist-acad" onclick="selNRTipo('hist-acad')" style="flex:1;min-width:130px;font-size:0.8rem">Hist. Academico</button>
       <button class="type-btn" id="nr-tab-jornada" onclick="selNRTipo('jornada')" style="flex:1;min-width:150px;font-size:0.8rem">Solicitud cambio jornada</button>
+      <button class="type-btn" id="nr-tab-informe" onclick="selNRTipo('informe')" style="flex:1;min-width:150px;font-size:0.8rem">Informe por asignatura</button>
     </div>
 
     <!-- Formulario citacion -->
@@ -1155,6 +1156,41 @@ body.docente-mode .admin-only{display:none !important;}
         </div>
       </div>
       <button class="btn btn-primary" id="nr-cj-btn" onclick="saveNRSolicitudJornada()" style="width:100%;padding:14px">Guardar solicitud</button>
+    </div>
+
+    <!-- Formulario informe por asignatura -->
+    <div class="card form-section" id="nr-form-informe" style="display:none">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Informe por asignatura</div>
+      <div style="font-size:0.8rem;color:var(--gray);margin-top:-4px">Resumen del informe que entrega el docente sobre el desempeño del estudiante en su asignatura.</div>
+      <div class="field">
+        <label class="lbl">Periodo</label>
+        <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <button class="type-btn" id="nr-inf-per-I" onclick="selNRInfPeriodo('I')">Periodo I</button>
+          <button class="type-btn" id="nr-inf-per-II" onclick="selNRInfPeriodo('II')">Periodo II</button>
+          <button class="type-btn" id="nr-inf-per-III" onclick="selNRInfPeriodo('III')">Periodo III</button>
+        </div>
+        <div class="ferr" id="nr-inf-ferr-periodo"></div>
+      </div>
+      <div class="field"><label class="lbl">Asignatura</label>
+        <input type="text" id="nr-inf-asignatura" list="nr-inf-asignaturas-list" placeholder="Escribe o elige la asignatura">
+        <datalist id="nr-inf-asignaturas-list">
+          <option value="Matematicas"><option value="Lengua Castellana"><option value="Ingles">
+          <option value="Ciencias Naturales"><option value="Ciencias Sociales"><option value="Tecnologia e Informatica">
+          <option value="Educacion Artistica"><option value="Educacion Fisica"><option value="Etica y Valores">
+          <option value="Educacion Religiosa"><option value="Fundamentos del Ser"><option value="Lectura Critica">
+        </datalist>
+        <div class="ferr" id="nr-inf-ferr-asignatura"></div>
+      </div>
+      <div class="field"><label class="lbl">Docente que entrega el informe</label>
+        <select id="nr-inf-docente"><option value="">Seleccionar docente...</option></select>
+        <div class="ferr" id="nr-inf-ferr-docente"></div>
+      </div>
+      <div class="field"><label class="lbl">Fecha del informe</label><input type="date" id="nr-inf-fecha"><div class="ferr" id="nr-inf-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Resumen del informe</label>
+        <textarea id="nr-inf-resumen" rows="6" placeholder="Condensa aqui lo que reporta el docente: desempeno, fortalezas, dificultades, actitud y recomendaciones..."></textarea>
+        <div class="ferr" id="nr-inf-ferr-resumen"></div>
+      </div>
+      <button class="btn btn-primary" id="nr-inf-btn" onclick="saveNRInforme()" style="width:100%;padding:14px">Guardar informe</button>
     </div>
   </div>
 </div>
@@ -6503,6 +6539,9 @@ function openEstModal(s) {
   histHTML += '<div id="est-histacad-content"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
+  histHTML += '<div class="hist-section"><div class="hist-title-badge">Informes por asignatura</div>';
+  histHTML += '<div id="est-informes-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
+
   // Compromisos y registros
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Compromisos academicos</div>';
   histHTML += '<div id="est-comp-acad-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
@@ -6529,6 +6568,7 @@ function openEstModal(s) {
   loadCompromisos(s.nombre);
   loadLlegadasTarde(s.nombre, s.grado);
   loadHistorialAcademico(s.nombre);
+  loadInformesAsignatura(s.nombre);
   loadAnotaciones(s.nombre);
   loadSolicitudesJornadaEstudiante(s.nombre);
   loadRegistros('citacion', s.nombre, 'est-citaciones-list');
@@ -7637,7 +7677,8 @@ function selEstNR() {
 
 function selNRTipo(tipo) {
   nrTipo = tipo;
-  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc','hist-acad','jornada'];
+  var tipos = ['citacion','reparacion','suspension','comp-acad','comp-disc','hist-acad','jornada','informe'];
+  if (tipo === 'informe') cargarDocentesInforme();
   tipos.forEach(function(t) {
     var tab = document.getElementById('nr-tab-' + t);
     var form = document.getElementById('nr-form-' + t);
@@ -7722,6 +7763,100 @@ function saveNRRegistro(tipo) {
     toast('Registro guardado', 'ok');
   }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = labels[tipo]; });
+}
+
+// ===== INFORME POR ASIGNATURA =====
+var nrInfPeriodo = '';
+var docentesInformeCargados = false;
+function escInf(t) {
+  return String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function cargarDocentesInforme() {
+  if (docentesInformeCargados) return;
+  sb.from('docentes').select('id,nombre').order('nombre').then(function(res) {
+    if (res.error || !res.data || !res.data.length) return;
+    var sel = document.getElementById('nr-inf-docente');
+    sel.innerHTML = '<option value="">Seleccionar docente...</option>' +
+      res.data.map(function(d){ return '<option value="' + escInf(d.nombre) + '">' + escInf(d.nombre) + '</option>'; }).join('');
+    docentesInformeCargados = true;
+  });
+}
+function selNRInfPeriodo(p) {
+  nrInfPeriodo = p;
+  ['I','II','III'].forEach(function(v){ document.getElementById('nr-inf-per-'+v).className = 'type-btn' + (v===p?' sel':''); });
+  document.getElementById('nr-inf-ferr-periodo').textContent = '';
+}
+function saveNRInforme() {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  clearNRFerr('inf', ['periodo','asignatura','docente','fecha','resumen']);
+  var asignatura = document.getElementById('nr-inf-asignatura').value.trim();
+  var docente = document.getElementById('nr-inf-docente').value;
+  var fecha = document.getElementById('nr-inf-fecha').value;
+  var resumen = document.getElementById('nr-inf-resumen').value.trim();
+  var ok = true;
+  if (!nrInfPeriodo) { document.getElementById('nr-inf-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
+  if (!asignatura) { document.getElementById('nr-inf-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
+  if (!docente) { document.getElementById('nr-inf-ferr-docente').textContent = 'Selecciona el docente'; ok = false; }
+  if (!fecha) { document.getElementById('nr-inf-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!resumen) { document.getElementById('nr-inf-ferr-resumen').textContent = 'Escribe el resumen del informe'; ok = false; }
+  if (!ok) return;
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var btn = document.getElementById('nr-inf-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('informes_asignatura').insert({
+    estudiante_id: estId, periodo: nrInfPeriodo, asignatura: asignatura,
+    docente: docente, fecha: fecha, resumen: resumen
+  }).then(function(res) {
+    if (res.error) throw res.error;
+    document.getElementById('nr-inf-asignatura').value = '';
+    document.getElementById('nr-inf-resumen').value = '';
+    document.getElementById('nr-inf-docente').value = '';
+    toast('Informe guardado', 'ok');
+  }).catch(function(err) { console.error(err); toast('Error al guardar el informe', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar informe'; });
+}
+function loadInformesAsignatura(nombre) {
+  var el = document.getElementById('est-informes-list');
+  if (!el) return;
+  var estId = resolveEstudianteId(nombre);
+  var vacio = '<div style="font-size:0.82rem;color:var(--gray)">Sin informes registrados.</div>';
+  if (!estId) { el.innerHTML = vacio; return; }
+  sb.from('informes_asignatura').select('*').eq('estudiante_id', estId).order('fecha', {ascending:false}).then(function(res) {
+    if (res.error) { console.error(res.error); el.innerHTML = vacio; return; }
+    var data = res.data || [];
+    if (!data.length) { el.innerHTML = vacio; return; }
+    var html = '';
+    ['III','II','I'].forEach(function(per) {
+      var items = data.filter(function(r){ return r.periodo === per; });
+      if (!items.length) return;
+      html += '<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--navy);margin:10px 0 6px">Periodo ' + per + '</div>';
+      html += items.map(function(r) {
+        return '<div style="padding:10px 12px;background:white;border-left:3px solid var(--blue);border-radius:8px;margin-bottom:8px">'
+          + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+          +   '<div style="font-weight:700;font-size:0.88rem;color:var(--navy)">' + escInf(r.asignatura) + '</div>'
+          +   '<div style="font-size:0.76rem;color:var(--gray)">' + fmtD(r.fecha || '') + '</div>'
+          + '</div>'
+          + '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Docente: ' + escInf(r.docente) + '</div>'
+          + '<div style="font-size:0.85rem;color:var(--text);margin-top:6px;line-height:1.55;white-space:pre-line">' + escInf(r.resumen) + '</div>'
+          + '<button class="admin-only" onclick="eliminarInformeAsignatura(\'' + r.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Eliminar</button>'
+          + '</div>';
+      }).join('');
+    });
+    el.innerHTML = html || vacio;
+  });
+}
+function eliminarInformeAsignatura(id) {
+  if (!confirm('¿Eliminar este informe?\nEsta accion no se puede deshacer.')) return;
+  var pwd = prompt('Ingresa la contrasena para eliminar:');
+  if (pwd === null) return;
+  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  sb.from('informes_asignatura').delete().eq('id', id).select().then(function(res) {
+    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+    toast('Informe eliminado', 'red');
+    loadInformesAsignatura(currentEstNombre);
+  });
 }
 
 function saveNRCompromiso(tipo) {
