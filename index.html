@@ -6490,12 +6490,13 @@ function openEstModal(s) {
   // Disciplinary history
   var studentCases = cases.filter(function(c) { return c.studentName === s.nombre; });
   studentCases.sort(function(a,b){ return new Date(b.date||0) - new Date(a.date||0); });
-  var histHTML = '<div class="hist-section"><div class="hist-title-badge">Historial disciplinario</div>';
-  if (studentCases.length) {
-    histHTML += '<div class="card" style="background:var(--gray-bg);padding:12px">';
-    studentCases.forEach(function(c) {
+  var casosDisc = studentCases.filter(function(c){ return c.type !== 'academico'; });
+  var casosAcad = studentCases.filter(function(c){ return c.type === 'academico'; });
+  var renderCasosLista = function(lista) {
+    var h = '<div class="card" style="background:var(--gray-bg);padding:12px">';
+    lista.forEach(function(c) {
       var cidx = cases.indexOf(c);
-      histHTML += '<div onclick="openModal(' + cidx + ')" style="padding:8px 0;border-bottom:1px solid var(--gray-light);cursor:pointer" onmouseover="this.style.background=\'rgba(59,130,246,0.06)\'" onmouseout="this.style.background=\'\'">' +
+      h += '<div onclick="openModal(' + cidx + ')" style="padding:8px 0;border-bottom:1px solid var(--gray-light);cursor:pointer" onmouseover="this.style.background=\'rgba(59,130,246,0.06)\'" onmouseout="this.style.background=\'\'">' +
         '<div style="display:flex;justify-content:space-between">' +
           '<span class="tag ' + (c.type==='convivencia'?'tag-red':'tag-blue') + '" style="font-size:0.68rem">' + c.type + '</span>' +
           stag(c.status) +
@@ -6508,7 +6509,11 @@ function openEstModal(s) {
         '</div>' +
       '</div>';
     });
-    histHTML += '</div>';
+    return h + '</div>';
+  };
+  var histHTML = '<div class="hist-section"><div class="hist-title-badge">Historial disciplinario</div>';
+  if (casosDisc.length) {
+    histHTML += renderCasosLista(casosDisc);
   } else {
     histHTML += '<div style="font-size:0.85rem;color:var(--gray)">Sin casos disciplinarios.</div>';
   }
@@ -6526,6 +6531,10 @@ function openEstModal(s) {
 
   // Academic history (live + legacy, con corte/final)
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Historial academico (materias con dificultad)</div>';
+  if (casosAcad.length) {
+    histHTML += '<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--navy);margin:2px 0 6px">Anotaciones academicas</div>';
+    histHTML += renderCasosLista(casosAcad);
+  }
   histHTML += '<div id="est-histacad-content"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
@@ -7472,6 +7481,7 @@ function loadFichaLlegadasTarde(d) {
       }
       var pad = function(n){ return (n<10?'0':'')+n; };
       return {
+        id: r.id,
         fecha: fechaObj.getFullYear()+'-'+pad(fechaObj.getMonth()+1)+'-'+pad(fechaObj.getDate()),
         hora: pad(fechaObj.getHours())+':'+pad(fechaObj.getMinutes()),
         esTarde: esTarde
@@ -7480,15 +7490,46 @@ function loadFichaLlegadasTarde(d) {
 
     if (!data.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin registros de ingreso.</div>'; return; }
     var totalTarde = data.filter(function(r){ return r.esTarde; }).length;
+    llTardeSel = {};
     var html = '<div style="font-size:0.82rem;color:var(--gray);margin-bottom:10px">' + totalTarde + ' llegada' + (totalTarde!==1?'s':'') + ' tarde de ' + data.length + ' ingresos registrados</div>';
+    html += '<div class="admin-only" style="font-size:0.76rem;color:var(--gray);margin-bottom:6px">Marca los registros que quieras eliminar.</div>';
     html += '<div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">';
     data.slice(0, 60).forEach(function(r) {
       var tag = r.esTarde ? '<span class="tag tag-red" style="font-size:0.68rem">Tarde</span>' : '<span class="tag tag-green" style="font-size:0.68rem">A tiempo</span>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--gray-bg);border-radius:8px;font-size:0.8rem">' +
-        '<span>' + fmtD(r.fecha) + ' · ' + r.hora + '</span>' + tag + '</div>';
+      html += '<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;background:var(--gray-bg);border-radius:8px;font-size:0.8rem;cursor:default">' +
+        '<span style="display:flex;align-items:center;gap:8px">' +
+          '<input type="checkbox" class="admin-only" onchange="toggleLlTardeSel(\'' + r.id + '\',this.checked)" style="width:15px;height:15px;cursor:pointer">' +
+          '<span>' + fmtD(r.fecha) + ' · ' + r.hora + '</span>' +
+        '</span>' + tag + '</label>';
     });
     html += '</div>';
+    html += '<button class="admin-only btn btn-ghost" id="df-llegadas-del-btn" onclick="eliminarLlTardeSeleccionadas()" disabled style="width:100%;margin-top:10px;padding:10px;font-size:0.82rem;color:var(--red);border-color:var(--red)">Eliminar seleccionadas</button>';
     el.innerHTML = html;
+  });
+}
+var llTardeSel = {};
+function toggleLlTardeSel(id, checked) {
+  if (checked) llTardeSel[id] = true; else delete llTardeSel[id];
+  var n = Object.keys(llTardeSel).length;
+  var btn = document.getElementById('df-llegadas-del-btn');
+  if (!btn) return;
+  btn.disabled = n === 0;
+  btn.textContent = n === 0 ? 'Eliminar seleccionadas' : 'Eliminar seleccionadas (' + n + ')';
+}
+function eliminarLlTardeSeleccionadas() {
+  var ids = Object.keys(llTardeSel);
+  if (!ids.length || !fichaDocenteActual) return;
+  if (!confirm('¿Eliminar ' + ids.length + ' registro' + (ids.length!==1?'s':'') + ' de ingreso seleccionado' + (ids.length!==1?'s':'') + '?\nEsta accion no se puede deshacer.')) return;
+  var pwd = prompt('Ingresa la contrasena para eliminar:');
+  if (pwd === null) return;
+  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  var btn = document.getElementById('df-llegadas-del-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Eliminando...'; }
+  sb.from('asistencia_personal').delete().in('id', ids).select().then(function(res) {
+    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+    toast(res.data.length + ' registro' + (res.data.length!==1?'s':'') + ' eliminado' + (res.data.length!==1?'s':''), 'red');
+    if (fichaDocenteActual) loadFichaLlegadasTarde(fichaDocenteActual);
   });
 }
 function loadFichaPermisos(d) {
