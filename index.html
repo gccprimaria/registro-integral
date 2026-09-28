@@ -5799,9 +5799,9 @@ function loadPanelExtras(){
     });
     renderPanelExtras();
   }).catch(function(){});
-  apiCall({action:'listQuejas'}).then(function(data){
+  sb.from('quejas').select('*', {count:'exact', head:true}).then(function(res){
     var elQ = document.getElementById('s-quejas');
-    if (elQ) elQ.textContent = Array.isArray(data) ? data.length : 0;
+    if (elQ) elQ.textContent = (res && typeof res.count === 'number') ? res.count : 0;
   }).catch(function(){});
 }
 
