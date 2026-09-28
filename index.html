@@ -661,7 +661,8 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar revisión</div>
       <div class="field">
         <label class="lbl">Buscar estudiante</label>
-        <input type="text" id="rl-search" placeholder="Escribe el nombre..." oninput="filtrarEstRL()">
+        <input type="text" id="rl-search" placeholder="Escribe apellido o nombre del estudiante..." oninput="filtrarEstRL()">
+        <div style="font-size:0.76rem;color:var(--gray);margin-top:4px">Primero elige al estudiante; el docente y el libro se seleccionan despues, mas abajo.</div>
       </div>
       <div class="field" id="rl-select-wrap" style="display:none">
         <label class="lbl">Seleccionar</label>
@@ -1185,7 +1186,7 @@ body.docente-mode .admin-only{display:none !important;}
 <!-- PERMISOS EN GENERAL (aseadoras, enfermera) -->
 <div class="page" id="page-permisos-general">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Permisos en general</div>
-  <div style="font-size:0.85rem;color:var(--gray)">Permisos e incapacidades del personal de apoyo (aseo, enfermería).</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Permisos e incapacidades del personal de apoyo (aseo, enfermería, inclusión y orientación).</div>
   <div class="card form-section" style="margin-top:16px">
     <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Registrar permiso o incapacidad</div>
     <div class="field">
@@ -4860,6 +4861,16 @@ var cases = [];
 var permisos = [];
 var quejas = [];
 
+function normBusq(t) {
+  return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+}
+function coincideBusqueda(nombre, q) {
+  var n = normBusq(nombre);
+  return normBusq(q).split(' ').every(function(w){ return n.indexOf(w) !== -1; });
+}
+function textoPrimeraOpcion(n) {
+  return n ? 'Seleccionar... (' + n + ' resultado' + (n!==1?'s':'') + ')' : 'Sin resultados: revisa el apellido o nombre';
+}
 function normName(s) {
   return String(s||'').trim().toUpperCase().replace(/\s+/g,' ')
     .replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E')
@@ -5054,7 +5065,7 @@ function filtrarEstDocente() {
   var q = document.getElementById('docente-search').value.trim().toLowerCase();
   var el = document.getElementById('docente-search-results');
   if (q.length < 2) { el.innerHTML = ''; return; }
-  var matches = studentsData.filter(function(s){ return s.nombre.toLowerCase().indexOf(q) !== -1; }).slice(0, 20);
+  var matches = studentsData.filter(function(s){ return coincideBusqueda(s.nombre, q); }).slice(0, 20);
   if (!matches.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray);padding:8px 0">Sin resultados.</div>'; return; }
   el.innerHTML = matches.map(function(s) {
     return '<div class="docente-result-card" onclick=\'docenteAbrirPerfil(' + JSON.stringify(s.nombre) + ')\'>' +
@@ -5908,8 +5919,9 @@ function submitPermisoGeneral(){
     clearPgForm(); loadPermisosGeneral(); toast((curPgTipo==="incapacidad"?"Incapacidad":"Permiso")+" registrado","ok");
   }).finally(function(){btn.disabled=false;btn.textContent="Registrar";});
 }
+var ROLES_PERMISOS_GENERAL = ['aseadora','enfermera','inclusion','psicoorientadora','docente orientadora'];
 function loadPermisosGeneral(){
-  sb.from('docentes').select('id,nombre,rol').in('rol',['aseadora','enfermera']).order('nombre').then(function(res){
+  sb.from('docentes').select('id,nombre,rol').in('rol',ROLES_PERMISOS_GENERAL).order('nombre').then(function(res){
     var sel = document.getElementById('pg-persona');
     if (sel && res.data) {
       sel.innerHTML = '<option value="">Seleccionar...</option>' +
@@ -5919,7 +5931,7 @@ function loadPermisosGeneral(){
   sb.from('permisos').select('*, docentes(nombre,rol)').order('fecha', {ascending:false}).then(function(res){
     if (res.error) { toast("Error cargando permisos","red"); return; }
     var el = document.getElementById('pg-list');
-    var soloApoyo = (res.data||[]).filter(function(p){ return p.docentes && (p.docentes.rol === 'aseadora' || p.docentes.rol === 'enfermera'); });
+    var soloApoyo = (res.data||[]).filter(function(p){ return p.docentes && ROLES_PERMISOS_GENERAL.indexOf(p.docentes.rol) !== -1; });
     renderPermisosList(el, soloApoyo, true);
   });
 }
@@ -6424,7 +6436,7 @@ function getEstFiltered() {
   var grado = document.getElementById('est-grado').value;
   var contacto = document.getElementById('est-contacto').value;
   return studentsData.filter(function(s) {
-    var matchSearch = !search || s.nombre.toLowerCase().includes(search);
+    var matchSearch = !search || coincideBusqueda(s.nombre, search);
     var matchJornada = !jornada || s.jornada === jornada;
     var matchGrado = !grado || s.grado === grado;
     var matchContacto = !contacto ||
@@ -7218,10 +7230,10 @@ function filtrarEstRL() {
     return;
   }
   var matches = studentsData.filter(function(s) {
-    return s.nombre.toLowerCase().includes(q);
+    return coincideBusqueda(s.nombre, q);
   }).slice(0, 25);
   var sel = document.getElementById('rl-student-select');
-  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  sel.innerHTML = '<option value="">' + textoPrimeraOpcion(matches.length) + '</option>';
   matches.forEach(function(s) {
     var opt = document.createElement('option');
     var globalIdx = studentsData.indexOf(s);
@@ -7315,7 +7327,7 @@ function filtrarDocenteFicha() {
   var q = document.getElementById('df-search').value.trim().toLowerCase();
   var el = document.getElementById('df-search-results');
   if (q.length < 2) { el.innerHTML = ''; return; }
-  var matches = docentesData.filter(function(d){ return d.nombre.toLowerCase().indexOf(q) !== -1; }).slice(0, 20);
+  var matches = docentesData.filter(function(d){ return coincideBusqueda(d.nombre, q); }).slice(0, 20);
   if (!matches.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray);padding:6px 0">Sin resultados.</div>'; return; }
   el.innerHTML = matches.map(function(d) {
     var rolTag = d.rol && d.rol !== 'docente' ? ' <span class="tag tag-gray" style="font-size:0.65rem">' + d.rol + '</span>' : '';
@@ -7609,10 +7621,10 @@ function filtrarEstAnotacion() {
     return;
   }
   var matches = studentsData.filter(function(s) {
-    return s.nombre.toLowerCase().includes(q);
+    return coincideBusqueda(s.nombre, q);
   }).slice(0, 25);
   var sel = document.getElementById('an-student-select');
-  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  sel.innerHTML = '<option value="">' + textoPrimeraOpcion(matches.length) + '</option>';
   matches.forEach(function(s) {
     var opt = document.createElement('option');
     var globalIdx = studentsData.indexOf(s);
@@ -7670,10 +7682,10 @@ function filtrarEstNR() {
     return;
   }
   var matches = studentsData.filter(function(s) {
-    return s.nombre.toLowerCase().includes(q);
+    return coincideBusqueda(s.nombre, q);
   }).slice(0, 25);
   var sel = document.getElementById('nr-student-select');
-  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  sel.innerHTML = '<option value="">' + textoPrimeraOpcion(matches.length) + '</option>';
   matches.forEach(function(s) {
     var opt = document.createElement('option');
     var globalIdx = studentsData.indexOf(s);
