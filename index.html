@@ -1020,6 +1020,36 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
 </div>
 
+<!-- MODAL EDITAR HISTORIAL ACADEMICO -->
+<div class="modal-overlay" id="ha-edit-modal-overlay" onclick="if(event.target===this) closeHaEditModal();">
+  <div class="modal">
+    <button class="back-btn" onclick="closeHaEditModal()" style="margin-bottom:16px">← Volver</button>
+    <div class="serif" style="font-size:1.1rem;color:var(--navy);font-weight:700;margin-bottom:16px">Editar historial académico</div>
+    <div class="form-section">
+      <div class="field">
+        <label class="lbl">Periodo</label>
+        <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <button class="type-btn" id="ha-edit-per-I" onclick="selHaEditPeriodo('I')">Periodo I</button>
+          <button class="type-btn" id="ha-edit-per-II" onclick="selHaEditPeriodo('II')">Periodo II</button>
+          <button class="type-btn" id="ha-edit-per-III" onclick="selHaEditPeriodo('III')">Periodo III</button>
+        </div>
+        <div class="ferr" id="ha-edit-ferr-periodo"></div>
+      </div>
+      <div class="field"><label class="lbl">Asignatura</label><input type="text" id="ha-edit-asignatura"><div class="ferr" id="ha-edit-ferr-asignatura"></div></div>
+      <div class="field">
+        <label class="lbl">Momento</label>
+        <div class="type-grid">
+          <button class="type-btn" id="ha-edit-mom-corte" onclick="selHaEditMomento('corte')">Corte del periodo</button>
+          <button class="type-btn" id="ha-edit-mom-final" onclick="selHaEditMomento('final')">Final del periodo</button>
+        </div>
+        <div class="ferr" id="ha-edit-ferr-momento"></div>
+      </div>
+      <div class="field"><label class="lbl">Nota (escala 10-50)</label><input type="number" min="10" max="50" step="1" id="ha-edit-nota"><div class="ferr" id="ha-edit-ferr-nota"></div></div>
+      <button class="btn btn-primary" id="ha-edit-btn-submit" onclick="guardarEdicionHistorialAcademico()" style="width:100%;padding:14px">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL REGISTRO (citacion/reparacion/suspension) -->
 <div class="modal-overlay" id="registro-modal-overlay" onclick="closeRegistroModal(event)">
   <div class="modal">
@@ -7058,7 +7088,7 @@ function guardarEdicionRegistro(id, tipo, elId) {
   });
 }
 
-function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
+function renderHistorialAcademico(el, liveRecords, legacyData) {
   if (!el) return;
   var merged = {I:{}, II:{}, III:{}};
   if (legacyData && legacyData.materias) {
@@ -7070,15 +7100,6 @@ function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
       });
     });
   }
-  if (liveJefeData && liveJefeData.materias) {
-    Object.keys(liveJefeData.materias).forEach(function(subj) {
-      Object.keys(liveJefeData.materias[subj]).forEach(function(per) {
-        if (!merged[per]) return;
-        if (!merged[per][subj]) merged[per][subj] = {};
-        merged[per][subj].final = liveJefeData.materias[subj][per];
-      });
-    });
-  }
   (liveRecords || []).forEach(function(r) {
     var per = r.periodo, subj = r.asignatura, mom = r.momento, nota = r.nota;
     if (!merged[per] || !subj || !mom) return;
@@ -7086,7 +7107,14 @@ function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
     merged[per][subj][mom] = nota;
   });
   var anyData = ['I','II','III'].some(function(p){ return Object.keys(merged[p]).length; });
-  if (!anyData) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>'; return; }
+  var records = (liveRecords || []).slice().sort(function(a,b){
+    if (a.periodo !== b.periodo) return (a.periodo||'').localeCompare(b.periodo||'');
+    return (a.asignatura||'').localeCompare(b.asignatura||'');
+  });
+  if (!anyData) {
+    el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Sin reportes de bajo rendimiento.</div>';
+    return;
+  }
   var html = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">';
   ['I','II','III'].forEach(function(per) {
     var cnt = Object.keys(merged[per]).length;
@@ -7116,7 +7144,94 @@ function renderHistorialAcademico(el, liveRecords, legacyData, liveJefeData) {
     });
     html += '</div>';
   });
+
+  if (records.length) {
+    html += '<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--navy);margin:14px 0 8px">Registros manuales</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    records.forEach(function(r) {
+      var momLabel = r.momento === 'corte' ? 'Corte del periodo' : 'Final del periodo';
+      html += '<div style="background:var(--white);border:1.5px solid var(--gray-light);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+        '<div>' +
+          '<div style="font-size:0.85rem;font-weight:700;color:var(--navy)">Periodo ' + r.periodo + ' · ' + (r.asignatura||'') + '</div>' +
+          '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">' + momLabel + ' · Nota: ' + r.nota + '</div>' +
+        '</div>' +
+        '<div class="admin-only" style="display:flex;gap:12px;white-space:nowrap">' +
+          '<span onclick=\'abrirEdicionHistorialAcademico(' + JSON.stringify(r.id) + ',' + JSON.stringify(r.periodo) + ',' + JSON.stringify(r.asignatura) + ',' + JSON.stringify(r.momento) + ',' + JSON.stringify(r.nota) + ')\' style="cursor:pointer;color:var(--blue);font-size:0.78rem;font-weight:600">Editar</span>' +
+          '<span onclick="eliminarHistorialAcademico(' + JSON.stringify(r.id) + ')" style="cursor:pointer;color:var(--red);font-size:0.78rem;font-weight:600">Eliminar</span>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
   el.innerHTML = html;
+}
+
+function abrirEdicionHistorialAcademico(id, periodo, asignatura, momento, nota) {
+  haEditCurrent = id;
+  document.getElementById('ha-edit-asignatura').value = asignatura || '';
+  document.getElementById('ha-edit-nota').value = (nota !== undefined && nota !== null) ? nota : '';
+  selHaEditPeriodo(periodo);
+  selHaEditMomento(momento);
+  ['periodo','asignatura','momento','nota'].forEach(function(f){ document.getElementById('ha-edit-ferr-'+f).textContent=''; });
+  document.getElementById('ha-edit-modal-overlay').classList.add('open');
+}
+function closeHaEditModal() {
+  document.getElementById('ha-edit-modal-overlay').classList.remove('open');
+  haEditCurrent = null;
+}
+var haEditCurrent = null;
+var haEditPeriodo = '';
+var haEditMomento = '';
+function selHaEditPeriodo(p) {
+  haEditPeriodo = p;
+  ['I','II','III'].forEach(function(v){ document.getElementById('ha-edit-per-'+v).className = 'type-btn' + (v===p?' sel':''); });
+  document.getElementById('ha-edit-ferr-periodo').textContent = '';
+}
+function selHaEditMomento(m) {
+  haEditMomento = m;
+  document.getElementById('ha-edit-mom-corte').className = 'type-btn' + (m==='corte'?' sel':'');
+  document.getElementById('ha-edit-mom-final').className = 'type-btn' + (m==='final'?' sel':'');
+  document.getElementById('ha-edit-ferr-momento').textContent = '';
+}
+function guardarEdicionHistorialAcademico() {
+  if (!haEditCurrent) return;
+  ['periodo','asignatura','momento','nota'].forEach(function(f){ document.getElementById('ha-edit-ferr-'+f).textContent=''; });
+  var asignatura = document.getElementById('ha-edit-asignatura').value.trim();
+  var nota = document.getElementById('ha-edit-nota').value;
+  var ok = true;
+  if (!haEditPeriodo) { document.getElementById('ha-edit-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
+  if (!asignatura) { document.getElementById('ha-edit-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
+  if (!haEditMomento) { document.getElementById('ha-edit-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
+  if (!nota) { document.getElementById('ha-edit-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
+  if (!ok) return;
+  var pwd = prompt('Ingresa la contrasena para guardar los cambios:');
+  if (pwd === null) return;
+  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  var btn = document.getElementById('ha-edit-btn-submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('historial_academico').update({
+    periodo: haEditPeriodo, asignatura: asignatura, momento: haEditMomento, nota: nota
+  }).eq('id', haEditCurrent).select().then(function(res) {
+    if (res.error) throw res.error;
+    if (!res.data || !res.data.length) { toast('No se pudo guardar (permiso en Supabase)', 'red'); return; }
+    toast('Historial academico actualizado', 'ok');
+    closeHaEditModal();
+    loadHistorialAcademico(currentEstNombre);
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar cambios'; });
+}
+function eliminarHistorialAcademico(id) {
+  if (!confirm('¿Eliminar este registro de historial academico?\nEsta accion no se puede deshacer.')) return;
+  var pwd = prompt('Ingresa la contrasena para eliminar:');
+  if (pwd === null) return;
+  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  sb.from('historial_academico').delete().eq('id', id).select().then(function(res) {
+    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+    toast('Registro eliminado', 'red');
+    loadHistorialAcademico(currentEstNombre);
+  });
 }
 
 function renderAnotaciones(el, data) {
@@ -7154,24 +7269,19 @@ function loadAnotaciones(nombre) {
 }
 
 function loadHistorialAcademico(nombre) {
+  // El reporte automatico desde el Apps Script del director de grupo ya no se consulta:
+  // el historial academico ahora se registra unicamente de forma manual (Registro > Historial academico).
   var el = document.getElementById('est-histacad-content');
   if (!el) return;
   var legacyData = ACADEMIC_DB[normName(nombre)] || ACADEMIC_DB[nombre] || null;
   var estId = resolveEstudianteId(nombre);
-  var liveManualPromise = estId
-    ? sb.from('historial_academico').select('*').eq('estudiante_id', estId)
-    : Promise.resolve({data: []});
-  Promise.all([
-    liveManualPromise,
-    apiCall({ action: 'listAsignaturasPerdidasJefe', nombre: nombre }).catch(function(){ return null; })
-  ]).then(function(results) {
-    var rawManual = (results[0] && !results[0].error) ? (results[0].data || []) : [];
-    var liveManual = rawManual.map(function(r){ return {periodo:r.periodo, asignatura:r.asignatura, momento:r.momento, nota:r.nota}; });
-    var liveJefe = results[1] || null;
-    renderHistorialAcademico(el, liveManual, legacyData, liveJefe);
+  if (!estId) { renderHistorialAcademico(el, [], legacyData); return; }
+  sb.from('historial_academico').select('*').eq('estudiante_id', estId).order('periodo').then(function(res) {
+    var liveManual = (res && !res.error) ? (res.data || []) : [];
+    renderHistorialAcademico(el, liveManual, legacyData);
   }).catch(function(err) {
     console.error(err);
-    renderHistorialAcademico(el, [], legacyData, null);
+    renderHistorialAcademico(el, [], legacyData);
   });
 }
 
