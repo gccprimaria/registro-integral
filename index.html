@@ -7347,12 +7347,30 @@ function loadAnotaciones(nombre) {
   });
 }
 
+function lookupAcademicLegacy(nombre) {
+  // Coincidencia directa primero (rapido). Si no hay, se compara por el mismo
+  // conjunto de palabras sin importar el orden, porque algunos registros del
+  // Excel historico quedaron con el nombre en otro orden (ej: "OBED BECERRA
+  // VARGAS" en vez de "BECERRA VARGAS OBED" como aparece en el listado oficial).
+  var directo = ACADEMIC_DB[normName(nombre)] || ACADEMIC_DB[nombre];
+  if (directo) return directo;
+  var wordsRoster = normName(nombre).split(' ').filter(function(w){ return w.length > 1; });
+  if (wordsRoster.length < 2) return null;
+  var setRoster = wordsRoster.slice().sort().join('|');
+  var keys = Object.keys(ACADEMIC_DB);
+  for (var i = 0; i < keys.length; i++) {
+    var wordsKey = normName(keys[i]).split(' ').filter(function(w){ return w.length > 1; });
+    if (wordsKey.length !== wordsRoster.length) continue;
+    if (wordsKey.slice().sort().join('|') === setRoster) return ACADEMIC_DB[keys[i]];
+  }
+  return null;
+}
 function loadHistorialAcademico(nombre) {
   // El reporte automatico desde el Apps Script del director de grupo ya no se consulta:
   // el historial academico ahora se registra unicamente de forma manual (Registro > Historial academico).
   var el = document.getElementById('est-histacad-content');
   if (!el) return;
-  var legacyData = ACADEMIC_DB[normName(nombre)] || ACADEMIC_DB[nombre] || null;
+  var legacyData = lookupAcademicLegacy(nombre);
   var estId = resolveEstudianteId(nombre);
   if (!estId) { renderHistorialAcademico(el, [], legacyData); return; }
   sb.from('historial_academico').select('*').eq('estudiante_id', estId).order('periodo').then(function(res) {
