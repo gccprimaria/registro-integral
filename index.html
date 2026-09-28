@@ -127,13 +127,9 @@ textarea{resize:vertical;min-height:90px;}
 #est-modal-overlay .modal::before{display:none;}
 .hist-section{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:4px;}
 @media(min-width:900px){
-  #est-modal-overlay .modal{max-width:1040px;max-height:90vh;padding:34px 38px 44px;}
-  #est-modal-historial{column-count:2;column-gap:28px;}
+  #est-modal-overlay .modal{max-width:860px;max-height:90vh;padding:34px 38px 44px;}
 }
-@media(min-width:1300px){
-  #est-modal-overlay .modal{max-width:1280px;}
-  #est-modal-historial{column-count:3;}
-}
+#est-modal-historial .hist-section{margin-bottom:22px;}
 @keyframes slideUp{from{transform:translateY(60px)}to{transform:translateY(0)}}
 .back-btn{background:none;border:none;cursor:pointer;color:var(--gray);font-size:0.88rem;font-weight:600;font-family:'DM Sans',sans-serif;padding:8px 0;display:inline-flex;align-items:center;gap:6px;}
 .pwd-overlay{display:none;position:fixed;inset:0;background:rgba(15,41,66,0.65);z-index:300;align-items:center;justify-content:center;padding:20px;}
@@ -917,12 +913,9 @@ body.docente-mode .admin-only{display:none !important;}
       <button class="btn btn-ghost" onclick="exportStudentPDF()" style="white-space:nowrap">📄 Exportar en PDF</button>
     </div>
 
-    <!-- Historial disciplinario -->
-    <div id="est-modal-historial" style="margin-bottom:20px"></div>
-
     <!-- Datos de contacto -->
-    <div class="form-section">
-      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Datos del acudiente</div>
+    <div class="form-section" style="margin-bottom:24px">
+      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Datos del estudiante y acudiente</div>
       <div class="field">
         <label class="lbl">Nombre del acudiente</label>
         <input type="text" id="est-edit-acudiente" placeholder="Nombre completo del acudiente">
@@ -945,6 +938,10 @@ body.docente-mode .admin-only{display:none !important;}
       </div>
       <button class="btn btn-primary admin-only" id="est-save-btn" onclick="saveEstudiante()" style="width:100%;padding:14px">💾 Guardar cambios</button>
     </div>
+
+    <!-- Historiales -->
+    <div id="est-modal-historial" style="margin-bottom:20px"></div>
+
   </div>
 </div>
 
@@ -6519,16 +6516,6 @@ function openEstModal(s) {
   }
   histHTML += '</div>';
 
-  // Anotaciones generales
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Anotaciones generales</div>';
-  histHTML += '<div id="est-anotaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '</div>';
-
-  // Solicitudes cambio de jornada
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Solicitudes cambio de jornada</div>';
-  histHTML += '<div id="est-solicitudes-jornada-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
-  histHTML += '</div>';
-
   // Academic history (live + legacy, con corte/final)
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Historial academico (materias con dificultad)</div>';
   if (casosAcad.length) {
@@ -6540,6 +6527,16 @@ function openEstModal(s) {
 
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Informes por asignatura</div>';
   histHTML += '<div id="est-informes-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
+
+  // Anotaciones generales
+  histHTML += '<div class="hist-section"><div class="hist-title-badge">Anotaciones generales</div>';
+  histHTML += '<div id="est-anotaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '</div>';
+
+  // Solicitudes cambio de jornada
+  histHTML += '<div class="hist-section"><div class="hist-title-badge">Solicitudes cambio de jornada</div>';
+  histHTML += '<div id="est-solicitudes-jornada-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
+  histHTML += '</div>';
 
   // Compromisos y registros
   histHTML += '<div class="hist-section"><div class="hist-title-badge">Compromisos academicos</div>';
