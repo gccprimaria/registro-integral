@@ -237,6 +237,7 @@ body.docente-mode .admin-only{display:none !important;}
     <button class="nav-tab" onclick="showPage('estudiantes')">👤 Estudiantes</button>
     <div class="side-group-label">Registros</div>
     <button class="nav-tab" onclick="showPage('nuevo-registro')">📝 Registro</button>
+    <button class="nav-tab" onclick="showPage('asignaturas-perdidas')">📉 Asignaturas perdidas</button>
     <button class="nav-tab" onclick="showPage('permisos-general')">🗂️ Permisos en general</button>
     <button class="nav-tab" onclick="showPage('solicitudes-jornada')">🔄 Solicitudes jornada</button>
     <div class="side-group-label">Sistema</div>
@@ -1303,6 +1304,83 @@ body.docente-mode .admin-only{display:none !important;}
     </div>
   </div>
   <div style="margin-top:20px"><div class="slbl" style="margin-bottom:12px">Registros</div><div id="pg-list" style="display:flex;flex-direction:column;gap:10px"></div></div>
+</div>
+
+<!-- ASIGNATURAS PERDIDAS (registro rapido por grado) -->
+<div class="page" id="page-asignaturas-perdidas">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Asignaturas perdidas</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Registro rapido por grado: elige jornada y grado una vez, y ve marcando estudiante por estudiante.</div>
+
+  <div class="card form-section" style="margin-top:16px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:160px">
+        <label class="lbl">Jornada</label>
+        <select id="ap-jornada" onchange="apUpdateGrados()">
+          <option value="">Seleccionar jornada...</option>
+          <option value="Manana">Mañana</option>
+          <option value="Tarde">Tarde</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1;min-width:160px">
+        <label class="lbl">Grado</label>
+        <select id="ap-grado" onchange="apUpdateEstudiantes()" disabled>
+          <option value="">Primero selecciona jornada...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Periodo</label>
+      <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
+        <button class="type-btn" id="ap-per-I" onclick="selApPeriodo('I')">Periodo I</button>
+        <button class="type-btn" id="ap-per-II" onclick="selApPeriodo('II')">Periodo II</button>
+        <button class="type-btn" id="ap-per-III" onclick="selApPeriodo('III')">Periodo III</button>
+      </div>
+      <div class="ferr" id="ap-ferr-periodo"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Momento</label>
+      <div class="type-grid">
+        <button class="type-btn" id="ap-mom-corte" onclick="selApMomento('corte')">Corte del periodo</button>
+        <button class="type-btn" id="ap-mom-final" onclick="selApMomento('final')">Final del periodo</button>
+      </div>
+      <div class="ferr" id="ap-ferr-momento"></div>
+    </div>
+
+    <div style="height:1px;background:var(--gray-light);margin:6px 0 14px"></div>
+
+    <div class="field">
+      <label class="lbl">Estudiante</label>
+      <select id="ap-estudiante" disabled>
+        <option value="">Primero selecciona grado...</option>
+      </select>
+      <div class="ferr" id="ap-ferr-estudiante"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Materia</label>
+      <select id="ap-materia" onchange="document.getElementById('ap-materia-otra').style.display=this.value==='Otra'?'block':'none';">
+        <option value="">Seleccionar materia...</option>
+        <option>Matematicas</option><option>Lengua Castellana</option><option>Ingles</option>
+        <option>Ciencias Naturales</option><option>Ciencias Sociales</option><option>Tecnologia e Informatica</option>
+        <option>Educacion Artistica</option><option>Educacion Fisica</option><option>Etica y Valores</option>
+        <option>Educacion Religiosa</option><option>Fundamentos del Ser</option><option>Lectura Critica</option>
+        <option>Otra</option>
+      </select>
+      <input type="text" id="ap-materia-otra" placeholder="Nombre de la materia" style="margin-top:8px;display:none">
+      <div class="ferr" id="ap-ferr-materia"></div>
+    </div>
+    <div class="field">
+      <label class="lbl">Nota con la que perdio (escala 10-50)</label>
+      <input type="number" min="10" max="50" step="1" id="ap-nota" placeholder="Ej: 28">
+      <div class="ferr" id="ap-ferr-nota"></div>
+    </div>
+    <button class="btn btn-primary" id="ap-btn-submit" onclick="guardarApRegistro()" style="width:100%;padding:14px">Guardar y seguir con el siguiente</button>
+  </div>
+
+  <div style="margin-top:20px">
+    <div class="slbl" style="margin-bottom:12px">Guardados en esta sesion</div>
+    <div id="ap-sesion-list" style="display:flex;flex-direction:column;gap:8px"><div style="font-size:0.85rem;color:var(--gray)">Aun no has guardado ninguno en esta sesion.</div></div>
+  </div>
 </div>
 
 <!-- SOLICITUDES CAMBIO DE JORNADA -->
@@ -5333,7 +5411,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","permisos-general","solicitudes-jornada","config"];
+  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","asignaturas-perdidas","permisos-general","solicitudes-jornada","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -5345,6 +5423,7 @@ function showPage(name) {
   if(name==="stats") renderStats();
   if(name==="estudiantes") renderEstudiantes();
   if(name==="nuevo-registro") initNuevoRegistro();
+  if(name==="asignaturas-perdidas") initApRapido();
   if(name==="permisos-general") loadPermisosGeneral();
   if(name==="solicitudes-jornada") loadSolicitudesJornadaPage();
   window.scrollTo(0,0);
@@ -8145,6 +8224,94 @@ function selNRMomento(m) {
   document.getElementById('nr-ha-mom-final').className = 'type-btn' + (m==='final'?' sel':'');
   document.getElementById('nr-ha-ferr-momento').textContent = '';
 }
+var apPeriodo = '';
+var apMomento = '';
+var apSesion = [];
+function initApRapido() {
+  rebuildStudentsRoster();
+}
+function apUpdateGrados() {
+  var j = document.getElementById('ap-jornada').value;
+  var ge = document.getElementById('ap-grado'); var se = document.getElementById('ap-estudiante');
+  ge.innerHTML = '<option value="">Seleccionar grado...</option>';
+  se.innerHTML = '<option value="">Primero selecciona grado...</option>'; se.disabled = true;
+  ge.disabled = true;
+  if (!j) return;
+  Object.keys(STUDENTS[j] || {}).sort().forEach(function(g) {
+    var o = document.createElement('option'); o.value = g; o.textContent = g; ge.appendChild(o);
+  });
+  ge.disabled = false;
+}
+function apUpdateEstudiantes() {
+  var j = document.getElementById('ap-jornada').value; var g = document.getElementById('ap-grado').value;
+  var se = document.getElementById('ap-estudiante');
+  se.innerHTML = '<option value="">Seleccionar estudiante...</option>'; se.disabled = true;
+  if (!j || !g) return;
+  ((STUDENTS[j] || {})[g] || []).slice().sort().forEach(function(nom) {
+    var o = document.createElement('option'); o.value = nom; o.textContent = nom; se.appendChild(o);
+  });
+  se.disabled = false;
+  document.getElementById('ap-ferr-estudiante').textContent = '';
+}
+function selApPeriodo(p) {
+  apPeriodo = p;
+  ['I','II','III'].forEach(function(v){ document.getElementById('ap-per-'+v).className = 'type-btn' + (v===p?' sel':''); });
+  document.getElementById('ap-ferr-periodo').textContent = '';
+}
+function selApMomento(m) {
+  apMomento = m;
+  document.getElementById('ap-mom-corte').className = 'type-btn' + (m==='corte'?' sel':'');
+  document.getElementById('ap-mom-final').className = 'type-btn' + (m==='final'?' sel':'');
+  document.getElementById('ap-ferr-momento').textContent = '';
+}
+function renderApSesion() {
+  var el = document.getElementById('ap-sesion-list');
+  if (!apSesion.length) { el.innerHTML = '<div style="font-size:0.85rem;color:var(--gray)">Aun no has guardado ninguno en esta sesion.</div>'; return; }
+  el.innerHTML = apSesion.slice().reverse().map(function(r) {
+    var momLabel = r.momento === 'corte' ? 'Corte' : 'Final';
+    return '<div style="background:var(--white);border:1.5px solid var(--gray-light);border-radius:10px;padding:9px 12px;font-size:0.83rem">' +
+      '<span style="font-weight:700;color:var(--navy)">' + r.nombre + '</span>' +
+      ' <span style="color:var(--gray)">· ' + r.grado + ' · Periodo ' + r.periodo + ' (' + momLabel + ') · ' + r.materia + ': ' + r.nota + '</span>' +
+      '</div>';
+  }).join('');
+}
+function guardarApRegistro() {
+  ['estudiante','materia','nota'].forEach(function(f){ document.getElementById('ap-ferr-'+f).textContent=''; });
+  document.getElementById('ap-ferr-periodo').textContent = '';
+  document.getElementById('ap-ferr-momento').textContent = '';
+  var jornada = document.getElementById('ap-jornada').value;
+  var grado = document.getElementById('ap-grado').value;
+  var estudiante = document.getElementById('ap-estudiante').value;
+  var materiaSel = document.getElementById('ap-materia').value;
+  var materia = materiaSel === 'Otra' ? document.getElementById('ap-materia-otra').value.trim() : materiaSel;
+  var nota = document.getElementById('ap-nota').value;
+  var ok = true;
+  if (!jornada || !grado) { toast('Selecciona jornada y grado', 'red'); return; }
+  if (!estudiante) { document.getElementById('ap-ferr-estudiante').textContent = 'Selecciona el estudiante'; ok = false; }
+  if (!apPeriodo) { document.getElementById('ap-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
+  if (!apMomento) { document.getElementById('ap-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
+  if (!materia) { document.getElementById('ap-ferr-materia').textContent = 'Selecciona la materia'; ok = false; }
+  if (!nota) { document.getElementById('ap-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
+  if (!ok) return;
+  var estId = resolveEstudianteId(estudiante, grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var btn = document.getElementById('ap-btn-submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('historial_academico').insert({
+    estudiante_id: estId, periodo: apPeriodo, asignatura: materia, momento: apMomento, nota: nota
+  }).then(function(res) {
+    if (res.error) throw res.error;
+    apSesion.push({nombre: estudiante, grado: grado, periodo: apPeriodo, momento: apMomento, materia: materia, nota: nota});
+    renderApSesion();
+    document.getElementById('ap-estudiante').value = '';
+    document.getElementById('ap-materia').value = '';
+    document.getElementById('ap-materia-otra').value = ''; document.getElementById('ap-materia-otra').style.display = 'none';
+    document.getElementById('ap-nota').value = '';
+    toast('Guardado: ' + estudiante, 'ok');
+  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar y seguir con el siguiente'; });
+}
+
 function saveNRHistorialAcademico() {
   if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
   clearNRFerr('ha', ['periodo','asignatura','momento','nota']);
