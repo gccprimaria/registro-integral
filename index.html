@@ -7896,19 +7896,21 @@ function loadRevisionLibros() {
 function renderRevisionLibrosList(el, data) {
   if (!el) return;
   if (!data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>No hay revisiones registradas</p></div>'; return; }
-  var grupos = {};
+
+  // Agrupar: Asignatura -> Docente -> Estudiante -> [revisiones]
+  var porAsignatura = {};
   data.forEach(function(r) {
-    var key = (r.estudiante||'') + ' · ' + (r.asignatura||'');
-    if (!grupos[key]) grupos[key] = [];
-    grupos[key].push(r);
+    var asig = r.asignatura || 'Sin asignatura';
+    var doc = r.docente || 'Sin docente asignado';
+    var est = r.estudiante || '(sin nombre)';
+    if (!porAsignatura[asig]) porAsignatura[asig] = {};
+    if (!porAsignatura[asig][doc]) porAsignatura[asig][doc] = {};
+    if (!porAsignatura[asig][doc][est]) porAsignatura[asig][doc][est] = [];
+    porAsignatura[asig][doc][est].push(r);
   });
-  var claves = Object.keys(grupos).sort();
-  el.innerHTML = '';
-  claves.forEach(function(key) {
-    var lista = grupos[key].slice().sort(function(a,b){ return new Date(b.fecha||0) - new Date(a.fecha||0); });
-    var ultimo = lista[0];
-    var div = document.createElement('div');
-    div.className = 'doc-card';
+
+  var filaEstudiante = function(nombre, grado, lista) {
+    lista = lista.slice().sort(function(a,b){ return new Date(b.fecha||0) - new Date(a.fecha||0); });
     var filas = lista.map(function(r) {
       var total = parseFloat(r.totalPaginas) || 0;
       var actual = parseFloat(r.paginaActual) || 0;
@@ -7921,12 +7923,51 @@ function renderRevisionLibrosList(el, data) {
         '<span class="admin-only" onclick="eliminarRevisionLibro(\''+r.id+'\')" style="cursor:pointer;color:var(--red);font-size:0.72rem;font-weight:600">Eliminar</span>' +
       '</div>';
     }).join('');
-    div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
-      '<div style="font-weight:700;color:var(--navy)">' + (ultimo.estudiante||'') + '</div>' +
-      '<span class="tag tag-gray">' + (ultimo.grado||'') + '</span></div>' +
-      '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">' + (ultimo.asignatura||'') + ' · ' + (ultimo.docente||'') + '</div>' +
-      filas;
-    el.appendChild(div);
+    return '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
+      '<div style="font-weight:700;color:var(--navy);font-size:0.9rem">' + nombre + '</div>' +
+      '<span class="tag tag-gray">' + (grado||'') + '</span></div>' + filas;
+  };
+
+  el.innerHTML = '';
+  Object.keys(porAsignatura).sort().forEach(function(asig) {
+    var porDocente = porAsignatura[asig];
+    var totalAsig = 0;
+    Object.keys(porDocente).forEach(function(d){ Object.keys(porDocente[d]).forEach(function(e){ totalAsig += porDocente[d][e].length; }); });
+
+    var wrap = document.createElement('div');
+    wrap.style.marginBottom = '22px';
+    var headerAsig = document.createElement('div');
+    headerAsig.className = 'hist-title-badge';
+    headerAsig.textContent = asig + ' (' + totalAsig + ')';
+    wrap.appendChild(headerAsig);
+
+    Object.keys(porDocente).sort().forEach(function(doc) {
+      var porEstudiante = porDocente[doc];
+      var totalDoc = 0;
+      Object.keys(porEstudiante).forEach(function(e){ totalDoc += porEstudiante[e].length; });
+
+      var docBlock = document.createElement('div');
+      docBlock.style.marginBottom = '12px';
+      docBlock.style.paddingLeft = '4px';
+      var headerDoc = document.createElement('div');
+      headerDoc.style.cssText = 'font-size:0.78rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;display:flex;align-items:center;gap:6px';
+      headerDoc.innerHTML = '<span style="color:var(--amber)">●</span> ' + doc + ' <span style="font-weight:400;text-transform:none;letter-spacing:0">(' + totalDoc + ')</span>';
+      docBlock.appendChild(headerDoc);
+
+      Object.keys(porEstudiante).sort().forEach(function(est) {
+        var lista = porEstudiante[est];
+        var grado = lista[0] ? lista[0].grado : '';
+        var card = document.createElement('div');
+        card.className = 'doc-card';
+        card.style.marginBottom = '8px';
+        card.innerHTML = filaEstudiante(est, grado, lista);
+        docBlock.appendChild(card);
+      });
+
+      wrap.appendChild(docBlock);
+    });
+
+    el.appendChild(wrap);
   });
 }
 
