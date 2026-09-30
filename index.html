@@ -7893,14 +7893,24 @@ function loadRevisionLibros() {
     renderRevisionLibrosList(el, data);
   }).catch(function(err) { console.error(err); renderRevisionLibrosList(el, []); });
 }
+function normalizeAsig(s) {
+  return (s || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita tildes
+    .replace(/\s+/g, ' '); // colapsa espacios repetidos
+}
 function renderRevisionLibrosList(el, data) {
   if (!el) return;
   if (!data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>No hay revisiones registradas</p></div>'; return; }
 
   // Agrupar: Asignatura -> Docente -> Estudiante -> [revisiones]
   var porAsignatura = {};
+  var etiquetaAsig = {}; // guarda el texto "bonito" a mostrar por cada llave normalizada
   data.forEach(function(r) {
-    var asig = r.asignatura || 'Sin asignatura';
+    var asigOriginal = r.asignatura || 'Sin asignatura';
+    var asig = normalizeAsig(asigOriginal) || 'sin asignatura';
+    if (!etiquetaAsig[asig]) etiquetaAsig[asig] = asigOriginal.trim() || 'Sin asignatura';
     var doc = r.docente || 'Sin docente asignado';
     var est = r.estudiante || '(sin nombre)';
     if (!porAsignatura[asig]) porAsignatura[asig] = {};
@@ -7938,7 +7948,7 @@ function renderRevisionLibrosList(el, data) {
     wrap.style.marginBottom = '22px';
     var headerAsig = document.createElement('div');
     headerAsig.className = 'hist-title-badge';
-    headerAsig.textContent = asig + ' (' + totalAsig + ')';
+    headerAsig.textContent = etiquetaAsig[asig] + ' (' + totalAsig + ')';
     wrap.appendChild(headerAsig);
 
     Object.keys(porDocente).sort().forEach(function(doc) {
