@@ -442,18 +442,42 @@ body.docente-mode .admin-only{display:none !important;}
 
   <div class="card form-section">
     <div class="field">
-      <label class="lbl">Buscar estudiante</label>
-      <input type="text" id="an-search" placeholder="Escribe el nombre..." oninput="filtrarEstAnotacion()">
+      <label class="lbl">¿A cuántos estudiantes?</label>
+      <div class="type-grid" style="grid-template-columns:1fr 1fr">
+        <button class="type-btn sel" id="an-modo-uno" onclick="selAnModo('uno')">Un estudiante</button>
+        <button class="type-btn" id="an-modo-grupo" onclick="selAnModo('grupo')">Varios estudiantes</button>
+      </div>
     </div>
-    <div class="field" id="an-select-wrap" style="display:none">
-      <label class="lbl">Seleccionar</label>
-      <select id="an-student-select" onchange="selEstAnotacion()">
-        <option value="">Seleccionar...</option>
-      </select>
+
+    <div id="an-bloque-uno">
+      <div class="field">
+        <label class="lbl">Buscar estudiante</label>
+        <input type="text" id="an-search" placeholder="Escribe el nombre..." oninput="filtrarEstAnotacion()">
+      </div>
+      <div class="field" id="an-select-wrap" style="display:none">
+        <label class="lbl">Seleccionar</label>
+        <select id="an-student-select" onchange="selEstAnotacion()">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div id="an-student-info" style="display:none;background:var(--navy);color:white;border-radius:10px;padding:12px;margin-top:4px">
+        <div id="an-student-name" style="font-weight:700;font-size:1rem"></div>
+        <div id="an-student-grade" style="font-size:0.82rem;color:#94A3B8;margin-top:2px"></div>
+      </div>
     </div>
-    <div id="an-student-info" style="display:none;background:var(--navy);color:white;border-radius:10px;padding:12px;margin-top:4px">
-      <div id="an-student-name" style="font-weight:700;font-size:1rem"></div>
-      <div id="an-student-grade" style="font-size:0.82rem;color:#94A3B8;margin-top:2px"></div>
+
+    <div id="an-bloque-grupo" style="display:none">
+      <div class="field">
+        <label class="lbl">Buscar y marcar estudiantes</label>
+        <input type="text" id="an-grupo-search" placeholder="Escribe un nombre para buscar..." oninput="filtrarEstAnotacionGrupo()">
+      </div>
+      <div id="an-grupo-resultados" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;margin-top:4px"></div>
+      <div style="margin-top:14px">
+        <label class="lbl">Seleccionados (<span id="an-grupo-count">0</span>)</label>
+        <div id="an-grupo-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          <div style="font-size:0.82rem;color:var(--gray)">Aún no has marcado a nadie.</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -7893,24 +7917,14 @@ function loadRevisionLibros() {
     renderRevisionLibrosList(el, data);
   }).catch(function(err) { console.error(err); renderRevisionLibrosList(el, []); });
 }
-function normalizeAsig(s) {
-  return (s || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita tildes
-    .replace(/\s+/g, ' '); // colapsa espacios repetidos
-}
 function renderRevisionLibrosList(el, data) {
   if (!el) return;
   if (!data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>No hay revisiones registradas</p></div>'; return; }
 
   // Agrupar: Asignatura -> Docente -> Estudiante -> [revisiones]
   var porAsignatura = {};
-  var etiquetaAsig = {}; // guarda el texto "bonito" a mostrar por cada llave normalizada
   data.forEach(function(r) {
-    var asigOriginal = r.asignatura || 'Sin asignatura';
-    var asig = normalizeAsig(asigOriginal) || 'sin asignatura';
-    if (!etiquetaAsig[asig]) etiquetaAsig[asig] = asigOriginal.trim() || 'Sin asignatura';
+    var asig = r.asignatura || 'Sin asignatura';
     var doc = r.docente || 'Sin docente asignado';
     var est = r.estudiante || '(sin nombre)';
     if (!porAsignatura[asig]) porAsignatura[asig] = {};
@@ -7948,7 +7962,7 @@ function renderRevisionLibrosList(el, data) {
     wrap.style.marginBottom = '22px';
     var headerAsig = document.createElement('div');
     headerAsig.className = 'hist-title-badge';
-    headerAsig.textContent = etiquetaAsig[asig] + ' (' + totalAsig + ')';
+    headerAsig.textContent = asig + ' (' + totalAsig + ')';
     wrap.appendChild(headerAsig);
 
     Object.keys(porDocente).sort().forEach(function(doc) {
@@ -8018,7 +8032,73 @@ function selEstAnotacion() {
   document.getElementById('an-student-info').style.display = 'block';
   document.getElementById('an-form-section').style.display = 'block';
 }
+var anModo = 'uno';
+var anGrupoSeleccionados = [];
+function selAnModo(m) {
+  anModo = m;
+  document.getElementById('an-modo-uno').className = 'type-btn' + (m==='uno'?' sel':'');
+  document.getElementById('an-modo-grupo').className = 'type-btn' + (m==='grupo'?' sel':'');
+  document.getElementById('an-bloque-uno').style.display = m==='uno' ? 'block' : 'none';
+  document.getElementById('an-bloque-grupo').style.display = m==='grupo' ? 'block' : 'none';
+  if (m === 'uno') {
+    document.getElementById('an-form-section').style.display = anCurrentStudent ? 'block' : 'none';
+  } else {
+    document.getElementById('an-form-section').style.display = anGrupoSeleccionados.length ? 'block' : 'none';
+  }
+}
+function filtrarEstAnotacionGrupo() {
+  var q = document.getElementById('an-grupo-search').value.trim().toLowerCase();
+  var el = document.getElementById('an-grupo-resultados');
+  if (q.length < 2) { el.innerHTML = ''; return; }
+  var yaIds = anGrupoSeleccionados.map(function(s){ return s.id; });
+  var matches = studentsData.filter(function(s) {
+    return coincideBusqueda(s.nombre, q) && yaIds.indexOf(s.id) === -1;
+  }).slice(0, 25);
+  if (!matches.length) { el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray);padding:6px 2px">Sin resultados.</div>'; return; }
+  el.innerHTML = matches.map(function(s) {
+    var idx = studentsData.indexOf(s);
+    return '<label style="display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:8px;cursor:pointer" ' +
+      'onmouseover="this.style.background=\'var(--gray-bg)\'" onmouseout="this.style.background=\'\'">' +
+      '<input type="checkbox" onchange="toggleAnGrupo(' + idx + ', this.checked)" style="width:17px;height:17px;flex-shrink:0">' +
+      '<span style="font-size:0.88rem">' + s.nombre + ' <span style="color:var(--gray);font-size:0.78rem">(' + s.grado + ' ' + s.jornada + ')</span></span>' +
+      '</label>';
+  }).join('');
+}
+function toggleAnGrupo(idx, checked) {
+  var s = studentsData[idx];
+  if (!s) return;
+  if (checked) {
+    if (anGrupoSeleccionados.indexOf(s) === -1) anGrupoSeleccionados.push(s);
+  } else {
+    anGrupoSeleccionados = anGrupoSeleccionados.filter(function(x){ return x !== s; });
+  }
+  renderAnGrupoChips();
+  filtrarEstAnotacionGrupo();
+}
+function quitarAnGrupo(idx) {
+  var s = studentsData[idx];
+  anGrupoSeleccionados = anGrupoSeleccionados.filter(function(x){ return x !== s; });
+  renderAnGrupoChips();
+  filtrarEstAnotacionGrupo();
+}
+function renderAnGrupoChips() {
+  document.getElementById('an-grupo-count').textContent = anGrupoSeleccionados.length;
+  var el = document.getElementById('an-grupo-chips');
+  if (!anGrupoSeleccionados.length) {
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Aún no has marcado a nadie.</div>';
+  } else {
+    el.innerHTML = anGrupoSeleccionados.map(function(s) {
+      var idx = studentsData.indexOf(s);
+      return '<span style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:white;border-radius:999px;padding:6px 10px;font-size:0.8rem">' +
+        s.nombre + ' (' + s.grado + ')' +
+        '<span onclick="quitarAnGrupo(' + idx + ')" style="cursor:pointer;font-weight:700;opacity:0.8">×</span>' +
+        '</span>';
+    }).join('');
+  }
+  document.getElementById('an-form-section').style.display = anGrupoSeleccionados.length ? 'block' : 'none';
+}
 function saveAnotacionGeneral() {
+  if (anModo === 'grupo') { saveAnotacionGrupo(); return; }
   if (!anCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
   document.getElementById('an-ferr-fecha').textContent = '';
   document.getElementById('an-ferr-nota').textContent = '';
@@ -8039,6 +8119,38 @@ function saveAnotacionGeneral() {
     document.getElementById('an-fecha').value = '';
     document.getElementById('an-nota').value = '';
     toast('Anotacion guardada', 'ok');
+  }).finally(function() { btn.disabled = false; btn.textContent = 'Guardar anotación'; });
+}
+function saveAnotacionGrupo() {
+  if (!anGrupoSeleccionados.length) { toast('Marca al menos un estudiante', 'red'); return; }
+  document.getElementById('an-ferr-fecha').textContent = '';
+  document.getElementById('an-ferr-nota').textContent = '';
+  var fecha = document.getElementById('an-fecha').value;
+  var nota = document.getElementById('an-nota').value.trim();
+  var ok = true;
+  if (!fecha) { document.getElementById('an-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
+  if (!nota) { document.getElementById('an-ferr-nota').textContent = 'Escribe la anotacion'; ok = false; }
+  if (!ok) return;
+  var filas = [];
+  var sinId = [];
+  anGrupoSeleccionados.forEach(function(s) {
+    var estId = resolveEstudianteId(s.nombre, s.grado);
+    if (estId) filas.push({ estudiante_id: estId, fecha: fecha, nota: nota });
+    else sinId.push(s.nombre);
+  });
+  if (!filas.length) { toast('No se encontro a ningun estudiante en la base de datos', 'red'); return; }
+  var btn = document.getElementById('an-btn-submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('anotaciones').insert(filas).then(function(res) {
+    if (res.error) { toast('Error al guardar', 'red'); return; }
+    toast('Anotacion guardada para ' + filas.length + ' estudiante' + (filas.length!==1?'s':''), 'ok');
+    if (sinId.length) toast('No se encontraron: ' + sinId.join(', '), 'red');
+    document.getElementById('an-fecha').value = '';
+    document.getElementById('an-nota').value = '';
+    anGrupoSeleccionados = [];
+    renderAnGrupoChips();
+    document.getElementById('an-grupo-search').value = '';
+    document.getElementById('an-grupo-resultados').innerHTML = '';
   }).finally(function() { btn.disabled = false; btn.textContent = 'Guardar anotación'; });
 }
 
