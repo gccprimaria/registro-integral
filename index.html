@@ -718,7 +718,7 @@ body.docente-mode .admin-only{display:none !important;}
           <input type="text" id="rl-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
           <div class="ferr" id="rl-ferr-teacher"></div>
         </div>
-        <div class="field"><label class="lbl">Asignatura / libro</label><input type="text" id="rl-asignatura" placeholder="Ej: Matematicas"><div class="ferr" id="rl-ferr-asignatura"></div></div>
+        <div class="field"><label class="lbl">Asignatura / libro</label><select id="rl-asignatura" onchange="document.getElementById('rl-asignatura-otra').style.display=this.value==='Otra'?'block':'none';"><option value="">Seleccionar asignatura...</option><option>Lenguaje</option><option>Comp. Lectora</option><option>Ingles</option><option>Matematicas</option><option>Ciencias Naturales</option><option>Sociales</option><option>Fundamentos del Ser</option><option>Ed. Financiera</option><option>Informatica</option><option>Artistica</option><option>Musica</option><option>Educacion Fisica</option><option>Otra</option></select><input type="text" id="rl-asignatura-otra" placeholder="Nombre de la asignatura" style="margin-top:8px;display:none"><div class="ferr" id="rl-ferr-asignatura"></div></div>
         <div class="field"><label class="lbl">Fecha</label><input type="date" id="rl-fecha"><div class="ferr" id="rl-ferr-fecha"></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="field"><label class="lbl">Total de paginas</label><input type="number" id="rl-total" min="1" oninput="rlActualizarPct()"><div class="ferr" id="rl-ferr-total"></div></div>
@@ -989,7 +989,7 @@ body.docente-mode .admin-only{display:none !important;}
       </div>
       <div class="field">
         <label class="lbl">Docente o persona responsable</label>
-        <input type="text" id="comp-docente" placeholder="Nombre del docente o responsable">
+        <select id="comp-docente" onchange="document.getElementById('comp-docente-otro').style.display=this.value==='Otro'?'block':'none';"><option value="">Seleccionar...</option><optgroup label="Docentes - Manana"><option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option><option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option><option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option></optgroup><optgroup label="Docentes - Tarde"><option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option><option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option><option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option><option>Xiomara Pulido</option></optgroup><optgroup label="Coordinacion y apoyo"><option>Martha Alixon Romero Barrero</option><option>Eybar Suarez Higuera</option><option>Mabel Zarate Garzon</option><option>Sandra Villalba</option><option>Belkys Alarcon</option><option>Claudia Rojas</option><option>Sonia Torres</option></optgroup><option>Otro</option></select><input type="text" id="comp-docente-otro" placeholder="Nombre" style="margin-top:8px;display:none">
         <div class="ferr" id="comp-ferr-doc"></div>
       </div>
       <div class="field">
@@ -1030,7 +1030,7 @@ body.docente-mode .admin-only{display:none !important;}
         <input type="text" id="rl-edit-teacher-other" placeholder="Nombre del docente" style="margin-top:8px;display:none">
         <div class="ferr" id="rl-edit-ferr-teacher"></div>
       </div>
-      <div class="field"><label class="lbl">Asignatura / libro</label><input type="text" id="rl-edit-asignatura"><div class="ferr" id="rl-edit-ferr-asignatura"></div></div>
+      <div class="field"><label class="lbl">Asignatura / libro</label><select id="rl-edit-asignatura" onchange="document.getElementById('rl-edit-asignatura-otra').style.display=this.value==='Otra'?'block':'none';"><option value="">Seleccionar asignatura...</option><option>Lenguaje</option><option>Comp. Lectora</option><option>Ingles</option><option>Matematicas</option><option>Ciencias Naturales</option><option>Sociales</option><option>Fundamentos del Ser</option><option>Ed. Financiera</option><option>Informatica</option><option>Artistica</option><option>Musica</option><option>Educacion Fisica</option><option>Otra</option></select><input type="text" id="rl-edit-asignatura-otra" placeholder="Nombre de la asignatura" style="margin-top:8px;display:none"><div class="ferr" id="rl-edit-ferr-asignatura"></div></div>
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="rl-edit-fecha"><div class="ferr" id="rl-edit-ferr-fecha"></div></div>
       <div style="display:flex;gap:12px">
         <div class="field" style="flex:1"><label class="lbl">Total de paginas</label><input type="number" id="rl-edit-total" min="1" oninput="rlEditActualizarPct()"><div class="ferr" id="rl-edit-ferr-total"></div></div>
@@ -1060,7 +1060,7 @@ body.docente-mode .admin-only{display:none !important;}
         </div>
         <div class="ferr" id="ha-edit-ferr-periodo"></div>
       </div>
-      <div class="field"><label class="lbl">Asignatura</label><input type="text" id="ha-edit-asignatura"><div class="ferr" id="ha-edit-ferr-asignatura"></div></div>
+      <div class="field"><label class="lbl">Asignatura</label><select id="ha-edit-asignatura" onchange="document.getElementById('ha-edit-asignatura-otra').style.display=this.value==='Otra'?'block':'none';"><option value="">Seleccionar asignatura...</option><option>Lenguaje</option><option>Comp. Lectora</option><option>Ingles</option><option>Matematicas</option><option>Ciencias Naturales</option><option>Sociales</option><option>Fundamentos del Ser</option><option>Ed. Financiera</option><option>Informatica</option><option>Artistica</option><option>Musica</option><option>Educacion Fisica</option><option>Otra</option></select><input type="text" id="ha-edit-asignatura-otra" placeholder="Nombre de la asignatura" style="margin-top:8px;display:none"><div class="ferr" id="ha-edit-ferr-asignatura"></div></div>
       <div class="field">
         <label class="lbl">Momento</label>
         <div class="type-grid">
@@ -1145,7 +1145,7 @@ body.docente-mode .admin-only{display:none !important;}
       </div>
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-cit-fecha"><div class="ferr" id="nr-cit-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Motivo de la citacion</label><textarea id="nr-cit-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="nr-cit-ferr-motivo"></div></div>
-      <div class="field"><label class="lbl">Quien brindo la atencion</label><input type="text" id="nr-cit-atencion" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-cit-ferr-atencion"></div></div>
+      <div class="field"><label class="lbl">Quien brindo la atencion</label><select id="nr-cit-atencion" onchange="document.getElementById('nr-cit-atencion-otro').style.display=this.value==='Otro'?'block':'none';"><option value="">Seleccionar...</option><optgroup label="Docentes - Manana"><option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option><option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option><option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option></optgroup><optgroup label="Docentes - Tarde"><option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option><option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option><option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option><option>Xiomara Pulido</option></optgroup><optgroup label="Coordinacion y apoyo"><option>Martha Alixon Romero Barrero</option><option>Eybar Suarez Higuera</option><option>Mabel Zarate Garzon</option><option>Sandra Villalba</option><option>Belkys Alarcon</option><option>Claudia Rojas</option><option>Sonia Torres</option></optgroup><option>Otro</option></select><input type="text" id="nr-cit-atencion-otro" placeholder="Nombre" style="margin-top:8px;display:none"><div class="ferr" id="nr-cit-ferr-atencion"></div></div>
       <div class="field" id="nr-cit-campo-asistio"><label class="lbl">Asistio el acudiente?</label>
         <div class="type-grid">
           <button class="type-btn" id="nr-cit-si" onclick="selNRBool('cit','si')">Si asistio</button>
@@ -1161,7 +1161,7 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-rep-fecha"><div class="ferr" id="nr-rep-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Motivo de la actividad</label><textarea id="nr-rep-motivo" placeholder="Por que se asigna esta actividad..." rows="2"></textarea><div class="ferr" id="nr-rep-ferr-motivo"></div></div>
       <div class="field"><label class="lbl">Descripcion de la actividad</label><textarea id="nr-rep-desc" placeholder="En que consiste la actividad..." rows="3"></textarea></div>
-      <div class="field"><label class="lbl">Docente que asigna</label><input type="text" id="nr-rep-atencion" placeholder="Nombre del docente"><div class="ferr" id="nr-rep-ferr-atencion"></div></div>
+      <div class="field"><label class="lbl">Docente que asigna</label><select id="nr-rep-atencion" onchange="document.getElementById('nr-rep-atencion-otro').style.display=this.value==='Otro'?'block':'none';"><option value="">Seleccionar...</option><optgroup label="Docentes - Manana"><option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option><option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option><option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option></optgroup><optgroup label="Docentes - Tarde"><option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option><option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option><option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option><option>Xiomara Pulido</option></optgroup><optgroup label="Coordinacion y apoyo"><option>Martha Alixon Romero Barrero</option><option>Eybar Suarez Higuera</option><option>Mabel Zarate Garzon</option><option>Sandra Villalba</option><option>Belkys Alarcon</option><option>Claudia Rojas</option><option>Sonia Torres</option></optgroup><option>Otro</option></select><input type="text" id="nr-rep-atencion-otro" placeholder="Nombre" style="margin-top:8px;display:none"><div class="ferr" id="nr-rep-ferr-atencion"></div></div>
       <div class="field"><label class="lbl">La cumplio el estudiante?</label>
         <div class="type-grid">
           <button class="type-btn" id="nr-rep-si" onclick="selNRBool('rep','si')">Si cumplio</button>
@@ -1192,7 +1192,7 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Compromiso academico</div>
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-ca-fecha"><div class="ferr" id="nr-ca-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Descripcion del compromiso</label><textarea id="nr-ca-desc" placeholder="Describe el compromiso adquirido..." rows="4"></textarea><div class="ferr" id="nr-ca-ferr-desc"></div></div>
-      <div class="field"><label class="lbl">Docente o responsable</label><input type="text" id="nr-ca-docente" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-ca-ferr-doc"></div></div>
+      <div class="field"><label class="lbl">Docente o responsable</label><select id="nr-ca-docente" onchange="document.getElementById('nr-ca-docente-otro').style.display=this.value==='Otro'?'block':'none';"><option value="">Seleccionar...</option><optgroup label="Docentes - Manana"><option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option><option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option><option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option></optgroup><optgroup label="Docentes - Tarde"><option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option><option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option><option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option><option>Xiomara Pulido</option></optgroup><optgroup label="Coordinacion y apoyo"><option>Martha Alixon Romero Barrero</option><option>Eybar Suarez Higuera</option><option>Mabel Zarate Garzon</option><option>Sandra Villalba</option><option>Belkys Alarcon</option><option>Claudia Rojas</option><option>Sonia Torres</option></optgroup><option>Otro</option></select><input type="text" id="nr-ca-docente-otro" placeholder="Nombre" style="margin-top:8px;display:none"><div class="ferr" id="nr-ca-ferr-doc"></div></div>
       <div class="field"><label class="lbl">Firmo el acudiente?</label>
         <div class="type-grid">
           <button class="type-btn" id="nr-ca-si" onclick="selNRBool('ca','si')">Si firmo</button>
@@ -1207,7 +1207,7 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Compromiso disciplinario</div>
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-cd-fecha"><div class="ferr" id="nr-cd-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Descripcion del compromiso</label><textarea id="nr-cd-desc" placeholder="Describe el compromiso adquirido..." rows="4"></textarea><div class="ferr" id="nr-cd-ferr-desc"></div></div>
-      <div class="field"><label class="lbl">Docente o responsable</label><input type="text" id="nr-cd-docente" placeholder="Nombre del docente o coordinador"><div class="ferr" id="nr-cd-ferr-doc"></div></div>
+      <div class="field"><label class="lbl">Docente o responsable</label><select id="nr-cd-docente" onchange="document.getElementById('nr-cd-docente-otro').style.display=this.value==='Otro'?'block':'none';"><option value="">Seleccionar...</option><optgroup label="Docentes - Manana"><option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option><option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option><option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option></optgroup><optgroup label="Docentes - Tarde"><option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option><option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option><option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option><option>Xiomara Pulido</option></optgroup><optgroup label="Coordinacion y apoyo"><option>Martha Alixon Romero Barrero</option><option>Eybar Suarez Higuera</option><option>Mabel Zarate Garzon</option><option>Sandra Villalba</option><option>Belkys Alarcon</option><option>Claudia Rojas</option><option>Sonia Torres</option></optgroup><option>Otro</option></select><input type="text" id="nr-cd-docente-otro" placeholder="Nombre" style="margin-top:8px;display:none"><div class="ferr" id="nr-cd-ferr-doc"></div></div>
       <div class="field"><label class="lbl">Firmo el acudiente?</label>
         <div class="type-grid">
           <button class="type-btn" id="nr-cd-si" onclick="selNRBool('cd','si')">Si firmo</button>
@@ -1229,7 +1229,7 @@ body.docente-mode .admin-only{display:none !important;}
         </div>
         <div class="ferr" id="nr-ha-ferr-periodo"></div>
       </div>
-      <div class="field"><label class="lbl">Asignatura</label><input type="text" id="nr-ha-asignatura" placeholder="Ej: Matematicas"><div class="ferr" id="nr-ha-ferr-asignatura"></div></div>
+      <div class="field"><label class="lbl">Asignatura</label><select id="nr-ha-asignatura" onchange="document.getElementById('nr-ha-asignatura-otra').style.display=this.value==='Otra'?'block':'none';"><option value="">Seleccionar asignatura...</option><option>Lenguaje</option><option>Comp. Lectora</option><option>Ingles</option><option>Matematicas</option><option>Ciencias Naturales</option><option>Sociales</option><option>Fundamentos del Ser</option><option>Ed. Financiera</option><option>Informatica</option><option>Artistica</option><option>Musica</option><option>Educacion Fisica</option><option>Otra</option></select><input type="text" id="nr-ha-asignatura-otra" placeholder="Nombre de la asignatura" style="margin-top:8px;display:none"><div class="ferr" id="nr-ha-ferr-asignatura"></div></div>
       <div class="field">
         <label class="lbl">Momento</label>
         <div class="type-grid">
@@ -1398,10 +1398,9 @@ body.docente-mode .admin-only{display:none !important;}
       <label class="lbl">Materia</label>
       <select id="ap-materia" onchange="document.getElementById('ap-materia-otra').style.display=this.value==='Otra'?'block':'none';">
         <option value="">Seleccionar materia...</option>
-        <option>Matematicas</option><option>Lengua Castellana</option><option>Ingles</option>
-        <option>Ciencias Naturales</option><option>Ciencias Sociales</option><option>Tecnologia e Informatica</option>
-        <option>Educacion Artistica</option><option>Educacion Fisica</option><option>Etica y Valores</option>
-        <option>Educacion Religiosa</option><option>Fundamentos del Ser</option><option>Lectura Critica</option>
+        <option>Lenguaje</option><option>Comp. Lectora</option><option>Ingles</option><option>Matematicas</option>
+        <option>Ciencias Naturales</option><option>Sociales</option><option>Fundamentos del Ser</option><option>Ed. Financiera</option>
+        <option>Informatica</option><option>Artistica</option><option>Musica</option><option>Educacion Fisica</option>
         <option>Otra</option>
       </select>
       <input type="text" id="ap-materia-otra" placeholder="Nombre de la materia" style="margin-top:8px;display:none">
@@ -7058,6 +7057,7 @@ function openCompModal(tipo) {
   document.getElementById('comp-fecha').value = '';
   document.getElementById('comp-desc').value = '';
   document.getElementById('comp-docente').value = '';
+  document.getElementById('comp-docente-otro').value = ''; document.getElementById('comp-docente-otro').style.display = 'none';
   document.getElementById('comp-btn-si').className = 'type-btn';
   document.getElementById('comp-btn-no').className = 'type-btn';
   ['comp-ferr-fecha','comp-ferr-desc','comp-ferr-doc'].forEach(function(id){ document.getElementById(id).textContent=''; });
@@ -7077,12 +7077,13 @@ function selCompFirma(v) {
 function saveCompromiso() {
   var fecha = document.getElementById('comp-fecha').value;
   var desc = document.getElementById('comp-desc').value.trim();
-  var docente = document.getElementById('comp-docente').value.trim();
+  var docente = document.getElementById('comp-docente').value;
   var ok = true;
   if(!fecha){ document.getElementById('comp-ferr-fecha').textContent='Selecciona la fecha'; ok=false; }
   if(!desc){ document.getElementById('comp-ferr-desc').textContent='Describe el compromiso'; ok=false; }
-  if(!docente){ document.getElementById('comp-ferr-doc').textContent='Escribe el responsable'; ok=false; }
+  if(!docente){ document.getElementById('comp-ferr-doc').textContent='Selecciona el responsable'; ok=false; }
   if(!ok) return;
+  if (docente === 'Otro') docente = document.getElementById('comp-docente-otro').value.trim() || 'Otro';
   var btn = document.getElementById('comp-save-btn');
   btn.disabled=true; btn.textContent='Guardando...';
   apiCall({
@@ -7328,7 +7329,17 @@ function renderHistorialAcademico(el, liveRecords, legacyData) {
 
 function abrirEdicionHistorialAcademico(id, periodo, asignatura, momento, nota) {
   haEditCurrent = id;
-  document.getElementById('ha-edit-asignatura').value = asignatura || '';
+  var selAsigHa = document.getElementById('ha-edit-asignatura');
+  var opcionesAsigHa = Array.prototype.map.call(selAsigHa.options, function(o){ return o.value; });
+  if (asignatura && opcionesAsigHa.indexOf(asignatura) === -1) {
+    selAsigHa.value = 'Otra';
+    document.getElementById('ha-edit-asignatura-otra').style.display = 'block';
+    document.getElementById('ha-edit-asignatura-otra').value = asignatura;
+  } else {
+    selAsigHa.value = asignatura || '';
+    document.getElementById('ha-edit-asignatura-otra').style.display = 'none';
+    document.getElementById('ha-edit-asignatura-otra').value = '';
+  }
   document.getElementById('ha-edit-nota').value = (nota !== undefined && nota !== null) ? nota : '';
   selHaEditPeriodo(periodo);
   selHaEditMomento(momento);
@@ -7356,14 +7367,15 @@ function selHaEditMomento(m) {
 function guardarEdicionHistorialAcademico() {
   if (!haEditCurrent) return;
   ['periodo','asignatura','momento','nota'].forEach(function(f){ document.getElementById('ha-edit-ferr-'+f).textContent=''; });
-  var asignatura = document.getElementById('ha-edit-asignatura').value.trim();
+  var asignatura = document.getElementById('ha-edit-asignatura').value;
   var nota = document.getElementById('ha-edit-nota').value;
   var ok = true;
   if (!haEditPeriodo) { document.getElementById('ha-edit-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
-  if (!asignatura) { document.getElementById('ha-edit-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
+  if (!asignatura) { document.getElementById('ha-edit-ferr-asignatura').textContent = 'Selecciona la asignatura'; ok = false; }
   if (!haEditMomento) { document.getElementById('ha-edit-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
   if (!nota) { document.getElementById('ha-edit-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
   if (!ok) return;
+  if (asignatura === 'Otra') asignatura = document.getElementById('ha-edit-asignatura-otra').value.trim() || 'Otra';
   pedirPasswordConfirm('Ingresa la contraseña para guardar los cambios:', function(){
     var btn = document.getElementById('ha-edit-btn-submit');
     btn.disabled = true; btn.textContent = 'Guardando...';
@@ -7592,7 +7604,7 @@ function saveRevisionLibro() {
   if (!rlCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
   ['teacher','asignatura','fecha','total','actual'].forEach(function(f){ document.getElementById('rl-ferr-'+f).textContent=''; });
   var teacher = document.getElementById('rl-teacher').value;
-  var asignatura = document.getElementById('rl-asignatura').value.trim();
+  var asignatura = document.getElementById('rl-asignatura').value;
   var fecha = document.getElementById('rl-fecha').value;
   var total = document.getElementById('rl-total').value;
   var actual = document.getElementById('rl-actual').value;
@@ -7604,6 +7616,7 @@ function saveRevisionLibro() {
   if (actual === '') { document.getElementById('rl-ferr-actual').textContent = 'Ingresa la pagina actual'; ok = false; }
   if (!ok) return;
   if (teacher === 'Otro docente') teacher = document.getElementById('rl-teacher-other').value.trim() || 'Otro docente';
+  if (asignatura === 'Otra') asignatura = document.getElementById('rl-asignatura-otra').value.trim() || 'Otra';
   var estId = resolveEstudianteId(rlCurrentStudent.nombre, rlCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('rl-btn-submit');
@@ -7614,6 +7627,7 @@ function saveRevisionLibro() {
   }).then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('rl-asignatura').value = '';
+    document.getElementById('rl-asignatura-otra').value = ''; document.getElementById('rl-asignatura-otra').style.display = 'none';
     document.getElementById('rl-fecha').value = '';
     document.getElementById('rl-total').value = '';
     document.getElementById('rl-actual').value = '';
@@ -7638,7 +7652,17 @@ function abrirEdicionRevisionLibro(id, estudiante, grado, docente, asignatura, f
     document.getElementById('rl-edit-teacher-other').style.display = 'none';
     document.getElementById('rl-edit-teacher-other').value = '';
   }
-  document.getElementById('rl-edit-asignatura').value = asignatura || '';
+  var selAsig = document.getElementById('rl-edit-asignatura');
+  var opcionesAsig = Array.prototype.map.call(selAsig.options, function(o){ return o.value; });
+  if (asignatura && opcionesAsig.indexOf(asignatura) === -1) {
+    selAsig.value = 'Otra';
+    document.getElementById('rl-edit-asignatura-otra').style.display = 'block';
+    document.getElementById('rl-edit-asignatura-otra').value = asignatura;
+  } else {
+    selAsig.value = asignatura || '';
+    document.getElementById('rl-edit-asignatura-otra').style.display = 'none';
+    document.getElementById('rl-edit-asignatura-otra').value = '';
+  }
   document.getElementById('rl-edit-fecha').value = fecha || '';
   document.getElementById('rl-edit-total').value = total || '';
   document.getElementById('rl-edit-actual').value = actual || '';
@@ -7660,7 +7684,7 @@ function guardarEdicionRevisionLibro() {
   if (!rlEditCurrent) return;
   ['teacher','asignatura','fecha','total','actual'].forEach(function(f){ document.getElementById('rl-edit-ferr-'+f).textContent=''; });
   var teacher = document.getElementById('rl-edit-teacher').value;
-  var asignatura = document.getElementById('rl-edit-asignatura').value.trim();
+  var asignatura = document.getElementById('rl-edit-asignatura').value;
   var fecha = document.getElementById('rl-edit-fecha').value;
   var total = document.getElementById('rl-edit-total').value;
   var actual = document.getElementById('rl-edit-actual').value;
@@ -7672,6 +7696,7 @@ function guardarEdicionRevisionLibro() {
   if (actual === '') { document.getElementById('rl-edit-ferr-actual').textContent = 'Ingresa la pagina actual'; ok = false; }
   if (!ok) return;
   if (teacher === 'Otro docente') teacher = document.getElementById('rl-edit-teacher-other').value.trim() || 'Otro docente';
+  if (asignatura === 'Otra') asignatura = document.getElementById('rl-edit-asignatura-otra').value.trim() || 'Otra';
   pedirPasswordConfirm('Ingresa la contraseña para guardar los cambios:', function(){
     var btn = document.getElementById('rl-edit-btn-submit');
     btn.disabled = true; btn.textContent = 'Guardando...';
@@ -8296,7 +8321,11 @@ function saveNRRegistro(tipo) {
   var descEl = document.getElementById('nr-' + pf + '-desc');
   var desc = descEl ? descEl.value.trim() : '';
   var atencionEl = document.getElementById('nr-' + pf + '-atencion');
-  var atencion = atencionEl ? atencionEl.value.trim() : '';
+  var atencion = atencionEl ? atencionEl.value : '';
+  if (atencion === 'Otro') {
+    var atencionOtroEl0 = document.getElementById('nr-' + pf + '-atencion-otro');
+    atencion = atencionOtroEl0 ? (atencionOtroEl0.value.trim() || 'Otro') : 'Otro';
+  }
   var diasEl = document.getElementById('nr-' + pf + '-dias');
   var dias = diasEl ? diasEl.value : '';
   var ok = true;
@@ -8322,6 +8351,8 @@ function saveNRRegistro(tipo) {
     document.getElementById('nr-' + pf + '-motivo').value = '';
     if(descEl) descEl.value = '';
     if(atencionEl) atencionEl.value = '';
+    var atencionOtroElReset = document.getElementById('nr-' + pf + '-atencion-otro');
+    if (atencionOtroElReset) { atencionOtroElReset.value = ''; atencionOtroElReset.style.display = 'none'; }
     if(diasEl) diasEl.value = '';
     nrBools[pf] = '';
     selNRBool(pf, '');
@@ -8415,12 +8446,13 @@ function saveNRCompromiso(tipo) {
   clearNRFerr(pf, ['fecha','desc','doc']);
   var fecha = document.getElementById('nr-' + pf + '-fecha').value;
   var desc = document.getElementById('nr-' + pf + '-desc').value.trim();
-  var docente = document.getElementById('nr-' + pf + '-docente').value.trim();
+  var docente = document.getElementById('nr-' + pf + '-docente').value;
   var ok = true;
   if (!fecha) { document.getElementById('nr-' + pf + '-ferr-fecha').textContent = 'Selecciona la fecha'; ok = false; }
   if (!desc) { document.getElementById('nr-' + pf + '-ferr-desc').textContent = 'Describe el compromiso'; ok = false; }
-  if (!docente) { document.getElementById('nr-' + pf + '-ferr-doc').textContent = 'Escribe el responsable'; ok = false; }
+  if (!docente) { document.getElementById('nr-' + pf + '-ferr-doc').textContent = 'Selecciona el responsable'; ok = false; }
   if (!ok) return;
+  if (docente === 'Otro') docente = document.getElementById('nr-' + pf + '-docente-otro').value.trim() || 'Otro';
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('nr-' + pf + '-btn');
@@ -8433,6 +8465,8 @@ function saveNRCompromiso(tipo) {
     document.getElementById('nr-' + pf + '-fecha').value = '';
     document.getElementById('nr-' + pf + '-desc').value = '';
     document.getElementById('nr-' + pf + '-docente').value = '';
+    var docenteOtroReset = document.getElementById('nr-' + pf + '-docente-otro');
+    if (docenteOtroReset) { docenteOtroReset.value = ''; docenteOtroReset.style.display = 'none'; }
     nrBools[pf] = '';
     selNRBool(pf, '');
     toast('Compromiso guardado', 'ok');
@@ -8542,14 +8576,15 @@ function guardarApRegistro() {
 function saveNRHistorialAcademico() {
   if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
   clearNRFerr('ha', ['periodo','asignatura','momento','nota']);
-  var asignatura = document.getElementById('nr-ha-asignatura').value.trim();
+  var asignatura = document.getElementById('nr-ha-asignatura').value;
   var nota = document.getElementById('nr-ha-nota').value;
   var ok = true;
   if (!nrPeriodo) { document.getElementById('nr-ha-ferr-periodo').textContent = 'Selecciona el periodo'; ok = false; }
-  if (!asignatura) { document.getElementById('nr-ha-ferr-asignatura').textContent = 'Escribe la asignatura'; ok = false; }
+  if (!asignatura) { document.getElementById('nr-ha-ferr-asignatura').textContent = 'Selecciona la asignatura'; ok = false; }
   if (!nrMomento) { document.getElementById('nr-ha-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
   if (!nota) { document.getElementById('nr-ha-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
   if (!ok) return;
+  if (asignatura === 'Otra') asignatura = document.getElementById('nr-ha-asignatura-otra').value.trim() || 'Otra';
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
   var btn = document.getElementById('nr-ha-btn');
@@ -8559,6 +8594,7 @@ function saveNRHistorialAcademico() {
   }).then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-ha-asignatura').value = '';
+    document.getElementById('nr-ha-asignatura-otra').value = ''; document.getElementById('nr-ha-asignatura-otra').style.display = 'none';
     document.getElementById('nr-ha-nota').value = '';
     nrPeriodo = ''; nrMomento = '';
     ['I','II','III'].forEach(function(v){ document.getElementById('nr-ha-per-'+v).className = 'type-btn'; });
