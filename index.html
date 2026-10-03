@@ -1075,6 +1075,20 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
 </div>
 
+<!-- MODAL CONFIRMAR CON CONTRASENA (reemplaza confirm()/prompt() nativos) -->
+<div class="modal-overlay" id="pwd-confirm-overlay">
+  <div class="modal" style="max-width:420px">
+    <div class="serif" id="pwd-confirm-msg" style="font-size:1rem;color:var(--navy);font-weight:700;margin-bottom:16px;white-space:pre-line"></div>
+    <input type="password" id="pwd-confirm-input" placeholder="Contraseña" autocomplete="off"
+      style="width:100%;padding:12px 13px;border:1.5px solid var(--gray-light);border-radius:10px;font-family:inherit;font-size:0.95rem;margin-bottom:6px">
+    <div class="ferr" id="pwd-confirm-err" style="min-height:18px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="cerrarPwdConfirm()" style="flex:1;padding:13px;background:var(--gray-bg);color:var(--text);border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">Cancelar</button>
+      <button class="btn btn-primary" id="pwd-confirm-btn" onclick="confirmarPwdConfirm()" style="flex:1;padding:13px">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL REGISTRO (citacion/reparacion/suspension) -->
 <div class="modal-overlay" id="registro-modal-overlay" onclick="closeRegistroModal(event)">
   <div class="modal">
@@ -5461,6 +5475,38 @@ function toast(msg,type){
 }
 function loading(v){document.getElementById("loading").className="loading-overlay"+(v?" show":"");}
 
+// Modal de confirmacion + contrasena, en reemplazo de confirm()/prompt() nativos
+// (en algunos navegadores/entornos moviles esos dialogos nativos no se muestran).
+var pwdConfirmCallback = null;
+function pedirPasswordConfirm(mensaje, callback) {
+  pwdConfirmCallback = callback;
+  document.getElementById('pwd-confirm-msg').textContent = mensaje;
+  document.getElementById('pwd-confirm-input').value = '';
+  document.getElementById('pwd-confirm-err').textContent = '';
+  document.getElementById('pwd-confirm-overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('pwd-confirm-input').focus(); }, 60);
+}
+function cerrarPwdConfirm() {
+  document.getElementById('pwd-confirm-overlay').classList.remove('open');
+  pwdConfirmCallback = null;
+}
+function confirmarPwdConfirm() {
+  var pwd = document.getElementById('pwd-confirm-input').value;
+  if (pwd !== DELETE_PWD) {
+    document.getElementById('pwd-confirm-err').textContent = 'Contraseña incorrecta';
+    return;
+  }
+  var cb = pwdConfirmCallback;
+  cerrarPwdConfirm();
+  if (cb) cb();
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var ov = document.getElementById('pwd-confirm-overlay');
+    if (ov && ov.classList.contains('open')) { e.preventDefault(); confirmarPwdConfirm(); }
+  }
+});
+
 function renderAll(){
   renderDash(); renderCases(); renderHSelect();
   var ab=cases.filter(function(c){return c.status==="abierto";}).length;
@@ -5631,13 +5677,14 @@ function closeModal(){
 }
 function toggleStatus(){
   var c=cases[modalIndex]; if(!c) return;
-  var pwd=prompt("Ingresa la contrasena para cambiar el estado:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  var newS=c.status==="abierto"?"resuelto":"abierto";
-  var btn=document.getElementById("m-status-btn"); if(btn)btn.disabled=true; loading(true);
-  sb.from('casos').update({status:newS}).eq('id',c.id).then(function(res){
-    if(res.error) throw res.error;
-    cases[modalIndex].status=newS;renderAll();openModal(modalIndex);toast("Estado actualizado","ok");
-  }).catch(function(err){console.error(err);toast("Error","red");}).finally(function(){loading(false);});
+  pedirPasswordConfirm("Ingresa la contraseña para cambiar el estado:", function(){
+    var newS=c.status==="abierto"?"resuelto":"abierto";
+    var btn=document.getElementById("m-status-btn"); if(btn)btn.disabled=true; loading(true);
+    sb.from('casos').update({status:newS}).eq('id',c.id).then(function(res){
+      if(res.error) throw res.error;
+      cases[modalIndex].status=newS;renderAll();openModal(modalIndex);toast("Estado actualizado","ok");
+    }).catch(function(err){console.error(err);toast("Error","red");}).finally(function(){loading(false);});
+  });
 }
 
 // CONTRASENA
@@ -5658,18 +5705,18 @@ function confirmDelete(){
 function eliminarCasoDesdeHistorial(idx, event){
   if(event) event.stopPropagation();
   var c=cases[idx]; if(!c) return;
-  var pwd=prompt("Ingresa la contrasena para eliminar:");
-  if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  var id=c.id; loading(true);
-  sb.from('casos').delete().eq('id',id).then(function(res){
-    if(res.error) throw res.error;
-    var i=cases.findIndex(function(x){return x.id===id;});
-    if(i>=0) cases.splice(i,1);
-    renderAll();
-    var s=studentsData[currentEstIndex];
-    if(s) openEstModal(s);
-    toast("Caso eliminado","red");
-  }).catch(function(err){console.error(err);toast("Error al eliminar","red");}).finally(function(){loading(false);});
+  pedirPasswordConfirm("Ingresa la contraseña para eliminar:", function(){
+    var id=c.id; loading(true);
+    sb.from('casos').delete().eq('id',id).then(function(res){
+      if(res.error) throw res.error;
+      var i=cases.findIndex(function(x){return x.id===id;});
+      if(i>=0) cases.splice(i,1);
+      renderAll();
+      var s=studentsData[currentEstIndex];
+      if(s) openEstModal(s);
+      toast("Caso eliminado","red");
+    }).catch(function(err){console.error(err);toast("Error al eliminar","red");}).finally(function(){loading(false);});
+  });
 }
 
 // DIRECTOR
@@ -5893,15 +5940,15 @@ function renderReportesDocentes(){
 function descartarReporte(idx){
   var r = reportesDocentes[idx];
   if(!r) return;
-  var pwd = prompt('Ingresa la contrasena para descartar este reporte:');
-  if(pwd !== DELETE_PWD){ toast('Contrasena incorrecta','red'); return; }
-  var id = String(r['ID']||'');
-  apiCall({action:'descartarReporte', id:id}).then(function(){
-    reportesDocentes.splice(idx,1);
-    reportesDescartadosIds.push(id);
-    renderReportesDocentes();
-    toast('Reporte descartado','red');
-  }).catch(function(){ toast('Error al descartar','red'); });
+  pedirPasswordConfirm('Ingresa la contraseña para descartar este reporte:', function(){
+    var id = String(r['ID']||'');
+    apiCall({action:'descartarReporte', id:id}).then(function(){
+      reportesDocentes.splice(idx,1);
+      reportesDescartadosIds.push(id);
+      renderReportesDocentes();
+      toast('Reporte descartado','red');
+    }).catch(function(){ toast('Error al descartar','red'); });
+  });
 }
 function convertirReporteACaso(idx){
   var r = reportesDocentes[idx];
@@ -6044,12 +6091,13 @@ function renderPermisosList(el, data, mostrarNombre){
 }
 
 function deletePermisoRow(id){
-  var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  sb.from('permisos').delete().eq('id', id).then(function(res){
-    if(res.error){ toast("Error al eliminar","red"); return; }
-    toast("Eliminado","red");
-    if (document.getElementById('dpanel-permisos') && document.getElementById('dpanel-permisos').style.display !== 'none') loadPermisos();
-    if (document.getElementById('page-permisos-general') && document.getElementById('page-permisos-general').classList.contains('visible')) loadPermisosGeneral();
+  pedirPasswordConfirm("Ingresa la contraseña para eliminar:", function(){
+    sb.from('permisos').delete().eq('id', id).then(function(res){
+      if(res.error){ toast("Error al eliminar","red"); return; }
+      toast("Eliminado","red");
+      if (document.getElementById('dpanel-permisos') && document.getElementById('dpanel-permisos').style.display !== 'none') loadPermisos();
+      if (document.getElementById('page-permisos-general') && document.getElementById('page-permisos-general').classList.contains('visible')) loadPermisosGeneral();
+    });
   });
 }
 
@@ -6160,12 +6208,13 @@ function submitAnotacionDocente(){
   }).finally(function(){ btn.disabled = false; btn.textContent = 'Guardar anotación'; });
 }
 function deleteAnotacionDocente(id){
-  var pwd = prompt('Ingresa la contrasena para eliminar:'); if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('anotaciones_docente').delete().eq('id', id).then(function(res){
-    if (res.error) { toast('Error al eliminar', 'red'); return; }
-    toast('Anotación eliminada', 'red');
-    loadAnotacionesDocentesTab();
-    if (fichaDocenteActual) loadFichaAnotacionesDocente(fichaDocenteActual);
+  pedirPasswordConfirm('Ingresa la contraseña para eliminar:', function(){
+    sb.from('anotaciones_docente').delete().eq('id', id).then(function(res){
+      if (res.error) { toast('Error al eliminar', 'red'); return; }
+      toast('Anotación eliminada', 'red');
+      loadAnotacionesDocentesTab();
+      if (fichaDocenteActual) loadFichaAnotacionesDocente(fichaDocenteActual);
+    });
   });
 }
 function loadFichaAnotacionesDocente(d){
@@ -6214,27 +6263,31 @@ function submitQueja(){
   var manejo=document.getElementById("dq-manejo").value.trim();
   var descargos=document.getElementById("dq-descargos").value.trim();
   var isEdit = editingQuejaIdx >= 0;
-  if(isEdit){
-    var pwdQ=prompt("Ingresa la contrasena para guardar cambios:"); if(pwdQ!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  }
-  var payload = {
-    docente: teacher, fecha: fecha, descripcion: desc,
-    verbal: curVerbal === "si", escrito: curEscrito === "si",
-    notificados: notificados, citacion: curQuejaCitacion === "si",
-    fecha_citacion: fechaCitacion || null, conversado: conversado, manejo: manejo, descargos: descargos
-  };
-  var btn=document.getElementById("dq-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
-  var op = isEdit ? sb.from('quejas').update(payload).eq('id', quejas[editingQuejaIdx].id) : sb.from('quejas').insert(payload);
-  op.select().then(function(res){
-    if (res.error) throw res.error;
-    var row = res.data && res.data[0];
-    var q = {
-      id: row.id, teacher: teacher, fecha: fecha, desc: desc, verbal: curVerbal, escrito: curEscrito,
-      notificados: notificados, citacion: curQuejaCitacion, fechaCitacion: fechaCitacion, conversado: conversado, manejo: manejo, descargos: descargos
+  var continuarGuardadoQueja = function(){
+    var payload = {
+      docente: teacher, fecha: fecha, descripcion: desc,
+      verbal: curVerbal === "si", escrito: curEscrito === "si",
+      notificados: notificados, citacion: curQuejaCitacion === "si",
+      fecha_citacion: fechaCitacion || null, conversado: conversado, manejo: manejo, descargos: descargos
     };
-    if(isEdit){ quejas[editingQuejaIdx]=q; } else { quejas.unshift(q); }
-    clearQuejaForm();renderQuejas();toast(isEdit?"Queja actualizada":"Queja registrada","ok");
-  }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent=isEdit?"Guardar cambios":"Registrar queja";});
+    var btn=document.getElementById("dq-btn-submit"); btn.disabled=true; btn.textContent="Guardando...";
+    var op = isEdit ? sb.from('quejas').update(payload).eq('id', quejas[editingQuejaIdx].id) : sb.from('quejas').insert(payload);
+    op.select().then(function(res){
+      if (res.error) throw res.error;
+      var row = res.data && res.data[0];
+      var q = {
+        id: row.id, teacher: teacher, fecha: fecha, desc: desc, verbal: curVerbal, escrito: curEscrito,
+        notificados: notificados, citacion: curQuejaCitacion, fechaCitacion: fechaCitacion, conversado: conversado, manejo: manejo, descargos: descargos
+      };
+      if(isEdit){ quejas[editingQuejaIdx]=q; } else { quejas.unshift(q); }
+      clearQuejaForm();renderQuejas();toast(isEdit?"Queja actualizada":"Queja registrada","ok");
+    }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent=isEdit?"Guardar cambios":"Registrar queja";});
+  };
+  if(isEdit){
+    pedirPasswordConfirm("Ingresa la contraseña para guardar cambios:", continuarGuardadoQueja);
+  } else {
+    continuarGuardadoQueja();
+  }
 }
 
 function editQueja(idx){
@@ -6429,36 +6482,37 @@ function selEditAsistencia(v) {
 function saveEdit() {
   var c = cases[editIndex];
   if (!c) return;
-  var pwd=prompt("Ingresa la contrasena para guardar cambios:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  var btn = document.getElementById("edit-btn-save");
-  btn.disabled = true; btn.textContent = "Guardando...";
-  var updated = Object.assign({}, c, {
-    type: editType,
-    tipologia: editTipo,
-    status: editStatus,
-    description: document.getElementById("edit-desc").value.trim(),
-    actions: document.getElementById("edit-actions").value.trim(),
-    acta: document.getElementById("edit-acta").value.trim(),
-    citacion: editCitacion,
-    fechaCitacion: editCitacion === "si" ? document.getElementById("edit-fecha-cit").value : "",
-    asistencia: editCitacion === "si" ? editAsistencia : ""
-  });
-  sb.from('casos').update({
-    tipo: updated.type, tipologia: updated.tipologia, status: updated.status,
-    descripcion: updated.description, acciones: updated.actions, acta_url: updated.acta,
-    citacion: updated.citacion, fecha_citacion: updated.fechaCitacion || null,
-    asistencia: updated.asistencia
-  }).eq('id', c.id).then(function(res) {
-    if (res.error) throw res.error;
-    cases[editIndex] = normalizeCase(updated);
-    renderAll();
-    closeEdit();
-    toast("Caso actualizado", "ok");
-  }).catch(function(err) {
-    console.error(err);
-    toast("Error al guardar", "red");
-  }).finally(function() {
-    btn.disabled = false; btn.textContent = "Guardar cambios";
+  pedirPasswordConfirm("Ingresa la contraseña para guardar cambios:", function(){
+    var btn = document.getElementById("edit-btn-save");
+    btn.disabled = true; btn.textContent = "Guardando...";
+    var updated = Object.assign({}, c, {
+      type: editType,
+      tipologia: editTipo,
+      status: editStatus,
+      description: document.getElementById("edit-desc").value.trim(),
+      actions: document.getElementById("edit-actions").value.trim(),
+      acta: document.getElementById("edit-acta").value.trim(),
+      citacion: editCitacion,
+      fechaCitacion: editCitacion === "si" ? document.getElementById("edit-fecha-cit").value : "",
+      asistencia: editCitacion === "si" ? editAsistencia : ""
+    });
+    sb.from('casos').update({
+      tipo: updated.type, tipologia: updated.tipologia, status: updated.status,
+      descripcion: updated.description, acciones: updated.actions, acta_url: updated.acta,
+      citacion: updated.citacion, fecha_citacion: updated.fechaCitacion || null,
+      asistencia: updated.asistencia
+    }).eq('id', c.id).then(function(res) {
+      if (res.error) throw res.error;
+      cases[editIndex] = normalizeCase(updated);
+      renderAll();
+      closeEdit();
+      toast("Caso actualizado", "ok");
+    }).catch(function(err) {
+      console.error(err);
+      toast("Error al guardar", "red");
+    }).finally(function() {
+      btn.disabled = false; btn.textContent = "Guardar cambios";
+    });
   });
 }
 
@@ -6575,12 +6629,13 @@ function barChartColors(list, colors) {
 }
 
 function deleteQueja(idx){
-  var pwd=prompt("Ingresa la contrasena para eliminar:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  var q=quejas[idx];
-  sb.from('quejas').delete().eq('id', q.id).then(function(res){
-    if (res.error) throw res.error;
-    quejas.splice(idx,1);renderQuejas();toast("Queja eliminada","red");
-  }).catch(function(err){console.error(err);toast("Error al eliminar","red");});
+  pedirPasswordConfirm("Ingresa la contraseña para eliminar:", function(){
+    var q=quejas[idx];
+    sb.from('quejas').delete().eq('id', q.id).then(function(res){
+      if (res.error) throw res.error;
+      quejas.splice(idx,1);renderQuejas();toast("Queja eliminada","red");
+    }).catch(function(err){console.error(err);toast("Error al eliminar","red");});
+  });
 }
 
 // ============================================================
@@ -6775,30 +6830,31 @@ function closeEstModalDirect() {
 
 function saveEstudiante() {
   if (currentEstIndex < 0) return;
-  var pwd=prompt("Ingresa la contrasena para guardar cambios:"); if(pwd!==DELETE_PWD){toast("Contrasena incorrecta","red");return;}
-  var s = studentsData[currentEstIndex];
-  var updated = Object.assign({}, s, {
-    acudiente: document.getElementById('est-edit-acudiente').value.trim(),
-    telefono: document.getElementById('est-edit-telefono').value.trim(),
-    correo: document.getElementById('est-edit-correo').value.trim(),
-    direccion: document.getElementById('est-edit-direccion').value.trim(),
-    documento: document.getElementById('est-edit-documento').value.trim(),
-    edited: true
-  });
-  var btn = document.getElementById('est-save-btn');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  sb.from('estudiantes').update({
-    acudiente: updated.acudiente, telefono: updated.telefono, correo: updated.correo,
-    direccion: updated.direccion, documento: updated.documento
-  }).eq('id', s.id).then(function(res) {
-    if (res.error) { toast('Error al guardar', 'red'); return; }
-    studentsData[currentEstIndex] = updated;
-    sbEstudiantes = studentsData;
-    closeEstModalDirect();
-    renderEstudiantes();
-    toast('Datos actualizados', 'ok');
-  }).finally(function() {
-    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+  pedirPasswordConfirm("Ingresa la contraseña para guardar cambios:", function(){
+    var s = studentsData[currentEstIndex];
+    var updated = Object.assign({}, s, {
+      acudiente: document.getElementById('est-edit-acudiente').value.trim(),
+      telefono: document.getElementById('est-edit-telefono').value.trim(),
+      correo: document.getElementById('est-edit-correo').value.trim(),
+      direccion: document.getElementById('est-edit-direccion').value.trim(),
+      documento: document.getElementById('est-edit-documento').value.trim(),
+      edited: true
+    });
+    var btn = document.getElementById('est-save-btn');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    sb.from('estudiantes').update({
+      acudiente: updated.acudiente, telefono: updated.telefono, correo: updated.correo,
+      direccion: updated.direccion, documento: updated.documento
+    }).eq('id', s.id).then(function(res) {
+      if (res.error) { toast('Error al guardar', 'red'); return; }
+      studentsData[currentEstIndex] = updated;
+      sbEstudiantes = studentsData;
+      closeEstModalDirect();
+      renderEstudiantes();
+      toast('Datos actualizados', 'ok');
+    }).finally(function() {
+      btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+    });
   });
 }
 // ============================================================
@@ -7308,32 +7364,29 @@ function guardarEdicionHistorialAcademico() {
   if (!haEditMomento) { document.getElementById('ha-edit-ferr-momento').textContent = 'Selecciona corte o final'; ok = false; }
   if (!nota) { document.getElementById('ha-edit-ferr-nota').textContent = 'Ingresa la nota'; ok = false; }
   if (!ok) return;
-  var pwd = prompt('Ingresa la contrasena para guardar los cambios:');
-  if (pwd === null) return;
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  var btn = document.getElementById('ha-edit-btn-submit');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  sb.from('historial_academico').update({
-    periodo: haEditPeriodo, asignatura: asignatura, momento: haEditMomento, nota: nota
-  }).eq('id', haEditCurrent).select().then(function(res) {
-    if (res.error) throw res.error;
-    if (!res.data || !res.data.length) { toast('No se pudo guardar (permiso en Supabase)', 'red'); return; }
-    toast('Historial academico actualizado', 'ok');
-    closeHaEditModal();
-    loadHistorialAcademico(currentEstNombre);
-  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
-  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar cambios'; });
+  pedirPasswordConfirm('Ingresa la contraseña para guardar los cambios:', function(){
+    var btn = document.getElementById('ha-edit-btn-submit');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    sb.from('historial_academico').update({
+      periodo: haEditPeriodo, asignatura: asignatura, momento: haEditMomento, nota: nota
+    }).eq('id', haEditCurrent).select().then(function(res) {
+      if (res.error) throw res.error;
+      if (!res.data || !res.data.length) { toast('No se pudo guardar (permiso en Supabase)', 'red'); return; }
+      toast('Historial academico actualizado', 'ok');
+      closeHaEditModal();
+      loadHistorialAcademico(currentEstNombre);
+    }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
+    .finally(function() { btn.disabled = false; btn.textContent = 'Guardar cambios'; });
+  });
 }
 function eliminarHistorialAcademico(id) {
-  if (!confirm('¿Eliminar este registro de historial academico?\nEsta accion no se puede deshacer.')) return;
-  var pwd = prompt('Ingresa la contrasena para eliminar:');
-  if (pwd === null) return;
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
+  pedirPasswordConfirm('¿Eliminar este registro de historial académico?\nEsta acción no se puede deshacer.', function(){
   sb.from('historial_academico').delete().eq('id', id).select().then(function(res) {
     if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
     if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
     toast('Registro eliminado', 'red');
     loadHistorialAcademico(currentEstNombre);
+  });
   });
 }
 
@@ -7352,12 +7405,12 @@ function renderAnotaciones(el, data) {
   el.innerHTML = html;
 }
 function eliminarAnotacion(id) {
-  var pwd = prompt('Ingresa la contrasena para eliminar:');
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('anotaciones').delete().eq('id', id).then(function(res) {
-    if (res.error) { toast('Error al eliminar', 'red'); return; }
-    toast('Anotacion eliminada', 'red');
-    loadAnotaciones(currentEstNombre);
+  pedirPasswordConfirm('Ingresa la contraseña para eliminar:', function(){
+    sb.from('anotaciones').delete().eq('id', id).then(function(res) {
+      if (res.error) { toast('Error al eliminar', 'red'); return; }
+      toast('Anotacion eliminada', 'red');
+      loadAnotaciones(currentEstNombre);
+    });
   });
 }
 function loadAnotaciones(nombre) {
@@ -7438,37 +7491,35 @@ function loadLlegadasTarde(nombre, grado) {
 }
 
 function eliminarLlegadaTarde(id, fechaLabel) {
-  if (!confirm('¿Eliminar la llegada tarde del ' + fechaLabel + '?\nEsta accion no se puede deshacer.')) return;
-  var pwd = prompt('Ingresa la contrasena para eliminar:');
-  if (pwd === null) return;
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('llegadas_tarde_estudiantes').delete().eq('id', id).select().then(function(res) {
-    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
-    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
-    toast('Llegada tarde eliminada', 'red');
-    llegadasTardeLoaded = false;
-    loadLlegadasTarde(currentEstNombre);
+  pedirPasswordConfirm('¿Eliminar la llegada tarde del ' + fechaLabel + '?\nEsta acción no se puede deshacer.', function(){
+    sb.from('llegadas_tarde_estudiantes').delete().eq('id', id).select().then(function(res) {
+      if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+      if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+      toast('Llegada tarde eliminada', 'red');
+      llegadasTardeLoaded = false;
+      loadLlegadasTarde(currentEstNombre);
+    });
   });
 }
 
 function eliminarCompromiso(id) {
-  var pwd = prompt('Contrasena para eliminar:');
-  if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('compromisos').delete().eq('id', id).then(function(res) {
-    if (res.error) throw res.error;
-    toast('Compromiso eliminado', 'red');
-    loadCompromisos(currentEstNombre);
-  }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  pedirPasswordConfirm('Ingresa la contraseña para eliminar:', function(){
+    sb.from('compromisos').delete().eq('id', id).then(function(res) {
+      if (res.error) throw res.error;
+      toast('Compromiso eliminado', 'red');
+      loadCompromisos(currentEstNombre);
+    }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  });
 }
 
 function eliminarRegistro(id, tipo, elId) {
-  var pwd = prompt('Contrasena para eliminar:');
-  if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('registros').delete().eq('id', id).then(function(res) {
-    if (res.error) throw res.error;
-    toast('Registro eliminado', 'red');
-    loadRegistros(tipo, currentEstNombre, elId);
-  }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  pedirPasswordConfirm('Ingresa la contraseña para eliminar:', function(){
+    sb.from('registros').delete().eq('id', id).then(function(res) {
+      if (res.error) throw res.error;
+      toast('Registro eliminado', 'red');
+      loadRegistros(tipo, currentEstNombre, elId);
+    }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  });
 }
 
 // ============================================================
@@ -7621,31 +7672,30 @@ function guardarEdicionRevisionLibro() {
   if (actual === '') { document.getElementById('rl-edit-ferr-actual').textContent = 'Ingresa la pagina actual'; ok = false; }
   if (!ok) return;
   if (teacher === 'Otro docente') teacher = document.getElementById('rl-edit-teacher-other').value.trim() || 'Otro docente';
-  var pwd = prompt('Ingresa la contrasena para guardar los cambios:');
-  if (pwd === null) return;
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  var btn = document.getElementById('rl-edit-btn-submit');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  sb.from('revision_libros').update({
-    docente: teacher, asignatura: asignatura, fecha: fecha,
-    total_paginas: total, pagina_actual: actual
-  }).eq('id', rlEditCurrent.id).select().then(function(res) {
-    if (res.error) throw res.error;
-    if (!res.data || !res.data.length) { toast('No se pudo guardar (permiso en Supabase)', 'red'); return; }
-    toast('Revision actualizada', 'ok');
-    closeRlEditModal();
-    loadRevisionLibros();
-  }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
-  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar cambios'; });
+  pedirPasswordConfirm('Ingresa la contraseña para guardar los cambios:', function(){
+    var btn = document.getElementById('rl-edit-btn-submit');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    sb.from('revision_libros').update({
+      docente: teacher, asignatura: asignatura, fecha: fecha,
+      total_paginas: total, pagina_actual: actual
+    }).eq('id', rlEditCurrent.id).select().then(function(res) {
+      if (res.error) throw res.error;
+      if (!res.data || !res.data.length) { toast('No se pudo guardar (permiso en Supabase)', 'red'); return; }
+      toast('Revision actualizada', 'ok');
+      closeRlEditModal();
+      loadRevisionLibros();
+    }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
+    .finally(function() { btn.disabled = false; btn.textContent = 'Guardar cambios'; });
+  });
 }
 function eliminarRevisionLibro(id) {
-  var pwd = prompt('Contrasena para eliminar:');
-  if (pwd !== 'Dilia123') { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('revision_libros').delete().eq('id', id).then(function(res) {
-    if (res.error) throw res.error;
-    toast('Revision eliminada', 'red');
-    loadRevisionLibros();
-  }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  pedirPasswordConfirm('Ingresa la contraseña para eliminar:', function(){
+    sb.from('revision_libros').delete().eq('id', id).then(function(res) {
+      if (res.error) throw res.error;
+      toast('Revision eliminada', 'red');
+      loadRevisionLibros();
+    }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  });
 }
 // ============================================================
 // FICHA DOCENTE
@@ -7867,17 +7917,15 @@ function toggleLlTardeSel(id, checked) {
 function eliminarLlTardeSeleccionadas() {
   var ids = Object.keys(llTardeSel);
   if (!ids.length || !fichaDocenteActual) return;
-  if (!confirm('¿Eliminar ' + ids.length + ' registro' + (ids.length!==1?'s':'') + ' de ingreso seleccionado' + (ids.length!==1?'s':'') + '?\nEsta accion no se puede deshacer.')) return;
-  var pwd = prompt('Ingresa la contrasena para eliminar:');
-  if (pwd === null) return;
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  var btn = document.getElementById('df-llegadas-del-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Eliminando...'; }
-  sb.from('asistencia_personal').delete().in('id', ids).select().then(function(res) {
-    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
-    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
-    toast(res.data.length + ' registro' + (res.data.length!==1?'s':'') + ' eliminado' + (res.data.length!==1?'s':''), 'red');
-    if (fichaDocenteActual) loadFichaLlegadasTarde(fichaDocenteActual);
+  pedirPasswordConfirm('¿Eliminar ' + ids.length + ' registro' + (ids.length!==1?'s':'') + ' de ingreso seleccionado' + (ids.length!==1?'s':'') + '?\nEsta acción no se puede deshacer.', function(){
+    var btn = document.getElementById('df-llegadas-del-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Eliminando...'; }
+    sb.from('asistencia_personal').delete().in('id', ids).select().then(function(res) {
+      if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+      if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+      toast(res.data.length + ' registro' + (res.data.length!==1?'s':'') + ' eliminado' + (res.data.length!==1?'s':''), 'red');
+      if (fichaDocenteActual) loadFichaLlegadasTarde(fichaDocenteActual);
+    });
   });
 }
 function loadFichaPermisos(d) {
@@ -8351,15 +8399,13 @@ function loadInformesAsignatura(nombre) {
   });
 }
 function eliminarInformeAsignatura(id) {
-  if (!confirm('¿Eliminar este informe?\nEsta accion no se puede deshacer.')) return;
-  var pwd = prompt('Ingresa la contrasena para eliminar:');
-  if (pwd === null) return;
-  if (pwd !== DELETE_PWD) { toast('Contrasena incorrecta', 'red'); return; }
-  sb.from('informes_asignatura').delete().eq('id', id).select().then(function(res) {
-    if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
-    if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
-    toast('Informe eliminado', 'red');
-    loadInformesAsignatura(currentEstNombre);
+  pedirPasswordConfirm('¿Eliminar este informe?\nEsta acción no se puede deshacer.', function(){
+    sb.from('informes_asignatura').delete().eq('id', id).select().then(function(res) {
+      if (res.error) { console.error(res.error); toast('Error al eliminar', 'red'); return; }
+      if (!res.data || !res.data.length) { toast('No se pudo eliminar (permiso de borrado en Supabase)', 'red'); return; }
+      toast('Informe eliminado', 'red');
+      loadInformesAsignatura(currentEstNombre);
+    });
   });
 }
 
