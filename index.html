@@ -105,6 +105,11 @@ textarea{resize:vertical;min-height:90px;}
 .detail-block{background:var(--gray-bg);border-radius:10px;padding:14px;font-size:0.92rem;line-height:1.65;color:#334155;}
 .detail-block.gr{background:#F0FDF4;}
 .slbl{font-size:0.72rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;}
+.marca{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:0.72rem;letter-spacing:0.05em;padding:4px 10px;border-radius:6px;text-transform:uppercase;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.marca-inc{background:#FACC15;color:#1E293B;border:2px solid #CA8A04;}
+.marca-ccd{background:#DC2626;color:#fff;border:2px solid #991B1B;}
+.marca-lg{font-size:0.88rem;padding:8px 14px;border-radius:8px;}
+.marcas-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 .hist-title-badge{display:inline-block;background:var(--blue);color:#fff;border:2px solid var(--amber);border-radius:8px;padding:6px 14px;font-size:0.74rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
 .empty{text-align:center;padding:50px 20px;color:#94A3B8;}
 .empty-icon{font-size:3rem;margin-bottom:12px;}
@@ -238,6 +243,7 @@ body.docente-mode .admin-only{display:none !important;}
     <div class="side-group-label">Registros</div>
     <button class="nav-tab" onclick="showPage('nuevo-registro')">📝 Registro</button>
     <button class="nav-tab" onclick="showPage('asignaturas-perdidas')">📉 Asignaturas perdidas</button>
+    <button class="nav-tab" onclick="showPage('marcas-estudiantes')">🏷️ Marcas de estudiantes</button>
     <button class="nav-tab" onclick="showPage('permisos-general')">🗂️ Permisos en general</button>
     <button class="nav-tab" onclick="showPage('solicitudes-jornada')">🔄 Solicitudes jornada</button>
     <div class="side-group-label">Sistema</div>
@@ -935,6 +941,7 @@ body.docente-mode .admin-only{display:none !important;}
       <div>
         <div class="serif" id="est-modal-nombre" style="font-size:1.2rem;color:var(--navy);font-weight:700;margin-bottom:4px"></div>
         <div id="est-modal-grado" style="font-size:0.85rem;color:var(--gray);margin-bottom:20px"></div>
+        <div id="est-modal-marcas" style="margin:-12px 0 18px"></div>
       </div>
       <button class="btn btn-ghost" onclick="exportStudentPDF()" style="white-space:nowrap">📄 Exportar en PDF</button>
     </div>
@@ -1418,6 +1425,47 @@ body.docente-mode .admin-only{display:none !important;}
     <div class="slbl" style="margin-bottom:12px">Guardados en esta sesion</div>
     <div id="ap-sesion-list" style="display:flex;flex-direction:column;gap:8px"><div style="font-size:0.85rem;color:var(--gray)">Aun no has guardado ninguno en esta sesion.</div></div>
   </div>
+</div>
+
+<!-- MARCAS DE ESTUDIANTES (educacion inclusiva / reportado a CCD) -->
+<div class="page" id="page-marcas-estudiantes">
+  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Marcas de estudiantes</div>
+  <div style="font-size:0.85rem;color:var(--gray)">Elige el tipo de marca y el estudiante. El letrero aparece en su hoja, en la lista de estudiantes y en sus casos.</div>
+
+  <div class="card form-section" style="margin-top:16px">
+    <div class="field">
+      <label class="lbl">Tipo de marca</label>
+      <div class="type-grid">
+        <button class="type-btn sel" id="mk-tipo-inclusion" onclick="selMkTipo('inclusion')">♿ Educación inclusiva</button>
+        <button class="type-btn" id="mk-tipo-ccd" onclick="selMkTipo('ccd')">⚠ Reportado a CCD</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:160px">
+        <label class="lbl">Jornada</label>
+        <select id="mk-jornada" onchange="mkUpdateGrados()">
+          <option value="">Seleccionar jornada...</option>
+          <option value="Manana">Mañana</option>
+          <option value="Tarde">Tarde</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1;min-width:160px">
+        <label class="lbl">Grado</label>
+        <select id="mk-grado" onchange="mkUpdateEstudiantes()" disabled>
+          <option value="">Primero selecciona jornada...</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="lbl">Estudiante</label>
+      <select id="mk-estudiante" disabled>
+        <option value="">Primero selecciona grado...</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="mk-btn" onclick="marcarDesdePagina()" style="width:100%;padding:14px">Marcar estudiante</button>
+  </div>
+
+  <div id="mk-listas" style="margin-top:22px"></div>
 </div>
 
 <!-- SOLICITUDES CAMBIO DE JORNADA -->
@@ -5448,7 +5496,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","asignaturas-perdidas","permisos-general","solicitudes-jornada","config"];
+  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","asignaturas-perdidas","marcas-estudiantes","permisos-general","solicitudes-jornada","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -5461,6 +5509,7 @@ function showPage(name) {
   if(name==="estudiantes") renderEstudiantes();
   if(name==="nuevo-registro") initNuevoRegistro();
   if(name==="asignaturas-perdidas") initApRapido();
+  if(name==="marcas-estudiantes") initMarcas();
   if(name==="permisos-general") loadPermisosGeneral();
   if(name==="solicitudes-jornada") loadSolicitudesJornadaPage();
   window.scrollTo(0,0);
@@ -5640,7 +5689,7 @@ function renderCases(){
 function buildCard(c,idx){
   var div=document.createElement("div"); div.className="case-card "+c.type;
   var sn=c.description.length>90?c.description.slice(0,90)+"...":c.description;
-  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy);font-size:1rem">'+c.studentName+"</div>"+stag(c.status)+"</div>"+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.grade+"</span>"+(c.jornada?'<span class="tag tag-gray">'+c.jornada+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:8px">'+fmtD(c.date)+(c.teacher?" - "+c.teacher:"")+(c.asignatura?" - "+c.asignatura:"")+"</div>"+'<div style="font-size:0.85rem;color:#475569;margin-top:6px;line-height:1.5">'+sn+"</div>";
+  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy);font-size:1rem">'+c.studentName+"</div>"+stag(c.status)+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.grade+"</span>"+(c.jornada?'<span class="tag tag-gray">'+c.jornada+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:8px">'+fmtD(c.date)+(c.teacher?" - "+c.teacher:"")+(c.asignatura?" - "+c.asignatura:"")+"</div>"+'<div style="font-size:0.85rem;color:#475569;margin-top:6px;line-height:1.5">'+sn+"</div>";
   div.addEventListener("click",function(){openModal(idx);}); return div;
 }
 function fmtD(iso){
@@ -5663,7 +5712,7 @@ function openModal(idx){
   var bc=c.type==="convivencia"?"var(--red)":"var(--blue)";
   var citHtml="";
   if(c.citacion){citHtml='<div><div class="slbl">Citacion al acudiente</div><div class="detail-block">'+(c.citacion==="si"?"Si fue citado":"No fue citado")+(c.citacion==="si"&&c.fechaCitacion?"<br>Fecha: "+c.fechaCitacion:"")+(c.citacion==="si"&&c.asistencia?"<br>"+(c.asistencia==="asistio"?"Asistio":"No asistio"):"")+"</div></div>";}
-  document.getElementById("modal-body").innerHTML='<div style="border-top:4px solid '+bc+';border-radius:8px;padding-top:16px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">'+c.studentName+"</div>"+'<div style="color:var(--gray);font-size:0.85rem;margin-top:3px">'+c.grade+(c.jornada?" - "+c.jornada:"")+" - "+fmtD(c.date)+"</div></div>"+stag(c.status)+"</div>"+'<div class="tags" style="margin-top:14px;margin-bottom:20px">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.teacher+"</span>"+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="display:flex;flex-direction:column;gap:16px"><div><div class="slbl">Descripcion</div><div class="detail-block">'+c.description+"</div></div>"+(c.actions?'<div><div class="slbl">Acciones</div><div class="detail-block gr">'+c.actions+"</div></div>":"")+citHtml+"</div>"+'<div class="btn-row" style="margin-top:24px"><button class="btn '+(c.status==="abierto"?"btn-green":"btn-amber")+'" id="m-status-btn" onclick="toggleStatus()">'+(c.status==="abierto"?"Marcar resuelto":"Reabrir caso")+"</button>"+'<button class="btn btn-ghost" onclick="openEditModal('+idx+')">Editar</button></div>'
+  document.getElementById("modal-body").innerHTML='<div style="border-top:4px solid '+bc+';border-radius:8px;padding-top:16px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">'+c.studentName+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div style="color:var(--gray);font-size:0.85rem;margin-top:3px">'+c.grade+(c.jornada?" - "+c.jornada:"")+" - "+fmtD(c.date)+"</div></div>"+stag(c.status)+"</div>"+'<div class="tags" style="margin-top:14px;margin-bottom:20px">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.teacher+"</span>"+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="display:flex;flex-direction:column;gap:16px"><div><div class="slbl">Descripcion</div><div class="detail-block">'+c.description+"</div></div>"+(c.actions?'<div><div class="slbl">Acciones</div><div class="detail-block gr">'+c.actions+"</div></div>":"")+citHtml+"</div>"+'<div class="btn-row" style="margin-top:24px"><button class="btn '+(c.status==="abierto"?"btn-green":"btn-amber")+'" id="m-status-btn" onclick="toggleStatus()">'+(c.status==="abierto"?"Marcar resuelto":"Reabrir caso")+"</button>"+'<button class="btn btn-ghost" onclick="openEditModal('+idx+')">Editar</button></div>'
     +'</div>';
   document.getElementById("modal-overlay").classList.add("open"); document.body.style.overflow="hidden";
 }
@@ -5809,7 +5858,7 @@ function renderDirector(){
   html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Citaciones a acudientes</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center"><div style="background:var(--gray-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--navy)">'+citados+'</div><div style="font-size:0.72rem;color:var(--gray)">Citados</div></div><div style="background:var(--green-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--green-dark)">'+asistieron+'</div><div style="font-size:0.72rem;color:var(--green-dark)">Asistieron</div></div><div style="background:var(--red-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--red-dark)">'+noAsistieron+'</div><div style="font-size:0.72rem;color:var(--red-dark)">No asistieron</div></div></div></div>';
   html+=ltHtml;
   html+='<div><div class="slbl" style="margin-bottom:12px">Todos los casos</div><div style="display:flex;flex-direction:column;gap:10px">';
-  gc.forEach(function(c){var idx=cases.indexOf(c);var sn=c.description.length>80?c.description.slice(0,80)+"...":c.description;html+='<div class="case-card '+c.type+'" onclick="openModal('+idx+')"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+c.studentName+"</div>"+stag(c.status)+"</div>"+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">'+fmtD(c.date)+" - "+c.teacher+"</div>"+'<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">'+sn+"</div></div>";});
+  gc.forEach(function(c){var idx=cases.indexOf(c);var sn=c.description.length>80?c.description.slice(0,80)+"...":c.description;html+='<div class="case-card '+c.type+'" onclick="openModal('+idx+')"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+c.studentName+"</div>"+stag(c.status)+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">'+fmtD(c.date)+" - "+c.teacher+"</div>"+'<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">'+sn+"</div></div>";});
   html+="</div></div>"; el.innerHTML=html;
 }
 
@@ -6656,6 +6705,7 @@ function initEstudiantes() {
     rebuildStudentsRoster();
     sbEstudiantes = studentsData;
     renderEstudiantes();
+    loadMarcasEstudiantes();
   }).catch(function(err) { console.error(err); toast('Error cargando estudiantes', 'red'); renderEstudiantes(); });
 }
 
@@ -6695,7 +6745,7 @@ function renderEstudiantes() {
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
         '<div style="font-weight:700;color:var(--navy);font-size:0.95rem">' + s.nombre + '</div>' +
         '<span class="tag ' + (hasContact ? 'tag-green' : 'tag-gray') + '">' + s.grado + '</span>' +
-      '</div>' +
+      '</div>' + marcaBadgesHTML(s.id) +
       '<div class="tags" style="margin-top:6px">' +
         '<span class="tag tag-gray">' + s.jornada + '</span>' +
         (s.acudiente ? '<span class="tag tag-gray">' + s.acudiente + '</span>' : '') +
@@ -6719,6 +6769,7 @@ function openEstModal(s) {
   currentEstIndex = studentsData.indexOf(s);
   document.getElementById('est-modal-nombre').textContent = s.nombre;
   document.getElementById('est-modal-grado').textContent = s.grado + ' · ' + s.jornada;
+  renderMarcasHoja(s);
   document.getElementById('est-edit-acudiente').value = s.acudiente || '';
   document.getElementById('est-edit-telefono').value = s.telefono || '';
   document.getElementById('est-edit-correo').value = s.correo || '';
@@ -8485,7 +8536,150 @@ function selNRMomento(m) {
   document.getElementById('nr-ha-mom-final').className = 'type-btn' + (m==='final'?' sel':'');
   document.getElementById('nr-ha-ferr-momento').textContent = '';
 }
+// ============================================================
+// MARCAS DE ESTUDIANTES: 'inclusion' (amarillo) y 'ccd' (rojo)
+// ============================================================
+var marcasMap = {};   // estudiante_id -> {inclusion:true, ccd:true}
+var MARCA_ETIQUETAS = { inclusion: '♿ Educación inclusiva', ccd: '⚠ Reportado a CCD' };
+function loadMarcasEstudiantes() {
+  // En el acceso de docentes no se cargan: es informacion sensible.
+  if (document.body.classList.contains('docente-mode')) return;
+  sb.from('marcas_estudiante').select('estudiante_id,tipo').then(function(res) {
+    if (res.error) { console.warn('marcas_estudiante:', res.error.message); return; }
+    marcasMap = {};
+    (res.data || []).forEach(function(m) {
+      if (!marcasMap[m.estudiante_id]) marcasMap[m.estudiante_id] = {};
+      marcasMap[m.estudiante_id][m.tipo] = true;
+    });
+    renderCases(); renderEstudiantes();
+  }).catch(function(err) { console.warn(err); });
+}
+function marcasDe(estId) { return marcasMap[estId] || {}; }
+function marcaBadgesHTML(estId, grande) {
+  var m = marcasDe(estId); var h = '';
+  var cls = grande ? ' marca-lg' : '';
+  if (m.inclusion) h += '<span class="marca marca-inc' + cls + '">♿ EDUCACIÓN INCLUSIVA</span>';
+  if (m.ccd) h += '<span class="marca marca-ccd' + cls + '">⚠ REPORTADO A CCD</span>';
+  return h ? '<div class="marcas-wrap admin-only">' + h + '</div>' : '';
+}
+function marcaBadgesPorNombre(nombre, grado) {
+  if (!Object.keys(marcasMap).length) return '';
+  var id = resolveEstudianteId(nombre, grado);
+  return id ? marcaBadgesHTML(id) : '';
+}
+function renderMarcasHoja(s) {
+  var el = document.getElementById('est-modal-marcas');
+  if (!el || !s) return;
+  var m = marcasDe(s.id);
+  el.innerHTML = marcaBadgesHTML(s.id, true) +
+    '<div class="admin-only" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+      '<button class="btn btn-ghost" style="padding:6px 12px;font-size:0.76rem" onclick="toggleMarca(\'' + s.id + '\',\'inclusion\')">' + (m.inclusion ? 'Quitar' : 'Marcar') + ' Educación inclusiva</button>' +
+      '<button class="btn btn-ghost" style="padding:6px 12px;font-size:0.76rem" onclick="toggleMarca(\'' + s.id + '\',\'ccd\')">' + (m.ccd ? 'Quitar' : 'Marcar') + ' Reportado a CCD</button>' +
+    '</div>';
+}
+function toggleMarca(estId, tipo) {
+  if (marcasDe(estId)[tipo]) {
+    pedirPasswordConfirm('¿Quitar la marca "' + MARCA_ETIQUETAS[tipo] + '" a este estudiante?', function() { quitarMarca(estId, tipo); });
+  } else {
+    ponerMarca(estId, tipo);
+  }
+}
+function ponerMarca(estId, tipo, cb) {
+  sb.from('marcas_estudiante').insert({ estudiante_id: estId, tipo: tipo }).then(function(res) {
+    if (res.error) {
+      console.error(res.error);
+      if (String(res.error.code) === '23505') toast('Ese estudiante ya tiene esa marca', 'red');
+      else if (String(res.error.code) === '42P01') toast('Falta crear la tabla marcas_estudiante en Supabase', 'red');
+      else toast('Error al marcar', 'red');
+      return;
+    }
+    if (!marcasMap[estId]) marcasMap[estId] = {};
+    marcasMap[estId][tipo] = true;
+    refrescarMarcasUI();
+    toast('Marca agregada: ' + MARCA_ETIQUETAS[tipo], 'ok');
+    if (cb) cb();
+  });
+}
+function quitarMarca(estId, tipo) {
+  sb.from('marcas_estudiante').delete().eq('estudiante_id', estId).eq('tipo', tipo).select().then(function(res) {
+    if (res.error) { console.error(res.error); toast('Error al quitar la marca', 'red'); return; }
+    if (!res.data || !res.data.length) { toast('No se pudo quitar (permiso de borrado en Supabase)', 'red'); return; }
+    if (marcasMap[estId]) delete marcasMap[estId][tipo];
+    refrescarMarcasUI();
+    toast('Marca quitada', 'red');
+  });
+}
+function refrescarMarcasUI() {
+  renderCases(); renderEstudiantes(); renderMarcasLista();
+  var ov = document.getElementById('est-modal-overlay');
+  if (ov && getComputedStyle(ov).display !== 'none' && currentEstIndex >= 0) renderMarcasHoja(studentsData[currentEstIndex]);
+}
+
+// ---- Pagina "Marcas de estudiantes" ----
+var mkTipo = 'inclusion';
+function initMarcas() { rebuildStudentsRoster(); selMkTipo(mkTipo); renderMarcasLista(); }
+function selMkTipo(t) {
+  mkTipo = t;
+  document.getElementById('mk-tipo-inclusion').className = 'type-btn' + (t === 'inclusion' ? ' sel' : '');
+  document.getElementById('mk-tipo-ccd').className = 'type-btn' + (t === 'ccd' ? ' sel' : '');
+}
+function mkUpdateGrados() {
+  var j = document.getElementById('mk-jornada').value;
+  var ge = document.getElementById('mk-grado'); var se = document.getElementById('mk-estudiante');
+  ge.innerHTML = '<option value="">Seleccionar grado...</option>';
+  se.innerHTML = '<option value="">Primero selecciona grado...</option>'; se.disabled = true;
+  ge.disabled = true;
+  if (!j) return;
+  Object.keys(STUDENTS[j] || {}).sort().forEach(function(g) {
+    var o = document.createElement('option'); o.value = g; o.textContent = g; ge.appendChild(o);
+  });
+  ge.disabled = false;
+}
+function mkUpdateEstudiantes() {
+  var j = document.getElementById('mk-jornada').value; var g = document.getElementById('mk-grado').value;
+  var se = document.getElementById('mk-estudiante');
+  se.innerHTML = '<option value="">Seleccionar estudiante...</option>'; se.disabled = true;
+  if (!j || !g) return;
+  ((STUDENTS[j] || {})[g] || []).slice().sort().forEach(function(nom) {
+    var o = document.createElement('option'); o.value = nom; o.textContent = nom; se.appendChild(o);
+  });
+  se.disabled = false;
+}
+function marcarDesdePagina() {
+  var g = document.getElementById('mk-grado').value;
+  var nom = document.getElementById('mk-estudiante').value;
+  if (!g || !nom) { toast('Selecciona grado y estudiante', 'red'); return; }
+  var estId = resolveEstudianteId(nom, g);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  if (marcasDe(estId)[mkTipo]) { toast('Ese estudiante ya tiene esa marca', 'red'); return; }
+  ponerMarca(estId, mkTipo, function() { document.getElementById('mk-estudiante').value = ''; });
+}
+function renderMarcasLista() {
+  var el = document.getElementById('mk-listas');
+  if (!el) return;
+  var html = '';
+  ['inclusion', 'ccd'].forEach(function(tipo) {
+    var lista = studentsData.filter(function(s) { return marcasDe(s.id)[tipo]; })
+      .sort(function(a, b) { return (a.grado + a.nombre).localeCompare(b.grado + b.nombre); });
+    html += '<div style="margin-bottom:22px">' +
+      '<span class="marca ' + (tipo === 'inclusion' ? 'marca-inc' : 'marca-ccd') + ' marca-lg">' +
+        (tipo === 'inclusion' ? '♿ EDUCACIÓN INCLUSIVA' : '⚠ REPORTADO A CCD') + ' (' + lista.length + ')</span>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">';
+    if (!lista.length) html += '<div style="font-size:0.85rem;color:var(--gray)">Ningún estudiante marcado.</div>';
+    lista.forEach(function(s) {
+      html += '<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+        '<div><div style="font-weight:700;color:var(--navy);font-size:0.9rem">' + s.nombre + '</div>' +
+        '<div style="font-size:0.78rem;color:var(--gray)">' + s.grado + ' · ' + s.jornada + '</div></div>' +
+        '<span class="admin-only" onclick="toggleMarca(\'' + s.id + '\',\'' + tipo + '\')" style="cursor:pointer;color:var(--red);font-size:0.78rem;font-weight:600">Quitar</span>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
 var apPeriodo = '';
+
 var apMomento = '';
 var apSesion = [];
 function initApRapido() {
