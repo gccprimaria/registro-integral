@@ -281,6 +281,10 @@ body.docente-mode .admin-only{display:none !important;}
     <div class="stat-card grad-amber"><div class="stat-icon">🎯</div><div class="stat-num" id="s-comp-acad">0</div><div class="stat-label">Compromisos academicos</div></div>
     <div class="stat-card grad-green"><div class="stat-icon">🛡️</div><div class="stat-num" id="s-comp-disc">0</div><div class="stat-label">Compromisos disciplinarios</div></div>
     <div class="stat-card grad-navy"><div class="stat-icon">🗣️</div><div class="stat-num" id="s-quejas">0</div><div class="stat-label">Quejas a docentes</div></div>
+    <div class="stat-card grad-blue"><div class="stat-icon">📨</div><div class="stat-num" id="s-cit-acud">0</div><div class="stat-label">Citaciones a acudientes</div></div>
+    <div class="stat-card grad-green"><div class="stat-icon">🌱</div><div class="stat-num" id="s-reparacion">0</div><div class="stat-label">Actividades de reparación</div></div>
+    <div class="stat-card grad-red"><div class="stat-icon">⛔</div><div class="stat-num" id="s-suspension">0</div><div class="stat-label">Suspensiones</div></div>
+    <div class="stat-card grad-amber"><div class="stat-icon">🔄</div><div class="stat-num" id="s-sol-jornada">0</div><div class="stat-label">Solicitudes cambio de jornada</div></div>
   </div>
   <div class="card">
     <div class="slbl" style="margin-bottom:14px">Citaciones por grado</div>
@@ -5922,6 +5926,19 @@ function loadPanelExtras(){
     var elQ = document.getElementById('s-quejas');
     if (elQ) elQ.textContent = (res && typeof res.count === 'number') ? res.count : 0;
   }).catch(function(){});
+  // Totales de registros y solicitudes de jornada (solo el conteo, sin traer las filas)
+  var contar = function(tabla, tipo, elId) {
+    var q = sb.from(tabla).select('*', {count:'exact', head:true});
+    if (tipo) q = q.eq('tipo', tipo);
+    q.then(function(res){
+      var el = document.getElementById(elId);
+      if (el) el.textContent = (res && typeof res.count === 'number') ? res.count : 0;
+    }).catch(function(){});
+  };
+  contar('registros', 'citacion', 's-cit-acud');
+  contar('registros', 'reparacion', 's-reparacion');
+  contar('registros', 'suspension', 's-suspension');
+  contar('solicitudes_jornada', null, 's-sol-jornada');
 }
 
 function renderPanelExtras(){
