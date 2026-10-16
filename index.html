@@ -23,20 +23,20 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min
 .serif{font-family:'Playfair Display',Georgia,serif;}
 ::selection{background:var(--blue);color:white;}
 :focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;}
-nav{background:var(--white);position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);display:flex;flex-direction:column;z-index:100;border-right:1px solid var(--gray-light);}
-.nav-top{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:26px 22px 18px;border-bottom:1px solid var(--gray-light);flex-shrink:0;}
+nav{background:var(--navy);position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);display:flex;flex-direction:column;z-index:100;border-right:1px solid rgba(255,255,255,0.08);}
+.nav-top{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:26px 22px 18px;border-bottom:1px solid rgba(255,255,255,0.12);flex-shrink:0;}
 .brand-row{display:flex;align-items:center;gap:11px;}
 .brand-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--amber) 0%,#FBBF24 100%);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:800;color:var(--navy);font-size:1rem;flex-shrink:0;box-shadow:0 4px 12px rgba(245,158,11,0.28);}
-.nav-title h1{color:var(--navy);font-size:1rem;font-weight:800;font-family:'Playfair Display',serif;line-height:1.2;}
-.nav-title p{font-size:0.64rem;color:var(--gray);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
+.nav-title h1{color:#fff;font-size:1rem;font-weight:800;font-family:'Playfair Display',serif;line-height:1.2;}
+.nav-title p{font-size:0.64rem;color:#A9BDD2;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
 .badge{background:var(--amber);color:var(--navy);font-weight:700;font-size:0.75rem;padding:5px 13px;border-radius:20px;}
 .nav-tabs{display:flex;flex-direction:column;gap:2px;padding:14px 14px 20px;overflow-y:auto;overflow-x:hidden;flex:1;scrollbar-width:thin;}
 .nav-tabs::-webkit-scrollbar{width:5px;}
-.nav-tabs::-webkit-scrollbar-thumb{background:var(--gray-light);border-radius:4px;}
-.side-group-label{font-size:0.66rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.09em;padding:16px 12px 6px;}
-.nav-tab{display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:10px 13px;border-radius:10px;font-size:0.84rem;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--gray);white-space:nowrap;transition:all 0.15s;text-align:left;width:100%;}
-.nav-tab:hover{background:var(--gray-bg);color:var(--navy);}
-.nav-tab.active{background:var(--blue-bg);color:var(--blue-dark);}
+.nav-tabs::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.25);border-radius:4px;}
+.side-group-label{font-size:0.66rem;font-weight:700;color:#9FB6CE;text-transform:uppercase;letter-spacing:0.09em;padding:16px 12px 6px;}
+.nav-tab{display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:10px 13px;border-radius:10px;font-size:0.84rem;font-weight:600;font-family:'DM Sans',sans-serif;color:#fff;white-space:nowrap;transition:all 0.15s;text-align:left;width:100%;}
+.nav-tab:hover{background:rgba(255,255,255,0.10);color:#fff;}
+.nav-tab.active{background:rgba(255,255,255,0.18);color:#fff;box-shadow:inset 3px 0 0 var(--amber);}
 .page{display:none;margin-left:var(--sidebar-w);max-width:1120px;padding:34px 38px 100px;}
 .page.visible{display:flex;flex-direction:column;gap:22px;animation:fadeIn 0.3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -140,13 +140,38 @@ textarea{resize:vertical;min-height:90px;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;padding:34px 22px 40px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);position:relative;}
 .modal::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:4px;background:var(--gray-light);}
-#est-modal-overlay .modal{max-width:960px;border-radius:24px;padding:30px 30px 40px;}
-#est-modal-overlay .modal::before{display:none;}
 .hist-section{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:4px;}
-@media(min-width:900px){
-  #est-modal-overlay .modal{max-width:860px;max-height:90vh;padding:34px 38px 44px;}
+/* Ficha del estudiante: ocupa todo el espacio a la derecha del menu, de borde a borde */
+#est-modal-overlay{left:var(--sidebar-w);z-index:150;background:var(--bg);padding:0;align-items:stretch;justify-content:stretch;backdrop-filter:none;}
+body.docente-mode #est-modal-overlay{left:0;}
+#est-modal-overlay .modal{max-width:none;width:100%;height:100%;max-height:none;border-radius:0;padding:0;background:var(--bg);animation:fadeIn 0.25s ease;overflow-y:auto;}
+#est-modal-overlay .modal::before{display:none;}
+.est-sticky{position:sticky;top:0;z-index:5;background:var(--white);border-bottom:1px solid var(--gray-light);box-shadow:0 4px 16px rgba(15,41,66,0.07);padding:12px 36px 0;}
+.est-head{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;}
+.est-id{flex:1;min-width:240px;}
+#est-modal-marcas:empty{display:none;}
+.est-secnav{display:flex;gap:6px;overflow-x:auto;padding:10px 0 12px;scrollbar-width:thin;}
+.est-chip{flex:0 0 auto;border:1px solid var(--gray-light);background:var(--gray-bg);color:var(--navy);border-radius:20px;padding:5px 13px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.est-chip:hover{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);}
+.est-body{padding:24px 36px 90px;display:flex;flex-direction:column;gap:18px;}
+.est-contact{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 18px;}
+#est-modal-historial{display:flex;flex-direction:column;gap:18px;}
+#est-modal-historial .hist-section, #sec-datos{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 24px;margin:0;display:grid;grid-template-columns:210px minmax(0,1fr);column-gap:28px;align-items:start;scroll-margin-top:170px;}
+#est-modal-historial .hist-section > .hist-title-badge, #sec-datos > .hist-title-badge{grid-column:1;grid-row:1 / span 12;justify-self:start;margin-bottom:0;}
+#est-modal-historial .hist-section > :not(.hist-title-badge), #sec-datos > :not(.hist-title-badge){grid-column:2;min-width:0;}
+#sec-datos > .btn{justify-self:start;margin-top:14px;}
+#est-modal-historial .hist-section > .arch-add{justify-self:start;}
+#est-modal-historial .hist-section [style*="border-left:3px"]{border-top:1px solid var(--gray-light);border-right:1px solid var(--gray-light);border-bottom:1px solid var(--gray-light);}
+@media(max-width:1180px){
+  #est-modal-historial .hist-section, #sec-datos{grid-template-columns:minmax(0,1fr);}
+  #est-modal-historial .hist-section > .hist-title-badge, #sec-datos > .hist-title-badge{grid-column:1;grid-row:auto;margin-bottom:12px;}
+  #est-modal-historial .hist-section > :not(.hist-title-badge), #sec-datos > :not(.hist-title-badge){grid-column:1;}
 }
-#est-modal-historial .hist-section{margin-bottom:22px;}
+@media(max-width:880px){
+  #est-modal-overlay{left:0;}
+  .est-sticky{padding:10px 16px 0;}
+  .est-body{padding:16px 14px 80px;}
+}
 @keyframes slideUp{from{transform:translateY(60px)}to{transform:translateY(0)}}
 .back-btn{background:none;border:none;cursor:pointer;color:var(--gray);font-size:0.88rem;font-weight:600;font-family:'DM Sans',sans-serif;padding:8px 0;display:inline-flex;align-items:center;gap:6px;}
 .pwd-overlay{display:none;position:fixed;inset:0;background:rgba(15,41,66,0.65);z-index:300;align-items:center;justify-content:center;padding:20px;}
@@ -952,46 +977,52 @@ body.docente-mode .admin-only{display:none !important;}
 
 <!-- MODAL EDITAR ESTUDIANTE -->
 <div class="modal-overlay" id="est-modal-overlay" onclick="closeEstModal(event)">
-  <div class="modal">
-    <button class="back-btn" onclick="closeEstModalDirect()" style="margin-bottom:16px">← Volver</button>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-      <div>
-        <div class="serif" id="est-modal-nombre" style="font-size:1.2rem;color:var(--navy);font-weight:700;margin-bottom:4px"></div>
-        <div id="est-modal-grado" style="font-size:0.85rem;color:var(--gray);margin-bottom:20px"></div>
-        <div id="est-modal-marcas" style="margin:-12px 0 18px"></div>
+  <div class="modal" id="est-modal-scroll">
+    <div class="est-sticky">
+      <div class="est-head">
+        <button class="back-btn" onclick="closeEstModalDirect()" style="padding:6px 0">← Volver</button>
+        <div class="est-id">
+          <div class="serif" id="est-modal-nombre" style="font-size:1.45rem;color:var(--navy);font-weight:700;line-height:1.2"></div>
+          <div id="est-modal-grado" style="font-size:0.88rem;color:var(--gray);margin-top:2px"></div>
+        </div>
+        <div id="est-modal-marcas"></div>
+        <button class="btn btn-ghost" onclick="exportStudentPDF()" style="white-space:nowrap">📄 Exportar en PDF</button>
       </div>
-      <button class="btn btn-ghost" onclick="exportStudentPDF()" style="white-space:nowrap">📄 Exportar en PDF</button>
+      <div class="est-secnav" id="est-secnav"></div>
     </div>
 
-    <!-- Datos de contacto -->
-    <div class="form-section" style="margin-bottom:24px">
-      <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Datos del estudiante y acudiente</div>
-      <div class="field">
-        <label class="lbl">Nombre del acudiente</label>
-        <input type="text" id="est-edit-acudiente" placeholder="Nombre completo del acudiente">
+    <div class="est-body">
+      <!-- Datos de contacto -->
+      <div id="sec-datos">
+        <div class="hist-title-badge">Datos del estudiante y acudiente</div>
+        <div class="est-contact">
+          <div class="field">
+            <label class="lbl">Nombre del acudiente</label>
+            <input type="text" id="est-edit-acudiente" placeholder="Nombre completo del acudiente">
+          </div>
+          <div class="field">
+            <label class="lbl">Telefono</label>
+            <input type="tel" id="est-edit-telefono" placeholder="Ej: 3001234567">
+          </div>
+          <div class="field">
+            <label class="lbl">Correo electronico</label>
+            <input type="email" id="est-edit-correo" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="field">
+            <label class="lbl">Direccion</label>
+            <input type="text" id="est-edit-direccion" placeholder="Direccion de residencia">
+          </div>
+          <div class="field">
+            <label class="lbl">Documento del estudiante</label>
+            <input type="text" id="est-edit-documento" placeholder="Numero de documento">
+          </div>
+        </div>
+        <button class="btn btn-primary admin-only" id="est-save-btn" onclick="saveEstudiante()" style="padding:12px 26px">💾 Guardar cambios</button>
       </div>
-      <div class="field">
-        <label class="lbl">Telefono</label>
-        <input type="tel" id="est-edit-telefono" placeholder="Ej: 3001234567">
-      </div>
-      <div class="field">
-        <label class="lbl">Correo electronico</label>
-        <input type="email" id="est-edit-correo" placeholder="correo@ejemplo.com">
-      </div>
-      <div class="field">
-        <label class="lbl">Direccion</label>
-        <input type="text" id="est-edit-direccion" placeholder="Direccion de residencia">
-      </div>
-      <div class="field">
-        <label class="lbl">Documento del estudiante</label>
-        <input type="text" id="est-edit-documento" placeholder="Numero de documento">
-      </div>
-      <button class="btn btn-primary admin-only" id="est-save-btn" onclick="saveEstudiante()" style="width:100%;padding:14px">💾 Guardar cambios</button>
+
+      <!-- Historiales -->
+      <div id="est-modal-historial"></div>
     </div>
-
-    <!-- Historiales -->
-    <div id="est-modal-historial" style="margin-bottom:20px"></div>
-
   </div>
 </div>
 
@@ -5552,6 +5583,7 @@ function resetApp() {
 
 var docentesUnlocked = false;
 function showPage(name) {
+  if (typeof closeEstModalDirect === "function") closeEstModalDirect();
   if (name === "docentes" && !docentesUnlocked) {
     var pwdDoc = prompt("Ingresa la contrasena para ver el panel de Docentes:");
     if (pwdDoc !== DELETE_PWD) { toast("Contrasena incorrecta", "red"); return; }
@@ -5614,6 +5646,11 @@ function confirmarPwdConfirm() {
   if (cb) cb();
 }
 document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var est = document.getElementById('est-modal-overlay');
+    var otra = document.querySelector('.modal-overlay.open');
+    if (est && getComputedStyle(est).display !== 'none' && !otra) closeEstModalDirect();
+  }
   if (e.key === 'Enter') {
     var ov = document.getElementById('pwd-confirm-overlay');
     if (ov && ov.classList.contains('open')) { e.preventDefault(); confirmarPwdConfirm(); }
@@ -6843,6 +6880,16 @@ function renderEstudiantes() {
   });
 }
 
+var EST_SECCIONES = [
+  ['sec-datos', 'Datos'], ['sec-disc', 'Disciplinario'], ['sec-acad', 'Académico'], ['sec-informes', 'Informes'],
+  ['sec-anot', 'Anotaciones'], ['sec-jornada', 'Cambio de jornada'], ['sec-comp-acad', 'Compromisos académicos'],
+  ['sec-comp-disc', 'Compromisos disciplinarios'], ['sec-llegadas', 'Llegadas tarde'], ['sec-cit', 'Citaciones acudiente'],
+  ['sec-cit-est', 'Citaciones estudiante'], ['sec-rep', 'Reparación'], ['sec-susp', 'Suspensiones'], ['sec-pdf', 'PDF']
+];
+function irSeccionEst(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 function openEstModal(s) {
   currentEstIndex = studentsData.indexOf(s);
   document.getElementById('est-modal-nombre').textContent = s.nombre;
@@ -6879,10 +6926,7 @@ function openEstModal(s) {
     });
     return h + '</div>';
   };
-  var histHTML = '<div class="hist-section"><div class="hist-title-badge">Documentos PDF</div>' +
-    '<div id="est-archivos-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>' +
-    '<button class="admin-only arch-add" style="margin-top:8px" onclick="abrirAdjuntar(\'otro\', null)">📎 Adjuntar PDF</button></div>';
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Historial disciplinario</div>';
+  var histHTML = '<div class="hist-section" id="sec-disc"><div class="hist-title-badge">Historial disciplinario</div>';
   if (casosDisc.length) {
     histHTML += renderCasosLista(casosDisc);
   } else {
@@ -6891,7 +6935,7 @@ function openEstModal(s) {
   histHTML += '</div>';
 
   // Academic history (live + legacy, con corte/final)
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Historial academico (materias con dificultad)</div>';
+  histHTML += '<div class="hist-section" id="sec-acad"><div class="hist-title-badge">Historial academico (materias con dificultad)</div>';
   if (casosAcad.length) {
     histHTML += '<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--navy);margin:2px 0 6px">Anotaciones academicas</div>';
     histHTML += renderCasosLista(casosAcad);
@@ -6899,40 +6943,49 @@ function openEstModal(s) {
   histHTML += '<div id="est-histacad-content"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Informes por asignatura</div>';
+  histHTML += '<div class="hist-section" id="sec-informes"><div class="hist-title-badge">Informes por asignatura</div>';
   histHTML += '<div id="est-informes-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
   // Anotaciones generales
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Anotaciones generales</div>';
+  histHTML += '<div class="hist-section" id="sec-anot"><div class="hist-title-badge">Anotaciones generales</div>';
   histHTML += '<div id="est-anotaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
   // Solicitudes cambio de jornada
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Solicitudes cambio de jornada</div>';
+  histHTML += '<div class="hist-section" id="sec-jornada"><div class="hist-title-badge">Solicitudes cambio de jornada</div>';
   histHTML += '<div id="est-solicitudes-jornada-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>';
   histHTML += '</div>';
 
   // Compromisos y registros
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Compromisos academicos</div>';
+  histHTML += '<div class="hist-section" id="sec-comp-acad"><div class="hist-title-badge">Compromisos academicos</div>';
   histHTML += '<div id="est-comp-acad-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Compromisos disciplinarios</div>';
+  histHTML += '<div class="hist-section" id="sec-comp-disc"><div class="hist-title-badge">Compromisos disciplinarios</div>';
   histHTML += '<div id="est-comp-disc-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Llegadas tarde</div>';
+  histHTML += '<div class="hist-section" id="sec-llegadas"><div class="hist-title-badge">Llegadas tarde</div>';
   histHTML += '<div id="est-llegadas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Citaciones a acudiente</div>';
+  histHTML += '<div class="hist-section" id="sec-cit"><div class="hist-title-badge">Citaciones a acudiente</div>';
   histHTML += '<div id="est-citaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Citaciones a estudiante</div>';
+  histHTML += '<div class="hist-section" id="sec-cit-est"><div class="hist-title-badge">Citaciones a estudiante</div>';
   histHTML += '<div id="est-citaciones-estudiante-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Actividades de reparacion</div>';
+  histHTML += '<div class="hist-section" id="sec-rep"><div class="hist-title-badge">Actividades de reparacion</div>';
   histHTML += '<div id="est-reparaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
-  histHTML += '<div class="hist-section"><div class="hist-title-badge">Suspensiones</div>';
+  histHTML += '<div class="hist-section" id="sec-susp"><div class="hist-title-badge">Suspensiones</div>';
   histHTML += '<div id="est-suspensiones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
+  // Documentos PDF: siempre al final de la hoja
+  histHTML += '<div class="hist-section" id="sec-pdf"><div class="hist-title-badge">Documentos PDF</div>' +
+    '<div id="est-archivos-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div>' +
+    '<button class="admin-only arch-add" style="margin-top:8px" onclick="abrirAdjuntar(\'otro\', null)">📎 Adjuntar PDF</button></div>';
+
   document.getElementById('est-modal-historial').innerHTML = histHTML;
+  var secnav = document.getElementById('est-secnav');
+  if (secnav) secnav.innerHTML = EST_SECCIONES.map(function(x) {
+    return '<button type="button" class="est-chip" onclick="irSeccionEst(\'' + x[0] + '\')">' + x[1] + '</button>';
+  }).join('');
   // Registration is done in the Nuevo Registro tab
   cargarArchivosEstudiante(s.nombre);
   loadCompromisos(s.nombre);
@@ -6947,7 +7000,11 @@ function openEstModal(s) {
   loadRegistros('suspension', s.nombre, 'est-suspensiones-list');
 
   var ov = document.getElementById('est-modal-overlay');
-  if(ov){ ov.style.cssText = 'display:flex !important;position:fixed;inset:0;background:rgba(15,41,66,0.55);z-index:500;align-items:center;justify-content:center;padding:20px;'; }
+  if(ov){
+    var yaAbierta = getComputedStyle(ov).display !== 'none';
+    ov.style.cssText = 'display:flex !important;';
+    if (!yaAbierta) { var sc = document.getElementById('est-modal-scroll'); if (sc) sc.scrollTop = 0; }
+  }
   document.body.style.overflow = 'hidden';
 }
 
