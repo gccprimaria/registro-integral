@@ -431,7 +431,8 @@ body.docente-mode .admin-only{display:none !important;}
         <button class="type-btn" id="btn-asist-no" onclick="selAsistencia('no_asistio')">No asistio</button>
       </div>
     </div>
-    <div class="btn-row" style="padding-top:4px">
+    <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-caso" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
+      <div class="btn-row" style="padding-top:4px">
       <button class="btn btn-ghost no-print" onclick="clearForm()">Limpiar</button>
       <button class="btn btn-primary" id="btn-submit" onclick="submitCase()" style="flex:2">Registrar caso</button>
     </div>
@@ -1229,6 +1230,7 @@ body.docente-mode .admin-only{display:none !important;}
           <button class="type-btn" id="nr-cit-no" onclick="selNRBool('cit','no')">No asistio</button>
         </div>
       </div>
+      <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-cit" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-cit-btn" onclick="saveNRRegistro('citacion')" style="width:100%;padding:14px">Guardar citacion</button>
     </div>
 
@@ -1245,6 +1247,7 @@ body.docente-mode .admin-only{display:none !important;}
           <button class="type-btn" id="nr-rep-no" onclick="selNRBool('rep','no')">No cumplio</button>
         </div>
       </div>
+      <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-rep" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-rep-btn" onclick="saveNRRegistro('reparacion')" style="width:100%;padding:14px">Guardar actividad</button>
     </div>
 
@@ -1261,6 +1264,7 @@ body.docente-mode .admin-only{display:none !important;}
           <button class="type-btn" id="nr-sus-no" onclick="selNRBool('sus','no')">No termino</button>
         </div>
       </div>
+      <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-sus" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-sus-btn" onclick="saveNRRegistro('suspension')" style="width:100%;padding:14px">Guardar suspension</button>
     </div>
 
@@ -1276,6 +1280,7 @@ body.docente-mode .admin-only{display:none !important;}
           <button class="type-btn" id="nr-ca-no" onclick="selNRBool('ca','no')">No firmo</button>
         </div>
       </div>
+      <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-ca" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-ca-btn" onclick="saveNRCompromiso('academico')" style="width:100%;padding:14px">Guardar compromiso</button>
     </div>
 
@@ -1291,6 +1296,7 @@ body.docente-mode .admin-only{display:none !important;}
           <button class="type-btn" id="nr-cd-no" onclick="selNRBool('cd','no')">No firmo</button>
         </div>
       </div>
+      <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-cd" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-cd-btn" onclick="saveNRCompromiso('disciplinario')" style="width:100%;padding:14px">Guardar compromiso</button>
     </div>
 
@@ -1340,6 +1346,7 @@ body.docente-mode .admin-only{display:none !important;}
           <button class="type-btn" id="nr-cj-est-rechazada" onclick="selNRCjEstado('rechazada')">Rechazada</button>
         </div>
       </div>
+      <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-cj" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-cj-btn" onclick="saveNRSolicitudJornada()" style="width:100%;padding:14px">Guardar solicitud</button>
     </div>
 
@@ -5722,6 +5729,7 @@ function clearForm(){
   document.getElementById("f-teacher").value=""; document.getElementById("f-teacher-other").value=""; document.getElementById("f-teacher-other").style.display="none";
   document.getElementById("campo-asignatura").style.display="none"; document.getElementById("campo-asignatura-otro").style.display="none";
   document.getElementById("f-asignatura").value=""; document.getElementById("f-asignatura-otro").value="";
+  var _pc=document.getElementById("pdf-caso"); if(_pc) _pc.value="";
   document.getElementById("f-desc").value=""; document.getElementById("f-actions").value=""; document.getElementById("f-fecha-cit").value="";
   document.getElementById("campo-fecha-cit").style.display="none"; document.getElementById("campo-asistencia").style.display="none";
   curType="convivencia"; curTipo=""; curCitacion=""; curAsistencia="";
@@ -5748,6 +5756,7 @@ function submitCase(){
   var studentName=document.getElementById("f-student").value; var grade=document.getElementById("f-grade").value;
   var estudianteId=resolveEstudianteId(studentName, grade);
   if(!estudianteId){toast("No se encontro ese estudiante en la base de datos","red");return;}
+  var pdfs=archTomar("pdf-caso"); if(pdfs.error){toast(pdfs.error,"red");return;}
   var c=normalizeCase({id:null,type:curType,studentName:studentName,grade:grade,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:new Date().toISOString()});
   var btn=document.getElementById("btn-submit"); btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Guardando...';
   loading(true);
@@ -5767,7 +5776,7 @@ function submitCase(){
     });
     cases.push(nuevo);
     cases.sort(function(a,b){ return new Date(b.date||0) - new Date(a.date||0); });
-    renderAll();clearForm();toast("Caso registrado","ok");showPage("casos");
+    renderAll();clearForm();showPage("casos");return archPostGuardar("pdf-caso",pdfs.files,estudianteId,"caso",row.id,"Caso registrado");
   }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar caso";loading(false);});
 }
 
@@ -7712,6 +7721,37 @@ function archBulkSubir() {
 }
 
 
+// ---- PDF adjunto al momento de registrar ----
+function archTomar(inputId) {
+  var el = document.getElementById(inputId);
+  var files = el ? Array.prototype.slice.call(el.files || []) : [];
+  for (var i = 0; i < files.length; i++) {
+    if (!archEsPdf(files[i])) return { files: [], error: '«' + files[i].name + '» no es un PDF' };
+    if (files[i].size > ARCH_MAX_BYTES) return { files: [], error: '«' + files[i].name + '» pesa más de 10 MB' };
+  }
+  return { files: files, error: '' };
+}
+// Sube los PDF al registro recien creado. Nunca falla: avisa con un mensaje.
+function archPostGuardar(inputId, files, estId, tipo, rid, msg) {
+  var el = document.getElementById(inputId);
+  if (el) el.value = '';
+  if (!files || !files.length || !rid) { toast(msg, 'ok'); return Promise.resolve(); }
+  toast(msg + '. Subiendo ' + files.length + ' PDF...', 'ok');
+  var ok = 0, fallos = [], i = 0;
+  return new Promise(function(done) {
+    (function siguiente() {
+      if (i >= files.length) {
+        if (!fallos.length) toast(msg + ' con ' + ok + ' PDF', 'ok');
+        else toast(msg + ', pero ' + fallos.length + ' PDF no se subieron (' + fallos[0] + '). Adjúntalos desde la ficha del estudiante con 📎', 'red');
+        done(); return;
+      }
+      archSubirUno(files[i], estId, tipo, rid).then(function() { ok++; })
+        .catch(function(e) { console.error(e); fallos.push(archErrTxt(e)); })
+        .then(function() { i++; siguiente(); });
+    })();
+  });
+}
+
 var curCompTipo = '';
 var curCompFirma = '';
 
@@ -9009,6 +9049,7 @@ function saveNRRegistro(tipo) {
   if (!ok) return;
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var pdfs = archTomar('pdf-' + pf); if (pdfs.error) { toast(pdfs.error, 'red'); return; }
   var btn = document.getElementById('nr-' + pf + '-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   var labels = {citacion:'Guardar citacion', reparacion:'Guardar actividad', suspension:'Guardar suspension'};
@@ -9016,7 +9057,7 @@ function saveNRRegistro(tipo) {
     estudiante_id: estId, tipo: tipoReal, fecha: fecha, motivo: motivo,
     descripcion: desc, atencion: atencion, dias: dias || null,
     asistio: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || '')
-  }).then(function(res) {
+  }).select().single().then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
     document.getElementById('nr-' + pf + '-motivo').value = '';
@@ -9028,7 +9069,7 @@ function saveNRRegistro(tipo) {
     nrBools[pf] = '';
     selNRBool(pf, '');
     if (tipo === 'citacion') selCitDestino('acudiente');
-    toast('Registro guardado', 'ok');
+    return archPostGuardar('pdf-' + pf, pdfs.files, estId, tipoReal, res.data && res.data.id, 'Registro guardado');
   }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = labels[tipo]; });
 }
@@ -9126,12 +9167,13 @@ function saveNRCompromiso(tipo) {
   if (docente === 'Otro') docente = document.getElementById('nr-' + pf + '-docente-otro').value.trim() || 'Otro';
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var pdfs = archTomar('pdf-' + pf); if (pdfs.error) { toast(pdfs.error, 'red'); return; }
   var btn = document.getElementById('nr-' + pf + '-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   sb.from('compromisos').insert({
     estudiante_id: estId, tipo: tipo, fecha: fecha, descripcion: desc,
     docente: docente, firma: (nrBools[pf] || '') === 'si'
-  }).then(function(res) {
+  }).select().single().then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
     document.getElementById('nr-' + pf + '-desc').value = '';
@@ -9140,7 +9182,7 @@ function saveNRCompromiso(tipo) {
     if (docenteOtroReset) { docenteOtroReset.value = ''; docenteOtroReset.style.display = 'none'; }
     nrBools[pf] = '';
     selNRBool(pf, '');
-    toast('Compromiso guardado', 'ok');
+    return archPostGuardar('pdf-' + pf, pdfs.files, estId, 'compromiso_' + tipo, res.data && res.data.id, 'Compromiso guardado');
   }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar compromiso'; });
 }
@@ -9444,12 +9486,13 @@ function saveNRSolicitudJornada() {
   if (!ok) return;
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var pdfs = archTomar('pdf-cj'); if (pdfs.error) { toast(pdfs.error, 'red'); return; }
   var btn = document.getElementById('nr-cj-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   sb.from('solicitudes_jornada').insert({
     estudiante_id: estId, fecha: fecha, jornada_actual: nrCurrentStudent.jornada,
     jornada_solicitada: nrCjJornada, motivo: motivo, estado: nrCjEstado
-  }).then(function(res) {
+  }).select().single().then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-cj-motivo').value = '';
     document.getElementById('nr-cj-fecha').value = '';
@@ -9457,7 +9500,7 @@ function saveNRSolicitudJornada() {
     document.getElementById('nr-cj-jor-manana').className = 'type-btn';
     document.getElementById('nr-cj-jor-tarde').className = 'type-btn';
     selNRCjEstado('pendiente');
-    toast('Solicitud guardada', 'ok');
+    return archPostGuardar('pdf-cj', pdfs.files, estId, 'solicitud_jornada', res.data && res.data.id, 'Solicitud guardada');
   }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = 'Guardar solicitud'; });
 }
