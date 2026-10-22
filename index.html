@@ -1277,11 +1277,7 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="field"><label class="lbl">Motivo de la actividad</label><textarea id="nr-rep-motivo" placeholder="Por que se asigna esta actividad..." rows="2"></textarea><div class="ferr" id="nr-rep-ferr-motivo"></div></div>
       <div class="field"><label class="lbl">Descripcion de la actividad</label><textarea id="nr-rep-desc" placeholder="En que consiste la actividad..." rows="3"></textarea></div>
       <div class="field"><label class="lbl">Docente que asigna</label><select id="nr-rep-atencion" onchange="document.getElementById('nr-rep-atencion-otro').style.display=this.value==='Otro'?'block':'none';"><option value="">Seleccionar...</option><optgroup label="Docentes - Manana"><option>Adriana Romero</option><option>Ana Bolanos</option><option>Angela Ibanez</option><option>Camila De Castro</option><option>Carolina Bonilla</option><option>Consuelo Ardila</option><option>Diana Yiseth Daza</option><option>Leilys Rodriguez</option><option>Magda Suarez</option><option>Maria Helena Soto</option><option>Mari Luz Rodriguez</option><option>Omar Ballesteros</option><option>Sofia Lesmes</option></optgroup><optgroup label="Docentes - Tarde"><option>Angel Gaviria</option><option>Diana Sanchez</option><option>Isbel Sanchez</option><option>Juan Duenas</option><option>Leidy Atilua</option><option>Leidy Gonzalez</option><option>Leidy Molano</option><option>Leidy Pedraos</option><option>Mabel Sanchez</option><option>Katherine Manrique</option><option>Mildred Corredor</option><option>Nidia Torres</option><option>Steve Bayona</option><option>Xiomara Pulido</option></optgroup><optgroup label="Coordinacion y apoyo"><option>Martha Alixon Romero Barrero</option><option>Eybar Suarez Higuera</option><option>Mabel Zarate Garzon</option><option>Sandra Villalba</option><option>Belkys Alarcon</option><option>Claudia Rojas</option><option>Sonia Torres</option></optgroup><option>Otro</option></select><input type="text" id="nr-rep-atencion-otro" placeholder="Nombre" style="margin-top:8px;display:none"><div class="ferr" id="nr-rep-ferr-atencion"></div></div>
-      <div class="field"><label class="lbl">La cumplio el estudiante?</label>
-        <div class="type-grid">
-          <button class="type-btn" id="nr-rep-si" onclick="selNRBool('rep','si')">Si cumplio</button>
-          <button class="type-btn" id="nr-rep-no" onclick="selNRBool('rep','no')">No cumplio</button>
-        </div>
+      <div class="field"><label class="lbl">Fecha limite de entrega <span style="color:#94A3B8;font-weight:400;text-transform:none">(recomendada)</span></label><input type="date" id="nr-rep-limite"><div class="ferr" id="nr-rep-ferr-limite"></div></div>
       </div>
       <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-rep" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-rep-btn" onclick="saveNRRegistro('reparacion')" style="width:100%;padding:14px">Guardar actividad</button>
@@ -1289,7 +1285,8 @@ body.docente-mode .admin-only{display:none !important;}
       <div id="nr-rep-entrega" style="display:none;flex-direction:column;gap:16px">
         <div class="field"><label class="lbl">Actividad que se entrega</label>
           <select id="nr-repent-actividad"><option value="">Selecciona primero un estudiante</option></select>
-          <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Elige a cual actividad asignada corresponde esta entrega. Si no esta en la lista, dejalo en "Sin vincular".</div></div>
+          <div class="ferr" id="nr-repent-ferr-actividad"></div>
+          <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Elige a cual actividad asignada corresponde esta entrega.</div></div>
         <div class="field"><label class="lbl">Dia que la trajo (fecha de entrega)</label><input type="date" id="nr-repent-fecha"><div class="ferr" id="nr-repent-ferr-fecha"></div></div>
         <div class="field"><label class="lbl">Observaciones <span style="color:#94A3B8;font-weight:400;text-transform:none">(si es el caso)</span></label><textarea id="nr-repent-obs" rows="3" placeholder="Ej: la entrego completa, la entrego tarde, falto una parte..."></textarea></div>
         <div class="field"><label class="lbl">Adjuntar PDF de la entrega <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label>
@@ -8096,8 +8093,11 @@ function infConstruir(s, d, tipo, desde, hasta) {
       citAcud.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion, si(r.asistio)]; }), [22, 0, 40, 18]);
     seccion('Citaciones a estudiante', citEst, ['Fecha', 'Motivo', 'Atendió'],
       citEst.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion]; }), [22, 0, 45]);
-    seccion('Actividades de reparación', repar, ['Fecha', 'Motivo', 'Responsable', 'Realizada'],
-      repar.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion, si(r.asistio)]; }), [22, 0, 40, 20]);
+    seccion('Actividades de reparación', repar, ['Fecha', 'Motivo', 'Responsable', 'Fecha límite', 'Entrega'],
+      repar.map(function(r) {
+        var ents = d.registros.filter(function(e) { return e.tipo === 'reparacion_entrega' && e.actividad_id != null && String(e.actividad_id) === String(r.id); });
+        return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion, r.fecha_limite ? infFecha(r.fecha_limite) : '', repEstado(r, ents, infFecha).txt];
+      }), [22, 0, 32, 22, 38]);
     seccion('Entregas de actividad de reparación', reparEnt, ['Fecha de entrega', 'Actividad', 'Observaciones'],
       reparEnt.map(function(r) {
         var act = null;
@@ -8287,6 +8287,23 @@ function renderCompList(el, list, color, tipo) {
   pintarArchivos();
 }
 
+// ---- Estado de una actividad de reparacion (sale de las entregas y de la fecha limite) ----
+function repHoy() { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }); }
+// a: {fecha_limite, asistio}; ents: entregas ligadas; fmt: formateador de fechas
+function repEstado(a, ents, fmt) {
+  fmt = fmt || fmtD;
+  var lim = a.fecha_limite || '';
+  if (ents && ents.length) {
+    var e = ents.slice().sort(function(x, y) { return String(y.fecha).localeCompare(String(x.fecha)); })[0];
+    var extra = lim ? (String(e.fecha) > lim ? ' (con retraso)' : ' (a tiempo)') : '';
+    return { k: 'ok', txt: 'Entregada el ' + fmt(e.fecha || '') + extra };
+  }
+  if (a.asistio === 'si') return { k: 'ok', txt: 'Cumplió (registro anterior)' };
+  if (a.asistio === 'no') return { k: 'bad', txt: 'No cumplió (registro anterior)' };
+  if (lim && lim < repHoy()) return { k: 'bad', txt: 'Vencida: el plazo era el ' + fmt(lim) };
+  return { k: 'pend', txt: 'Pendiente de entrega' };
+}
+
 function loadRegistros(tipo, nombre, elId) {
   var el = document.getElementById(elId);
   var estId = resolveEstudianteId(nombre);
@@ -8302,7 +8319,7 @@ function loadRegistros(tipo, nombre, elId) {
     var res = rr[0], entregas = rr[1];
     if (res.error) throw res.error;
     var data = (res.data || []).map(function(r) {
-      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio,
+      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio, fecha_limite: r.fecha_limite,
                entregas: entregas.filter(function(e) { return e.actividad_id != null && String(e.actividad_id) === String(r.id); }) };
     });
     renderRegistrosList(el, data, tipo, elId);
@@ -8322,13 +8339,12 @@ function renderRegistrosList(el, list, tipo, elId) {
     if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + '</div>';
     if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
     if (tipo === 'reparacion') {
-      if (r.entregas && r.entregas.length) {
-        extra += '<div style="font-size:0.8rem;color:#166534;font-weight:600;margin-top:4px">✔ Entregada el ' + r.entregas.map(function(e) { return fmtD(e.fecha || ''); }).join(', ') + '</div>';
-      } else {
-        extra += '<div style="font-size:0.78rem;color:#94A3B8;margin-top:4px">Sin entrega registrada</div>';
-      }
+      if (r.fecha_limite) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Fecha límite de entrega: ' + fmtD(r.fecha_limite) + '</div>';
+      var st = repEstado(r, r.entregas);
+      var stColor = st.k === 'ok' ? '#166534' : (st.k === 'bad' ? '#B91C1C' : '#B45309');
+      extra += '<div style="font-size:0.8rem;color:' + stColor + ';font-weight:600;margin-top:4px">' + (st.k === 'ok' ? '✔ ' : '') + st.txt + '</div>';
     }
-    if (r.bool1) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
+    if (r.bool1 && tipo !== 'reparacion') extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
     var editarBtn = '<button class="admin-only" onclick="editarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;margin-right:14px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Editar</button>';
     return '<div id="reg-row-' + r.id + '" style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
       + '<div style="font-size:0.78rem;color:var(--gray)">' + fechaLabel + '</div>'
@@ -8356,7 +8372,11 @@ function editarRegistro(id, tipo, elId) {
     } else {
       camposExtra = '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Responsable</label>' +
         '<input type="text" id="er-atencion-' + id + '" value="' + (r.atencion||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>';
-      if (tipo === 'citacion' || tipo === 'reparacion') {
+      if (tipo === 'reparacion') {
+        camposExtra += '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Fecha límite de entrega</label>' +
+          '<input type="date" id="er-limite-' + id + '" value="' + (r.fecha_limite||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>';
+      }
+      if (tipo === 'citacion') {
         var etiquetaAsistio = tipo === 'citacion' ? '¿Asistió el acudiente?' : '¿Se realizó la actividad?';
         camposExtra += '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">' + etiquetaAsistio + '</label>' +
           '<div class="type-grid" style="margin-top:2px">' +
@@ -8394,8 +8414,12 @@ function guardarEdicionRegistro(id, tipo, elId) {
     payload.dias = document.getElementById('er-dias-' + id).value || null;
   } else {
     payload.atencion = document.getElementById('er-atencion-' + id).value.trim();
-    if (tipo === 'citacion' || tipo === 'reparacion') {
+    if (tipo === 'citacion') {
       payload.asistio = (row && row.dataset.asistio) || '';
+    }
+    if (tipo === 'reparacion') {
+      var limEl = document.getElementById('er-limite-' + id);
+      payload.fecha_limite = (limEl && limEl.value) || null;
     }
   }
   sb.from('registros').update(payload).eq('id', id).then(function(res) {
@@ -9477,7 +9501,7 @@ function saveNRRegistro(tipo) {
   var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
   var pf = prefixMap[tipo];
   var tipoReal = (tipo === 'citacion' && curCitDestino === 'estudiante') ? 'citacion_estudiante' : tipo;
-  clearNRFerr(pf, ['fecha','motivo','atencion','dias']);
+  clearNRFerr(pf, ['fecha','motivo','atencion','dias','limite']);
   var fecha = document.getElementById('nr-' + pf + '-fecha').value;
   var motivo = document.getElementById('nr-' + pf + '-motivo').value.trim();
   var descEl = document.getElementById('nr-' + pf + '-desc');
@@ -9497,6 +9521,9 @@ function saveNRRegistro(tipo) {
     document.getElementById('nr-' + pf + '-ferr-atencion').textContent = 'Escribe el responsable'; ok = false;
   }
   if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + pf + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
+  var limiteEl = document.getElementById('nr-rep-limite');
+  var limite = (tipo === 'reparacion' && limiteEl) ? limiteEl.value : '';
+  if (limite && fecha && limite < fecha) { document.getElementById('nr-rep-ferr-limite').textContent = 'La fecha limite no puede ser anterior a la fecha de la actividad'; ok = false; }
   if (!ok) return;
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
@@ -9504,11 +9531,13 @@ function saveNRRegistro(tipo) {
   var btn = document.getElementById('nr-' + pf + '-btn');
   btn.disabled = true; btn.textContent = 'Guardando...';
   var labels = {citacion:'Guardar citacion', reparacion:'Guardar actividad', suspension:'Guardar suspension'};
-  sb.from('registros').insert({
+  var payloadReg = {
     estudiante_id: estId, tipo: tipoReal, fecha: fecha, motivo: motivo,
     descripcion: desc, atencion: atencion, dias: dias || null,
     asistio: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || '')
-  }).select().single().then(function(res) {
+  };
+  if (tipo === 'reparacion') payloadReg.fecha_limite = limite || null;
+  sb.from('registros').insert(payloadReg).select().single().then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
     document.getElementById('nr-' + pf + '-motivo').value = '';
@@ -9517,6 +9546,7 @@ function saveNRRegistro(tipo) {
     var atencionOtroElReset = document.getElementById('nr-' + pf + '-atencion-otro');
     if (atencionOtroElReset) { atencionOtroElReset.value = ''; atencionOtroElReset.style.display = 'none'; }
     if(diasEl) diasEl.value = '';
+    if (limiteEl) limiteEl.value = '';
     nrBools[pf] = '';
     selNRBool(pf, '');
     if (tipo === 'citacion') selCitDestino('acudiente');
@@ -9552,24 +9582,34 @@ function cargarActividadesEntrega(seleccionar) {
   Promise.all([q('reparacion'), q('reparacion_entrega')]).then(function(rr) {
     if (!nrCurrentStudent || resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado) !== estId) return;
     var acts = rr[0], entregas = rr[1];
-    var html = '<option value="">Sin vincular a una actividad</option>';
+    if (!acts.length) {
+      sel.innerHTML = '<option value="">Este estudiante no tiene actividades asignadas registradas (se guarda sin vincular)</option>';
+      return;
+    }
+    var html = '<option value="">Selecciona la actividad...</option>';
+    var pendientes = [];
     acts.forEach(function(a) {
       var yaEntregada = entregas.some(function(e) { return e.actividad_id != null && String(e.actividad_id) === String(a.id); });
+      if (!yaEntregada) pendientes.push(a.id);
       var m = String(a.motivo || '').replace(/\s+/g, ' ');
       if (m.length > 60) m = m.slice(0, 57) + '...';
       html += '<option value="' + escInf(a.id) + '">' + escInf(fmtD(a.fecha || '') + ' - ' + m + (yaEntregada ? ' (ya entregada)' : '')) + '</option>';
     });
     sel.innerHTML = html;
     if (seleccionar) sel.value = seleccionar;
+    else if (pendientes.length === 1) sel.value = pendientes[0];
   });
 }
 
 function saveNREntregaReparacion() {
   if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
-  clearNRFerr('repent', ['fecha']);
+  clearNRFerr('repent', ['fecha', 'actividad']);
   var fecha = document.getElementById('nr-repent-fecha').value;
   var obs = document.getElementById('nr-repent-obs').value.trim();
-  var actId = document.getElementById('nr-repent-actividad').value;
+  var selAct = document.getElementById('nr-repent-actividad');
+  var actId = selAct.value;
+  var hayActs = Array.prototype.some.call(selAct.options, function(o) { return o.value; });
+  if (hayActs && !actId) { document.getElementById('nr-repent-ferr-actividad').textContent = 'Selecciona la actividad que se entrega'; return; }
   if (!fecha) { document.getElementById('nr-repent-ferr-fecha').textContent = 'Selecciona el dia que la trajo'; return; }
   var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
   if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
@@ -9612,6 +9652,7 @@ function loadEntregasReparacion(nombre, elId) {
       return '<div id="ent-row-' + r.id + '" style="padding:10px;background:white;border-left:3px solid var(--green,#16A34A);border-radius:8px;margin-bottom:8px">'
         + '<div style="font-size:0.78rem;color:var(--gray)">Entregada el ' + fmtD(r.fecha || '') + '</div>'
         + '<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">' + corresponde + '</div>'
+        + (act && act.fecha_limite ? '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Fecha límite: ' + fmtD(act.fecha_limite) + ' — ' + (String(r.fecha) > act.fecha_limite ? '<span style="color:#B45309;font-weight:600">entregada con retraso</span>' : '<span style="color:#166534;font-weight:600">entregada a tiempo</span>') + '</div>' : '')
         + (r.descripcion ? '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5"><b>Observaciones:</b> ' + escInf(r.descripcion) + '</div>' : '')
         + '<button class="admin-only" onclick="editarEntregaRep(\'' + r.id + '\', \'' + elId + '\')" style="margin-top:6px;margin-right:14px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600">Editar</button>'
         + '<button class="admin-only" onclick="eliminarEntregaRep(\'' + r.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600">Eliminar</button>'
