@@ -1266,6 +1266,13 @@ body.docente-mode .admin-only{display:none !important;}
     <!-- Formulario reparacion -->
     <div class="card form-section" id="nr-form-reparacion" style="display:none">
       <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Actividad de reparacion</div>
+      <div class="field"><label class="lbl">Que vas a registrar?</label>
+        <div class="type-grid">
+          <button type="button" class="type-btn sel" id="nr-rep-modo-asig" onclick="selRepModo('asig')">Actividad asignada</button>
+          <button type="button" class="type-btn" id="nr-rep-modo-ent" onclick="selRepModo('ent')">Entrega de actividad</button>
+        </div>
+      </div>
+      <div id="nr-rep-asig" style="display:flex;flex-direction:column;gap:16px">
       <div class="field"><label class="lbl">Fecha</label><input type="date" id="nr-rep-fecha"><div class="ferr" id="nr-rep-ferr-fecha"></div></div>
       <div class="field"><label class="lbl">Motivo de la actividad</label><textarea id="nr-rep-motivo" placeholder="Por que se asigna esta actividad..." rows="2"></textarea><div class="ferr" id="nr-rep-ferr-motivo"></div></div>
       <div class="field"><label class="lbl">Descripcion de la actividad</label><textarea id="nr-rep-desc" placeholder="En que consiste la actividad..." rows="3"></textarea></div>
@@ -1278,6 +1285,18 @@ body.docente-mode .admin-only{display:none !important;}
       </div>
       <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-rep" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-rep-btn" onclick="saveNRRegistro('reparacion')" style="width:100%;padding:14px">Guardar actividad</button>
+      </div>
+      <div id="nr-rep-entrega" style="display:none;flex-direction:column;gap:16px">
+        <div class="field"><label class="lbl">Actividad que se entrega</label>
+          <select id="nr-repent-actividad"><option value="">Selecciona primero un estudiante</option></select>
+          <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Elige a cual actividad asignada corresponde esta entrega. Si no esta en la lista, dejalo en "Sin vincular".</div></div>
+        <div class="field"><label class="lbl">Dia que la trajo (fecha de entrega)</label><input type="date" id="nr-repent-fecha"><div class="ferr" id="nr-repent-ferr-fecha"></div></div>
+        <div class="field"><label class="lbl">Observaciones <span style="color:#94A3B8;font-weight:400;text-transform:none">(si es el caso)</span></label><textarea id="nr-repent-obs" rows="3" placeholder="Ej: la entrego completa, la entrego tarde, falto una parte..."></textarea></div>
+        <div class="field"><label class="lbl">Adjuntar PDF de la entrega <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label>
+          <input type="file" id="pdf-repent" accept="application/pdf,.pdf" multiple>
+          <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, maximo 10 MB por archivo. Se guarda junto con esta entrega.</div></div>
+        <button class="btn btn-primary" id="nr-repent-btn" onclick="saveNREntregaReparacion()" style="width:100%;padding:14px">Guardar entrega</button>
+      </div>
     </div>
 
     <!-- Formulario suspension -->
@@ -6922,7 +6941,7 @@ var EST_SECCIONES = [
   ['sec-datos', 'Datos'], ['sec-disc', 'Disciplinario'], ['sec-acad', 'Académico'], ['sec-informes', 'Informes'],
   ['sec-anot', 'Anotaciones'], ['sec-jornada', 'Cambio de jornada'], ['sec-comp-acad', 'Compromisos académicos'],
   ['sec-comp-disc', 'Compromisos disciplinarios'], ['sec-llegadas', 'Llegadas tarde'], ['sec-cit', 'Citaciones acudiente'],
-  ['sec-cit-est', 'Citaciones estudiante'], ['sec-rep', 'Reparación'], ['sec-susp', 'Suspensiones'], ['sec-pdf', 'PDF']
+  ['sec-cit-est', 'Citaciones estudiante'], ['sec-rep', 'Reparación'], ['sec-rep-ent', 'Entregas reparación'], ['sec-susp', 'Suspensiones'], ['sec-pdf', 'PDF']
 ];
 function irSeccionEst(id) {
   var el = document.getElementById(id);
@@ -6930,6 +6949,7 @@ function irSeccionEst(id) {
 }
 function openEstModal(s) {
   currentEstIndex = studentsData.indexOf(s);
+  currentEstNombre = s.nombre;
   document.getElementById('est-modal-nombre').textContent = s.nombre;
   document.getElementById('est-modal-grado').textContent = s.grado + ' · ' + s.jornada;
   renderMarcasHoja(s);
@@ -7011,6 +7031,9 @@ function openEstModal(s) {
   histHTML += '<div class="hist-section" id="sec-rep"><div class="hist-title-badge">Actividades de reparacion</div>';
   histHTML += '<div id="est-reparaciones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
+  histHTML += '<div class="hist-section" id="sec-rep-ent"><div class="hist-title-badge">Entregas de actividad de reparacion</div>';
+  histHTML += '<div id="est-rep-entregas-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
+
   histHTML += '<div class="hist-section" id="sec-susp"><div class="hist-title-badge">Suspensiones</div>';
   histHTML += '<div id="est-suspensiones-list"><div style="font-size:0.82rem;color:var(--gray)">Cargando...</div></div></div>';
 
@@ -7035,6 +7058,7 @@ function openEstModal(s) {
   loadRegistros('citacion', s.nombre, 'est-citaciones-list');
   loadRegistros('citacion_estudiante', s.nombre, 'est-citaciones-estudiante-list');
   loadRegistros('reparacion', s.nombre, 'est-reparaciones-list');
+  loadRegistros('reparacion_entrega', s.nombre, 'est-rep-entregas-list');
   loadRegistros('suspension', s.nombre, 'est-suspensiones-list');
 
   var ov = document.getElementById('est-modal-overlay');
@@ -7282,6 +7306,7 @@ var ARCH_TIPOS = [
   ['citacion', 'Citación a acudiente'],
   ['citacion_estudiante', 'Citación a estudiante'],
   ['reparacion', 'Actividad de reparación'],
+  ['reparacion_entrega', 'Entrega de actividad de reparación'],
   ['suspension', 'Suspensión'],
   ['compromiso_academico', 'Compromiso académico'],
   ['compromiso_disciplinario', 'Compromiso disciplinario'],
@@ -7516,7 +7541,7 @@ function archParseNombre(fname) {
   var texto = ' ' + norm + ' ';
   var tipo = 'otro';
   if (/suspension/.test(texto)) tipo = 'suspension';
-  else if (/reparacion/.test(texto)) tipo = 'reparacion';
+  else if (/reparacion/.test(texto)) tipo = /entrega/.test(texto) ? 'reparacion_entrega' : 'reparacion';
   else if (/ jornada /.test(texto)) tipo = 'solicitud_jornada';
   else if (/compromiso/.test(texto)) tipo = /academ/.test(texto) ? 'compromiso_academico' : (/disciplin|convivencia/.test(texto) ? 'compromiso_disciplinario' : 'otro');
   else if (/citacion/.test(texto)) tipo = / estudiante /.test(texto) ? 'citacion_estudiante' : 'citacion';
@@ -7921,7 +7946,7 @@ function infConstruir(s, d, tipo, desde, hasta) {
   var casosAcad = d.casos.filter(function(c) { return c.type === 'academico' && enRango(c.date); }).sort(function(a, b) { return infAscFecha({ fecha: a.date }, { fecha: b.date }); });
   function reg(t) { return d.registros.filter(function(r) { return r.tipo === t && enRango(r.fecha); }).sort(infAscFecha); }
   function comp(t) { return d.compromisos.filter(function(c) { return c.tipo === t && enRango(c.fecha); }).sort(infAscFecha); }
-  var citAcud = reg('citacion'), citEst = reg('citacion_estudiante'), repar = reg('reparacion'), susp = reg('suspension');
+  var citAcud = reg('citacion'), citEst = reg('citacion_estudiante'), repar = reg('reparacion'), reparEnt = reg('reparacion_entrega'), susp = reg('suspension');
   var compDisc = comp('disciplinario'), compAcad = comp('academico');
   var anot = d.anotaciones.filter(function(a) { return enRango(a.fecha); }).sort(infAscFecha);
   var informes = d.informes.filter(function(i) { return enRango(i.fecha); }).sort(infAscFecha);
@@ -8073,6 +8098,12 @@ function infConstruir(s, d, tipo, desde, hasta) {
       citEst.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion]; }), [22, 0, 45]);
     seccion('Actividades de reparación', repar, ['Fecha', 'Motivo', 'Responsable', 'Realizada'],
       repar.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion, si(r.asistio)]; }), [22, 0, 40, 20]);
+    seccion('Entregas de actividad de reparación', reparEnt, ['Fecha de entrega', 'Actividad', 'Observaciones'],
+      reparEnt.map(function(r) {
+        var act = null;
+        d.registros.forEach(function(a) { if (r.actividad_id != null && String(a.id) === String(r.actividad_id)) act = a; });
+        return [infFecha(r.fecha), act ? ('Asignada el ' + infFecha(act.fecha) + ': ' + (act.motivo || '')) : 'Sin vincular', r.descripcion || ''];
+      }), [28, 0, 60]);
     seccion('Suspensiones', susp, ['Fecha', 'Motivo', 'Días'],
       susp.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.dias]; }), [22, 0, 16]);
     seccion('Compromisos disciplinarios', compDisc, ['Fecha', 'Compromiso', 'Responsable', 'Firmado'],
@@ -8260,10 +8291,19 @@ function loadRegistros(tipo, nombre, elId) {
   var el = document.getElementById(elId);
   var estId = resolveEstudianteId(nombre);
   if (!estId) { if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>'; return; }
-  sb.from('registros').select('*').eq('estudiante_id', estId).eq('tipo', tipo).order('fecha', {ascending:false}).then(function(res) {
+  if (tipo === 'reparacion_entrega') { loadEntregasReparacion(nombre, elId); return; }
+  var pEntregas = tipo === 'reparacion'
+    ? sb.from('registros').select('*').eq('estudiante_id', estId).eq('tipo', 'reparacion_entrega').then(function(r) { return (r && !r.error && r.data) ? r.data : []; }).catch(function() { return []; })
+    : Promise.resolve([]);
+  Promise.all([
+    sb.from('registros').select('*').eq('estudiante_id', estId).eq('tipo', tipo).order('fecha', {ascending:false}),
+    pEntregas
+  ]).then(function(rr) {
+    var res = rr[0], entregas = rr[1];
     if (res.error) throw res.error;
     var data = (res.data || []).map(function(r) {
-      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio };
+      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio,
+               entregas: entregas.filter(function(e) { return e.actividad_id != null && String(e.actividad_id) === String(r.id); }) };
     });
     renderRegistrosList(el, data, tipo, elId);
   }).catch(function(err) {
@@ -8281,6 +8321,13 @@ function renderRegistrosList(el, list, tipo, elId) {
     var extra = '';
     if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + '</div>';
     if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
+    if (tipo === 'reparacion') {
+      if (r.entregas && r.entregas.length) {
+        extra += '<div style="font-size:0.8rem;color:#166534;font-weight:600;margin-top:4px">✔ Entregada el ' + r.entregas.map(function(e) { return fmtD(e.fecha || ''); }).join(', ') + '</div>';
+      } else {
+        extra += '<div style="font-size:0.78rem;color:#94A3B8;margin-top:4px">Sin entrega registrada</div>';
+      }
+    }
     if (r.bool1) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
     var editarBtn = '<button class="admin-only" onclick="editarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;margin-right:14px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Editar</button>';
     return '<div id="reg-row-' + r.id + '" style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
@@ -8658,6 +8705,7 @@ var nrMomento = '';
 function initNuevoRegistro() {
   nrCurrentStudent = null;
   nrBools = {};
+  if (typeof selRepModo === 'function') selRepModo('asig');
   var srch = document.getElementById('nr-search');
   if(srch) srch.value = '';
   var sw = document.getElementById('nr-select-wrap');
@@ -9377,6 +9425,7 @@ function selEstNR() {
   document.getElementById('nr-student-info').style.display = 'block';
   document.getElementById('nr-tipo-section').style.display = 'block';
   nrBools = {};
+  if (nrRepModo === 'ent') cargarActividadesEntrega();
 }
 
 function selNRTipo(tipo) {
@@ -9389,6 +9438,7 @@ function selNRTipo(tipo) {
     if(form) form.style.display = t === tipo ? 'flex' : 'none';
   });
   nrBools = {};
+  if (tipo === 'reparacion' && nrRepModo === 'ent') cargarActividadesEntrega();
 }
 
 var curCitDestino = 'acudiente';
@@ -9473,6 +9523,145 @@ function saveNRRegistro(tipo) {
     return archPostGuardar('pdf-' + pf, pdfs.files, estId, tipoReal, res.data && res.data.id, 'Registro guardado');
   }).catch(function(err) { console.error(err); toast('Error al guardar', 'red'); })
   .finally(function() { btn.disabled = false; btn.textContent = labels[tipo]; });
+}
+
+// ===== ENTREGA DE ACTIVIDAD DE REPARACION =====
+var nrRepModo = 'asig';
+function selRepModo(m) {
+  nrRepModo = m;
+  var a = document.getElementById('nr-rep-asig'), e = document.getElementById('nr-rep-entrega');
+  var ba = document.getElementById('nr-rep-modo-asig'), be = document.getElementById('nr-rep-modo-ent');
+  if (a) a.style.display = m === 'asig' ? 'flex' : 'none';
+  if (e) e.style.display = m === 'ent' ? 'flex' : 'none';
+  if (ba) ba.className = 'type-btn' + (m === 'asig' ? ' sel' : '');
+  if (be) be.className = 'type-btn' + (m === 'ent' ? ' sel' : '');
+  if (m === 'ent') cargarActividadesEntrega();
+}
+
+function cargarActividadesEntrega(seleccionar) {
+  var sel = document.getElementById('nr-repent-actividad');
+  if (!sel) return;
+  if (!nrCurrentStudent) { sel.innerHTML = '<option value="">Selecciona primero un estudiante</option>'; return; }
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { sel.innerHTML = '<option value="">Sin vincular</option>'; return; }
+  sel.innerHTML = '<option value="">Cargando...</option>';
+  function q(tipo) {
+    return sb.from('registros').select('*').eq('estudiante_id', estId).eq('tipo', tipo).order('fecha', {ascending:false})
+      .then(function(r) { return (r && !r.error && r.data) ? r.data : []; }).catch(function() { return []; });
+  }
+  Promise.all([q('reparacion'), q('reparacion_entrega')]).then(function(rr) {
+    if (!nrCurrentStudent || resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado) !== estId) return;
+    var acts = rr[0], entregas = rr[1];
+    var html = '<option value="">Sin vincular a una actividad</option>';
+    acts.forEach(function(a) {
+      var yaEntregada = entregas.some(function(e) { return e.actividad_id != null && String(e.actividad_id) === String(a.id); });
+      var m = String(a.motivo || '').replace(/\s+/g, ' ');
+      if (m.length > 60) m = m.slice(0, 57) + '...';
+      html += '<option value="' + escInf(a.id) + '">' + escInf(fmtD(a.fecha || '') + ' - ' + m + (yaEntregada ? ' (ya entregada)' : '')) + '</option>';
+    });
+    sel.innerHTML = html;
+    if (seleccionar) sel.value = seleccionar;
+  });
+}
+
+function saveNREntregaReparacion() {
+  if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
+  clearNRFerr('repent', ['fecha']);
+  var fecha = document.getElementById('nr-repent-fecha').value;
+  var obs = document.getElementById('nr-repent-obs').value.trim();
+  var actId = document.getElementById('nr-repent-actividad').value;
+  if (!fecha) { document.getElementById('nr-repent-ferr-fecha').textContent = 'Selecciona el dia que la trajo'; return; }
+  var estId = resolveEstudianteId(nrCurrentStudent.nombre, nrCurrentStudent.grado);
+  if (!estId) { toast('No se encontro ese estudiante en la base de datos', 'red'); return; }
+  var pdfs = archTomar('pdf-repent'); if (pdfs.error) { toast(pdfs.error, 'red'); return; }
+  var btn = document.getElementById('nr-repent-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  sb.from('registros').insert({
+    estudiante_id: estId, tipo: 'reparacion_entrega', fecha: fecha,
+    motivo: 'Entrega de actividad de reparacion', descripcion: obs,
+    atencion: '', dias: null, asistio: '', actividad_id: actId || null
+  }).select().single().then(function(res) {
+    if (res.error) throw res.error;
+    document.getElementById('nr-repent-fecha').value = '';
+    document.getElementById('nr-repent-obs').value = '';
+    cargarActividadesEntrega();
+    return archPostGuardar('pdf-repent', pdfs.files, estId, 'reparacion_entrega', res.data && res.data.id, 'Entrega guardada');
+  }).catch(function(err) { console.error(err); toast('Error al guardar la entrega', 'red'); })
+  .finally(function() { btn.disabled = false; btn.textContent = 'Guardar entrega'; });
+}
+
+// Lista de entregas en la ficha del estudiante
+function loadEntregasReparacion(nombre, elId) {
+  var el = document.getElementById(elId);
+  var estId = resolveEstudianteId(nombre);
+  if (!estId) { if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>'; return; }
+  function q(tipo) {
+    return sb.from('registros').select('*').eq('estudiante_id', estId).eq('tipo', tipo).order('fecha', {ascending:false})
+      .then(function(r) { if (r.error) throw r.error; return r.data || []; });
+  }
+  Promise.all([q('reparacion_entrega'), q('reparacion').catch(function() { return []; })]).then(function(rr) {
+    var ents = rr[0], acts = rr[1];
+    if (!el) return;
+    if (!ents.length) { el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>'; return; }
+    el.innerHTML = ents.map(function(r) {
+      var act = null;
+      if (r.actividad_id != null) acts.forEach(function(a) { if (String(a.id) === String(r.actividad_id)) act = a; });
+      var corresponde = act
+        ? 'Corresponde a la actividad del ' + fmtD(act.fecha || '') + ': ' + escInf(act.motivo || '')
+        : 'Sin vincular a una actividad asignada';
+      return '<div id="ent-row-' + r.id + '" style="padding:10px;background:white;border-left:3px solid var(--green,#16A34A);border-radius:8px;margin-bottom:8px">'
+        + '<div style="font-size:0.78rem;color:var(--gray)">Entregada el ' + fmtD(r.fecha || '') + '</div>'
+        + '<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">' + corresponde + '</div>'
+        + (r.descripcion ? '<div style="font-size:0.88rem;color:var(--text);margin-top:4px;line-height:1.5"><b>Observaciones:</b> ' + escInf(r.descripcion) + '</div>' : '')
+        + '<button class="admin-only" onclick="editarEntregaRep(\'' + r.id + '\', \'' + elId + '\')" style="margin-top:6px;margin-right:14px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600">Editar</button>'
+        + '<button class="admin-only" onclick="eliminarEntregaRep(\'' + r.id + '\')" style="margin-top:6px;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600">Eliminar</button>'
+        + archBoxHTML('reparacion_entrega', r.id)
+        + '</div>';
+    }).join('');
+    pintarArchivos();
+  }).catch(function(err) {
+    console.error(err);
+    if (el) el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Sin registros.</div>';
+  });
+}
+function recargarReparacionEst() {
+  loadRegistros('reparacion', currentEstNombre, 'est-reparaciones-list');
+  loadRegistros('reparacion_entrega', currentEstNombre, 'est-rep-entregas-list');
+}
+function editarEntregaRep(id, elId) {
+  var row = document.getElementById('ent-row-' + id);
+  if (!row) return;
+  sb.from('registros').select('*').eq('id', id).single().then(function(res) {
+    if (res.error || !res.data) { toast('No se pudo cargar la entrega', 'red'); return; }
+    var r = res.data;
+    row.innerHTML =
+      '<div class="field"><label class="lbl" style="font-size:0.7rem">Fecha de entrega</label>' +
+        '<input type="date" id="ee-fecha-' + id + '" value="' + (r.fecha || '') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>' +
+      '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Observaciones</label>' +
+        '<textarea id="ee-obs-' + id + '" rows="2" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px">' + escInf(r.descripcion || '') + '</textarea></div>' +
+      '<div class="btn-row" style="margin-top:10px">' +
+        '<button class="btn btn-ghost" onclick="recargarReparacionEst()" style="flex:1;padding:8px;font-size:0.8rem">Cancelar</button>' +
+        '<button class="btn btn-primary" onclick="guardarEdicionEntregaRep(\'' + id + '\')" style="flex:1;padding:8px;font-size:0.8rem">Guardar</button>' +
+      '</div>';
+  });
+}
+function guardarEdicionEntregaRep(id) {
+  var fecha = document.getElementById('ee-fecha-' + id).value;
+  if (!fecha) { toast('Selecciona la fecha de entrega', 'red'); return; }
+  sb.from('registros').update({ fecha: fecha, descripcion: document.getElementById('ee-obs-' + id).value.trim() }).eq('id', id).then(function(res) {
+    if (res.error) { toast('Error al guardar', 'red'); return; }
+    toast('Entrega actualizada', 'ok');
+    recargarReparacionEst();
+  });
+}
+function eliminarEntregaRep(id) {
+  pedirPasswordConfirm('Ingresa la contraseña para eliminar:', function() {
+    sb.from('registros').delete().eq('id', id).then(function(res) {
+      if (res.error) throw res.error;
+      toast('Entrega eliminada', 'red');
+      recargarReparacionEst();
+    }).catch(function(err) { console.error(err); toast('Error al eliminar', 'red'); });
+  });
 }
 
 // ===== INFORME POR ASIGNATURA =====
