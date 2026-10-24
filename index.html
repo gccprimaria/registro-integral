@@ -265,7 +265,7 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="brand-mark">RI</div>
       <div class="nav-title"><h1>Gimnasio ComfaCasanare</h1><p>Registro Integral</p></div>
     </div>
-    <div class="badge" id="badge">0 activos</div>
+    <div class="badge" id="badge">0 casos</div>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">📊 Panel</button>
@@ -459,7 +459,6 @@ body.docente-mode .admin-only{display:none !important;}
         <optgroup label="Tarde"><option>1C</option><option>1D</option><option>2C</option><option>2D</option><option>3C</option><option>3D</option><option>4C</option><option>4D</option><option>5C</option><option>5D</option></optgroup>
       </select>
       <select id="f-ftype" onchange="renderCases()"><option value="">Tipo</option><option value="convivencia">Convivencia</option><option value="academico">Academico</option></select>
-      <select id="f-fstatus" onchange="renderCases()"><option value="">Estado</option><option value="abierto">Abierto</option><option value="resuelto">Resuelto</option></select>
     </div>
     <div class="fg2">
       <select id="f-fjornada" onchange="renderCases()"><option value="">Jornada</option><option value="Manana">Manana</option><option value="Tarde">Tarde</option></select>
@@ -918,13 +917,6 @@ body.docente-mode .admin-only{display:none !important;}
         <label class="lbl">Enlace del acta <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional)</span></label>
         <input type="text" id="edit-acta" placeholder="Pega aqui el enlace de Google Drive...">
         <div style="font-size:0.78rem;color:var(--gray);margin-top:4px">El archivo debe tener permiso "Cualquier persona con el enlace puede ver"</div>
-      </div>
-      <div class="field">
-        <label class="lbl">Estado</label>
-        <div class="type-grid">
-          <button class="type-btn" id="edit-btn-abierto" onclick="selEditStatus('abierto')">Abierto</button>
-          <button class="type-btn" id="edit-btn-resuelto" onclick="selEditStatus('resuelto')">Resuelto</button>
-        </div>
       </div>
       <div class="field">
         <label class="lbl">Citación al acudiente</label>
@@ -5711,8 +5703,7 @@ document.addEventListener('keydown', function(e) {
 
 function renderAll(){
   renderDash(); renderCases(); renderHSelect();
-  var ab=cases.filter(function(c){return c.status==="abierto";}).length;
-  document.getElementById("badge").textContent=ab+" activo"+(ab!==1?"s":"");
+  document.getElementById("badge").textContent=cases.length+" caso"+(cases.length!==1?"s":"");
 }
 
 function renderDash(){
@@ -5829,12 +5820,12 @@ function submitCase(){
 function getFiltered(){
   var name=document.getElementById("s-name").value.trim().toLowerCase();
   var grade=document.getElementById("f-fgrade").value; var type=document.getElementById("f-ftype").value;
-  var status=document.getElementById("f-fstatus").value; var jornada=document.getElementById("f-fjornada").value; var tipo=document.getElementById("f-ftipo").value;
-  return cases.slice().reverse().map(function(c,i){return{c:c,idx:cases.length-1-i};}).filter(function(item){var c=item.c;return(!name||c.studentName.toLowerCase().includes(name))&&(!grade||c.grade===grade)&&(!type||c.type===type)&&(!status||c.status===status)&&(!jornada||c.jornada===jornada)&&(!tipo||c.tipologia===tipo);});
+  var jornada=document.getElementById("f-fjornada").value; var tipo=document.getElementById("f-ftipo").value;
+  return cases.slice().reverse().map(function(c,i){return{c:c,idx:cases.length-1-i};}).filter(function(item){var c=item.c;return(!name||c.studentName.toLowerCase().includes(name))&&(!grade||c.grade===grade)&&(!type||c.type===type)&&(!jornada||c.jornada===jornada)&&(!tipo||c.tipologia===tipo);});
 }
-function clearFilters(){["s-name","f-fgrade","f-ftype","f-fstatus","f-fjornada","f-ftipo"].forEach(function(id){document.getElementById(id).value="";});renderCases();}
+function clearFilters(){["s-name","f-fgrade","f-ftype","f-fjornada","f-ftipo"].forEach(function(id){document.getElementById(id).value="";});renderCases();}
 function renderCases(){
-  var filtered=getFiltered(); var hasF=["s-name","f-fgrade","f-ftype","f-fstatus","f-fjornada","f-ftipo"].some(function(id){return document.getElementById(id).value;});
+  var filtered=getFiltered(); var hasF=["s-name","f-fgrade","f-ftype","f-fjornada","f-ftipo"].some(function(id){return document.getElementById(id).value;});
   var btn=document.getElementById("btn-clf"); btn.style.display=hasF?"block":"none";
   if(hasF) btn.textContent="Limpiar filtros - "+filtered.length+" resultado(s)";
   var list=document.getElementById("cases-list");
@@ -5845,7 +5836,7 @@ function renderCases(){
 function buildCard(c,idx){
   var div=document.createElement("div"); div.className="case-card "+c.type;
   var sn=c.description.length>90?c.description.slice(0,90)+"...":c.description;
-  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy);font-size:1rem">'+c.studentName+"</div>"+stag(c.status)+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.grade+"</span>"+(c.jornada?'<span class="tag tag-gray">'+c.jornada+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:8px">'+fmtD(c.date)+(c.teacher?" - "+c.teacher:"")+(c.asignatura?" - "+c.asignatura:"")+"</div>"+'<div style="font-size:0.85rem;color:#475569;margin-top:6px;line-height:1.5">'+sn+"</div>";
+  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy);font-size:1rem">'+c.studentName+"</div></div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.grade+"</span>"+(c.jornada?'<span class="tag tag-gray">'+c.jornada+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:8px">'+fmtD(c.date)+(c.teacher?" - "+c.teacher:"")+(c.asignatura?" - "+c.asignatura:"")+"</div>"+'<div style="font-size:0.85rem;color:#475569;margin-top:6px;line-height:1.5">'+sn+"</div>";
   div.addEventListener("click",function(){openModal(idx);}); return div;
 }
 function fmtD(iso){
@@ -5858,7 +5849,6 @@ function fmtD(iso){
     return d.toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric"});
   }catch(e){return iso;}
 }
-function stag(s){return s==="resuelto"?'<span class="tag tag-green"><span class="dot" style="background:#10B981"></span> resuelto</span>':'<span class="tag tag-amber"><span class="dot" style="background:#F59E0B"></span> abierto</span>';}
 function ttag(t){return t==="convivencia"?'<span class="tag tag-red">Convivencia</span>':'<span class="tag tag-blue">Academico</span>';}
 function tipotag(t){if(!t)return"";var colors={I:"#F59E0B",II:"#EF4444",III:"#7C3AED"};var bgs={I:"#FFF3CD",II:"#FEE2E2",III:"#EDE9FE"};return'<span class="tag" style="background:'+(bgs[t]||"#F1F5F9")+";color:"+(colors[t]||"#64748B")+'">Tipo '+t+"</span>";}
 
@@ -5868,7 +5858,7 @@ function openModal(idx){
   var bc=c.type==="convivencia"?"var(--red)":"var(--blue)";
   var citHtml="";
   if(c.citacion){citHtml='<div><div class="slbl">Citacion al acudiente</div><div class="detail-block">'+(c.citacion==="si"?"Si fue citado":"No fue citado")+(c.citacion==="si"&&c.fechaCitacion?"<br>Fecha: "+c.fechaCitacion:"")+(c.citacion==="si"&&c.asistencia?"<br>"+(c.asistencia==="asistio"?"Asistio":"No asistio"):"")+"</div></div>";}
-  document.getElementById("modal-body").innerHTML='<div style="border-top:4px solid '+bc+';border-radius:8px;padding-top:16px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">'+c.studentName+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div style="color:var(--gray);font-size:0.85rem;margin-top:3px">'+c.grade+(c.jornada?" - "+c.jornada:"")+" - "+fmtD(c.date)+"</div></div>"+stag(c.status)+"</div>"+'<div class="tags" style="margin-top:14px;margin-bottom:20px">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.teacher+"</span>"+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="display:flex;flex-direction:column;gap:16px"><div><div class="slbl">Descripcion</div><div class="detail-block">'+c.description+"</div></div>"+(c.actions?'<div><div class="slbl">Acciones</div><div class="detail-block gr">'+c.actions+"</div></div>":"")+citHtml+"</div>"+'<div class="btn-row" style="margin-top:24px"><button class="btn '+(c.status==="abierto"?"btn-green":"btn-amber")+'" id="m-status-btn" onclick="toggleStatus()">'+(c.status==="abierto"?"Marcar resuelto":"Reabrir caso")+"</button>"+'<button class="btn btn-ghost" onclick="openEditModal('+idx+')">Editar</button></div>'
+  document.getElementById("modal-body").innerHTML='<div style="border-top:4px solid '+bc+';border-radius:8px;padding-top:16px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">'+c.studentName+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div style="color:var(--gray);font-size:0.85rem;margin-top:3px">'+c.grade+(c.jornada?" - "+c.jornada:"")+" - "+fmtD(c.date)+"</div></div></div>"+'<div class="tags" style="margin-top:14px;margin-bottom:20px">'+ttag(c.type)+tipotag(c.tipologia)+'<span class="tag tag-gray">'+c.teacher+"</span>"+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="display:flex;flex-direction:column;gap:16px"><div><div class="slbl">Descripcion</div><div class="detail-block">'+c.description+"</div></div>"+(c.actions?'<div><div class="slbl">Acciones</div><div class="detail-block gr">'+c.actions+"</div></div>":"")+citHtml+"</div>"+'<div class="btn-row" style="margin-top:24px"><button class="btn btn-ghost" onclick="openEditModal('+idx+')">Editar</button></div>'
     +'</div>';
   document.getElementById("modal-overlay").classList.add("open"); document.body.style.overflow="hidden";
 }
@@ -5878,17 +5868,6 @@ function closeModal(){
   var est = document.getElementById('est-modal-overlay');
   var estOpen = est && getComputedStyle(est).display !== 'none';
   document.body.style.overflow = estOpen ? 'hidden' : '';
-}
-function toggleStatus(){
-  var c=cases[modalIndex]; if(!c) return;
-  pedirPasswordConfirm("Ingresa la contraseña para cambiar el estado:", function(){
-    var newS=c.status==="abierto"?"resuelto":"abierto";
-    var btn=document.getElementById("m-status-btn"); if(btn)btn.disabled=true; loading(true);
-    sb.from('casos').update({status:newS}).eq('id',c.id).then(function(res){
-      if(res.error) throw res.error;
-      cases[modalIndex].status=newS;renderAll();openModal(modalIndex);toast("Estado actualizado","ok");
-    }).catch(function(err){console.error(err);toast("Error","red");}).finally(function(){loading(false);});
-  });
 }
 
 // CONTRASENA
@@ -6000,7 +5979,7 @@ function renderDirector(){
   ltHtml+='</div>';
 
   if(!gc.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No hay casos para el grado '+grade+"</p></div>"+ltHtml;return;}
-  var total=gc.length; var abiertos=gc.filter(function(c){return c.status==="abierto";}).length; var conv=gc.filter(function(c){return c.type==="convivencia";}).length;
+  var total=gc.length; var acadG=gc.filter(function(c){return c.type==="academico";}).length; var conv=gc.filter(function(c){return c.type==="convivencia";}).length;
   var countMap={};gc.forEach(function(c){countMap[c.studentName]=(countMap[c.studentName]||0)+1;});
   var reincidentes=Object.entries(countMap).filter(function(e){return e[1]>1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var asgMap={};gc.forEach(function(c){var a=c.asignatura||"Sin asignatura";asgMap[a]=(asgMap[a]||0)+1;});
@@ -6008,13 +5987,13 @@ function renderDirector(){
   var citados=gc.filter(function(c){return c.citacion==="si";}).length;
   var asistieron=gc.filter(function(c){return c.asistencia==="asistio";}).length;
   var noAsistieron=gc.filter(function(c){return c.asistencia==="no_asistio";}).length;
-  var html='<div class="card" style="background:var(--navy);color:white"><div class="serif" style="font-size:1.2rem;margin-bottom:12px;font-weight:700">Grado '+grade+' - Resumen</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center"><div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800">'+total+'</div><div style="font-size:0.72rem;color:#94A3B8">Total</div></div><div style="background:rgba(245,158,11,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#F59E0B">'+abiertos+'</div><div style="font-size:0.72rem;color:#94A3B8">Abiertos</div></div><div style="background:rgba(239,68,68,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#EF4444">'+conv+'</div><div style="font-size:0.72rem;color:#94A3B8">Convivencia</div></div></div></div>';
+  var html='<div class="card" style="background:var(--navy);color:white"><div class="serif" style="font-size:1.2rem;margin-bottom:12px;font-weight:700">Grado '+grade+' - Resumen</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center"><div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800">'+total+'</div><div style="font-size:0.72rem;color:#94A3B8">Total</div></div><div style="background:rgba(59,130,246,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#60A5FA">'+acadG+'</div><div style="font-size:0.72rem;color:#94A3B8">Academicos</div></div><div style="background:rgba(239,68,68,0.2);border-radius:10px;padding:12px"><div style="font-size:1.8rem;font-weight:800;color:#EF4444">'+conv+'</div><div style="font-size:0.72rem;color:#94A3B8">Convivencia</div></div></div></div>';
   if(reincidentes.length){html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Estudiantes reincidentes</div>';reincidentes.forEach(function(e){html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-light)"><div style="font-weight:600;color:var(--navy)">'+e[0]+'</div><span class="tag tag-red">'+e[1]+" caso"+(e[1]>1?"s":"")+"</span></div>";});html+="</div>";}
   html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Casos por asignatura</div>';asgList.forEach(function(e){html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-light)"><div>'+e[0]+'</div><span class="tag tag-blue">'+e[1]+"</span></div>";});html+="</div>";
   html+='<div class="card"><div class="slbl" style="margin-bottom:12px">Citaciones a acudientes</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center"><div style="background:var(--gray-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--navy)">'+citados+'</div><div style="font-size:0.72rem;color:var(--gray)">Citados</div></div><div style="background:var(--green-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--green-dark)">'+asistieron+'</div><div style="font-size:0.72rem;color:var(--green-dark)">Asistieron</div></div><div style="background:var(--red-bg);border-radius:10px;padding:12px"><div style="font-size:1.5rem;font-weight:800;color:var(--red-dark)">'+noAsistieron+'</div><div style="font-size:0.72rem;color:var(--red-dark)">No asistieron</div></div></div></div>';
   html+=ltHtml;
   html+='<div><div class="slbl" style="margin-bottom:12px">Todos los casos</div><div style="display:flex;flex-direction:column;gap:10px">';
-  gc.forEach(function(c){var idx=cases.indexOf(c);var sn=c.description.length>80?c.description.slice(0,80)+"...":c.description;html+='<div class="case-card '+c.type+'" onclick="openModal('+idx+')"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+c.studentName+"</div>"+stag(c.status)+"</div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">'+fmtD(c.date)+" - "+c.teacher+"</div>"+'<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">'+sn+"</div></div>";});
+  gc.forEach(function(c){var idx=cases.indexOf(c);var sn=c.description.length>80?c.description.slice(0,80)+"...":c.description;html+='<div class="case-card '+c.type+'" onclick="openModal('+idx+')"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:700;color:var(--navy)">'+c.studentName+"</div></div>"+marcaBadgesPorNombre(c.studentName,c.grade)+'<div class="tags">'+ttag(c.type)+tipotag(c.tipologia)+(c.asignatura?'<span class="tag tag-gray">'+c.asignatura+"</span>":"")+"</div>"+'<div style="font-size:0.78rem;color:var(--gray);margin-top:6px">'+fmtD(c.date)+" - "+c.teacher+"</div>"+'<div style="font-size:0.82rem;color:#475569;margin-top:4px;line-height:1.5">'+sn+"</div></div>";});
   html+="</div></div>"; el.innerHTML=html;
 }
 
@@ -6029,8 +6008,7 @@ function renderHistorial(){
   var name=document.getElementById("h-select").value; var sum=document.getElementById("h-summary"); var list=document.getElementById("h-list");
   if(!name){sum.innerHTML="";list.innerHTML="";return;}
   var sc=cases.map(function(c,i){return{c:c,i:i};}).filter(function(item){return item.c.studentName===name;});
-  var ab=sc.filter(function(item){return item.c.status==="abierto";}).length;
-  sum.innerHTML='<div class="card" style="background:var(--navy);color:white"><div class="serif" style="font-size:1.2rem;font-weight:700">'+name+'</div><div style="font-size:0.82rem;color:#94A3B8;margin-top:4px">'+sc.length+" caso(s) - "+ab+" abierto(s)</div></div>";
+  sum.innerHTML='<div class="card" style="background:var(--navy);color:white"><div class="serif" style="font-size:1.2rem;font-weight:700">'+name+'</div><div style="font-size:0.82rem;color:#94A3B8;margin-top:4px">'+sc.length+" caso(s)</div></div>";
   list.innerHTML=""; sc.forEach(function(item){list.appendChild(buildCard(item.c,item.i));});
 }
 
@@ -6626,7 +6604,6 @@ function renderPanelDocente(){
 var editIndex = -1;
 var editType = "";
 var editTipo = "";
-var editStatus = "";
 var editCitacion = "";
 var editAsistencia = "";
 
@@ -6637,7 +6614,6 @@ function openEditModal(idx) {
   closeModal();
   editType = c.type;
   editTipo = c.tipologia;
-  editStatus = c.status;
   editCitacion = c.citacion;
   editAsistencia = c.asistencia;
 
@@ -6648,7 +6624,6 @@ function openEditModal(idx) {
 
   selEditType(editType);
   selEditTipo(editTipo);
-  selEditStatus(editStatus);
   selEditCitacion(editCitacion);
   if (editCitacion === "si") selEditAsistencia(editAsistencia);
 
@@ -6676,11 +6651,6 @@ function selEditTipo(t) {
   editTipo = t;
   ["I","II","III"].forEach(function(v) { document.getElementById("edit-tbtn-"+v).className = "tipo-btn" + (t === v ? " tipo-"+v : ""); });
 }
-function selEditStatus(s) {
-  editStatus = s;
-  document.getElementById("edit-btn-abierto").className = "type-btn" + (s === "abierto" ? " sel" : "");
-  document.getElementById("edit-btn-resuelto").className = "type-btn" + (s === "resuelto" ? " sel" : "");
-}
 function selEditCitacion(v) {
   editCitacion = v;
   document.getElementById("edit-btn-cit-si").className = "type-btn" + (v === "si" ? " sel" : "");
@@ -6705,7 +6675,6 @@ function saveEdit() {
     var updated = Object.assign({}, c, {
       type: editType,
       tipologia: editTipo,
-      status: editStatus,
       description: document.getElementById("edit-desc").value.trim(),
       actions: document.getElementById("edit-actions").value.trim(),
       acta: document.getElementById("edit-acta").value.trim(),
@@ -6714,7 +6683,7 @@ function saveEdit() {
       asistencia: editCitacion === "si" ? editAsistencia : ""
     });
     sb.from('casos').update({
-      tipo: updated.type, tipologia: updated.tipologia, status: updated.status,
+      tipo: updated.type, tipologia: updated.tipologia,
       descripcion: updated.description, acciones: updated.actions, acta_url: updated.acta,
       citacion: updated.citacion, fecha_citacion: updated.fechaCitacion || null,
       asistencia: updated.asistencia
@@ -6745,14 +6714,12 @@ function renderStats() {
   }
 
   var total = cases.length;
-  var abiertos = cases.filter(function(c) { return c.status === "abierto"; }).length;
   var conv = cases.filter(function(c) { return c.type === "convivencia"; }).length;
   var acad = cases.filter(function(c) { return c.type === "academico"; }).length;
 
   // Resumen
   document.getElementById("stats-summary").innerHTML =
     statCard(total, "Total casos", "var(--navy)") +
-    statCard(abiertos, "Abiertos", "var(--amber)") +
     statCard(conv, "Convivencia", "var(--red)") +
     statCard(acad, "Academicos", "var(--blue)");
 
@@ -6968,7 +6935,6 @@ function openEstModal(s) {
       h += '<div onclick="openModal(' + cidx + ')" style="padding:8px 0;border-bottom:1px solid var(--gray-light);cursor:pointer" onmouseover="this.style.background=\'rgba(59,130,246,0.06)\'" onmouseout="this.style.background=\'\'">' +
         '<div style="display:flex;justify-content:space-between">' +
           '<span class="tag ' + (c.type==='convivencia'?'tag-red':'tag-blue') + '" style="font-size:0.68rem">' + c.type + '</span>' +
-          stag(c.status) +
         '</div>' +
         '<div style="font-size:0.82rem;color:#475569;margin-top:4px">' + fmtD(c.date) + ' · ' + (c.asignatura || c.teacher) + '</div>' +
         '<div style="font-size:0.82rem;color:#475569;margin-top:2px">' + (c.description.length > 80 ? c.description.slice(0,80)+'...' : c.description) + '</div>' +
@@ -8073,7 +8039,6 @@ function infConstruir(s, d, tipo, desde, hasta) {
     doc.text(T(titulo.toUpperCase()), M + 4, y + 5.6);
     y += 13;
   }
-  var estadoTxt = function(c) { return c.status === 'resuelto' ? 'Resuelto' : 'Abierto'; };
   var si = function(v) { return v === 'si' ? 'Sí' : (v === 'no' ? 'No' : ''); };
 
   var haceDisc = (tipo === 'completo' || tipo === 'disciplinario');
@@ -8082,13 +8047,13 @@ function infConstruir(s, d, tipo, desde, hasta) {
   if (haceDisc) {
     grupo('Historial disciplinario');
     seccion('Faltas disciplinarias (casos de convivencia)', casosConv,
-      ['Fecha', 'Tipo', 'Docente', 'Descripción', 'Acciones tomadas', 'Estado'],
+      ['Fecha', 'Tipo', 'Docente', 'Descripción', 'Acciones tomadas'],
       casosConv.map(function(c) {
         var acc = c.actions || '';
         if (c.citacion === 'si') acc += (acc ? '\n' : '') + 'Citación a acudiente' + (c.fechaCitacion ? ' (' + infFecha(c.fechaCitacion) + ')' : '') +
           (c.asistencia === 'asistio' ? ': asistió' : (c.asistencia === 'no_asistio' ? ': no asistió' : ''));
-        return [infFecha(c.date), c.tipologia ? 'Tipo ' + c.tipologia : '', c.teacher, c.description, acc, estadoTxt(c)];
-      }), [20, 17, 28, 0, 40, 17]);
+        return [infFecha(c.date), c.tipologia ? 'Tipo ' + c.tipologia : '', c.teacher, c.description, acc];
+      }), [20, 17, 28, 0, 50]);
     seccion('Citaciones a acudiente', citAcud, ['Fecha', 'Motivo', 'Atendió', 'Asistió'],
       citAcud.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.atencion, si(r.asistio)]; }), [22, 0, 40, 18]);
     seccion('Citaciones a estudiante', citEst, ['Fecha', 'Motivo', 'Atendió'],
@@ -8113,8 +8078,8 @@ function infConstruir(s, d, tipo, desde, hasta) {
   if (haceAcad) {
     grupo('Historial académico');
     seccion('Anotaciones académicas', casosAcad,
-      ['Fecha', 'Docente', 'Asignatura', 'Descripción', 'Acciones tomadas', 'Estado'],
-      casosAcad.map(function(c) { return [infFecha(c.date), c.teacher, c.asignatura, c.description, c.actions, estadoTxt(c)]; }), [20, 28, 26, 0, 38, 17]);
+      ['Fecha', 'Docente', 'Asignatura', 'Descripción', 'Acciones tomadas'],
+      casosAcad.map(function(c) { return [infFecha(c.date), c.teacher, c.asignatura, c.description, c.actions]; }), [20, 28, 26, 0, 46]);
     seccion('Asignaturas con dificultad', historial, ['Periodo', 'Momento', 'Asignatura', 'Nota'],
       historial.map(function(h) { return [h.periodo, h.momento === 'final' ? 'Final' : 'Corte', h.asignatura, h.nota]; }), [22, 26, 0, 20]);
     seccion('Informes por asignatura', informes, ['Periodo', 'Fecha', 'Motivo', 'Resumen'],
