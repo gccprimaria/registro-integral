@@ -1359,11 +1359,13 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="field"><label class="lbl">Motivo de la suspension</label><textarea id="nr-sus-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="nr-sus-ferr-motivo"></div></div>
       <div class="field"><label class="lbl">Actividades asignadas</label><textarea id="nr-sus-desc" placeholder="Que actividades debe realizar durante la suspension..." rows="3"></textarea></div>
       <div class="field"><label class="lbl">Realizo las actividades? <span style="color:#94A3B8;font-weight:400;text-transform:none">(dejalo en blanco: te lo preguntara en Pendientes)</span></label>
-        <div class="type-grid">
+        <div class="tipo-grid">
           <button class="type-btn" id="nr-sus-si" onclick="selNRBool('sus','si')">Si las realizo</button>
+          <button class="type-btn" id="nr-sus-obs" onclick="selNRBool('sus','obs')">Con observaciones</button>
           <button class="type-btn" id="nr-sus-no" onclick="selNRBool('sus','no')">No las realizo</button>
         </div>
       </div>
+      <div class="field" id="nr-sus-obs-box" style="display:none"><label class="lbl">Observaciones de las actividades</label><textarea id="nr-sus-obs-txt" rows="3" placeholder="Ej: las hizo a medias, con dificultad y poca disposicion..."></textarea><div class="ferr" id="nr-sus-ferr-obs"></div></div>
       <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-sus" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
       <button class="btn btn-primary" id="nr-sus-btn" onclick="saveNRRegistro('suspension')" style="width:100%;padding:14px">Guardar suspension</button>
     </div>
@@ -8216,7 +8218,7 @@ function infConstruir(s, d, tipo, desde, hasta) {
       susp.map(function(r) {
         var st = susEstado(r, infFecha), fin = susFin(r);
         return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), (r.dias || '') + (fin ? '\n(hasta ' + infFecha(fin) + ')' : ''), st.txt];
-      }), [22, 0, 24, 40]);
+      }), [22, 0, 24, 52]);
     seccion('Compromisos disciplinarios', compDisc, ['Fecha', 'Compromiso', 'Responsable', 'Firmado'],
       compDisc.map(function(c) { return [infFecha(c.fecha), c.descripcion, c.docente, c.firma ? 'Sí' : 'No']; }), [22, 0, 40, 18]);
   }
@@ -8371,6 +8373,7 @@ function pendBucket(fecha) {
 }
 function pendErrTxt(e) {
   var m = (e && (e.message || e.details)) ? String(e.message || e.details) : '';
+  if (/obs_actividades/.test(m)) return 'Falta ejecutar el SQL observaciones_suspension.sql en Supabase.';
   if (/veces_pospuesta|fecha_limite|actividad_id/.test(m)) return 'Falta ejecutar el SQL pendientes.sql en Supabase.';
   return m ? m.slice(0, 120) : '';
 }
@@ -8400,7 +8403,7 @@ function pendConstruir() {
   var items = [];
   pendRows.forEach(function(r) {
     if (r.tipo === 'reparacion_entrega') return;
-    if (r.asistio === 'si' || r.asistio === 'no') return;
+    if (r.asistio === 'si' || r.asistio === 'no' || r.asistio === 'obs') return;
     var e = r.estudiantes || {};
     if (r.tipo === 'reparacion') {
       var ya = entregas.some(function(x) { return x.actividad_id != null && String(x.actividad_id) === String(r.id); });
@@ -8514,6 +8517,7 @@ function pendAcciones(i) {
   if (i.k === 'sus') {
     if (i.b !== 'prox') {
       h += '<button class="btn pend-btn pend-btn-ok" onclick="pendMarcarSus(\'' + id + '\',\'si\')">✔ Realizó las actividades</button>';
+      h += '<button class="btn btn-ghost pend-btn" onclick="pendModalAbrir(\'susobs\',\'sus\',\'' + id + '\')">Con observaciones</button>';
       h += '<button class="btn btn-ghost pend-btn" onclick="pendMarcarSus(\'' + id + '\',\'no\')">No las realizó</button>';
     }
   } else if (i.k === 'rep') {
@@ -8651,7 +8655,14 @@ function pendModalAbrir(modo, k, id) {
   pendModal = { modo: modo, k: k, id: id, sub: 'fecha' };
   var hoy = repHoy(), h = '';
   var cab = '<div style="font-size:0.85rem;color:var(--gray);margin-bottom:14px"><b style="color:var(--navy)">' + escInf(it.nombre) + '</b>' + (it.grado ? ' · ' + escInf(it.grado) : '') + '</div>';
-  if (modo === 'entrega') {
+  if (modo === 'susobs') {
+    h = '<div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">Actividades de la suspensión: realizadas con observaciones</div>' + cab +
+      '<div class="form-section">' +
+      '<div style="font-size:0.82rem;color:#475569;line-height:1.5">' + escInf('Suspensión de ' + (it.dias || '?') + ' días hasta el ' + fmtD(it.fin) + (it.titulo ? ': ' + String(it.titulo).slice(0, 140) : '')) + '</div>' +
+      '<div class="field"><label class="lbl">Observaciones</label><textarea id="pend-m-obs" rows="4" placeholder="Ej: las hizo a medias, con dificultad y poca disposición..."></textarea></div>' +
+      '<div class="ferr" id="pend-m-err" style="min-height:18px"></div>' +
+      '<button class="btn btn-primary" id="pend-m-btn" onclick="pendModalGuardar()" style="width:100%;padding:14px">Guardar</button></div>';
+  } else if (modo === 'entrega') {
     h = '<div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">Registrar entrega de la actividad</div>' + cab +
       '<div class="form-section">' +
       '<div style="font-size:0.82rem;color:#475569;line-height:1.5">' + escInf('Asignada el ' + fmtD(it.asignada || '') + (it.titulo ? ': ' + String(it.titulo).slice(0, 140) : '')) + '</div>' +
@@ -8699,6 +8710,13 @@ function pendModalGuardar() {
   var fEl = document.getElementById('pend-m-fecha'), fecha = fEl ? fEl.value : '';
   var hoy = repHoy();
 
+  if (m.modo === 'susobs') {
+    var tObs = document.getElementById('pend-m-obs').value.trim();
+    if (!tObs) { err.textContent = 'Escribe las observaciones'; return; }
+    pendModalCerrarDirecto();
+    pendEjecutar(sb.from('registros').update({ asistio: 'obs', obs_actividades: tObs }).eq('id', m.id), 'Registrado: actividades realizadas con observaciones');
+    return;
+  }
   if (m.modo === 'entrega') {
     if (!fecha) { err.textContent = 'Elige el día que la trajo'; return; }
     var pdfs = archTomar('pdf-pend'); if (pdfs.error) { err.textContent = pdfs.error; return; }
@@ -9140,6 +9158,7 @@ function susFin(r) {
 function susEstado(r, fmt) {
   fmt = fmt || fmtD;
   if (r.asistio === 'si') return { k: 'ok', txt: 'Actividades realizadas' };
+  if (r.asistio === 'obs') return { k: 'obs', txt: 'Actividades realizadas con observaciones' + (r.obs_actividades ? ': ' + r.obs_actividades : '') };
   if (r.asistio === 'no') return { k: 'bad', txt: 'No realizó las actividades' };
   var fin = susFin(r);
   if (fin && fin >= repHoy()) return { k: 'pend', txt: 'En curso: termina el ' + fmt(fin) };
@@ -9178,7 +9197,7 @@ function loadRegistros(tipo, nombre, elId) {
     var res = rr[0], entregas = rr[1];
     if (res.error) throw res.error;
     var data = (res.data || []).map(function(r) {
-      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio, fecha_limite: r.fecha_limite, pospuestas: r.veces_pospuesta || 0, orig: r.fecha_limite_original || '',
+      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio, obs_act: r.obs_actividades || '', fecha_limite: r.fecha_limite, pospuestas: r.veces_pospuesta || 0, orig: r.fecha_limite_original || '',
                entregas: entregas.filter(function(e) { return e.actividad_id != null && String(e.actividad_id) === String(r.id); }) };
     });
     renderRegistrosList(el, data, tipo, elId);
@@ -9197,9 +9216,9 @@ function renderRegistrosList(el, list, tipo, elId) {
     var extra = '';
     if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + (susFin({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite }) ? ' · ultimo dia: ' + fmtD(susFin({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite })) : '') + '</div>';
     if (tipo === 'suspension') {
-      var stS = susEstado({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite, asistio: r.bool1 });
-      var stSC = stS.k === 'ok' ? '#166534' : (stS.k === 'bad' ? '#B91C1C' : '#B45309');
-      extra += '<div style="font-size:0.8rem;color:' + stSC + ';font-weight:600;margin-top:4px">' + (stS.k === 'ok' ? '✔ ' : '') + stS.txt + '</div>';
+      var stS = susEstado({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite, asistio: r.bool1, obs_actividades: r.obs_act });
+      var stSC = stS.k === 'ok' ? '#166534' : (stS.k === 'bad' ? '#B91C1C' : (stS.k === 'obs' ? '#1D4ED8' : '#B45309'));
+      extra += '<div style="font-size:0.8rem;color:' + stSC + ';font-weight:600;margin-top:4px">' + (stS.k === 'ok' ? '✔ ' : '') + escInf(stS.txt) + '</div>';
     }
     if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
     if (tipo === 'reparacion') {
@@ -9237,10 +9256,13 @@ function editarRegistro(id, tipo, elId) {
         '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Ultimo dia de suspension</label>' +
         '<input type="date" id="er-fin-' + id + '" value="' + susFin(r) + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>' +
         '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">¿Realizó las actividades?</label>' +
-          '<div class="type-grid" style="margin-top:2px">' +
+          '<div class="tipo-grid" style="margin-top:2px">' +
             '<button type="button" class="type-btn' + (r.asistio==='si'?' sel':'') + '" id="er-asis-si-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'si\')">Si</button>' +
+            '<button type="button" class="type-btn' + (r.asistio==='obs'?' sel':'') + '" id="er-asis-obs-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'obs\')">Con observ.</button>' +
             '<button type="button" class="type-btn' + (r.asistio==='no'?' sel':'') + '" id="er-asis-no-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'no\')">No</button>' +
-          '</div></div>';
+          '</div></div>' +
+        '<div class="field" id="er-obs-box-' + id + '" style="margin-top:8px;display:' + (r.asistio==='obs'?'flex':'none') + '"><label class="lbl" style="font-size:0.7rem">Observaciones de las actividades</label>' +
+        '<textarea id="er-obs-' + id + '" rows="2" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px">' + escInf(r.obs_actividades || '') + '</textarea></div>';
     } else {
       camposExtra = '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Responsable</label>' +
         '<input type="text" id="er-atencion-' + id + '" value="' + (r.atencion||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>';
@@ -9268,6 +9290,7 @@ function editarRegistro(id, tipo, elId) {
         '<button class="btn btn-primary" onclick="guardarEdicionRegistro(\'' + id + '\',\'' + tipo + '\',\'' + elId + '\')" style="flex:1;padding:8px;font-size:0.8rem">Guardar</button>' +
       '</div>';
     row.dataset.asistio = r.asistio || '';
+    row.dataset.obsPrev = r.asistio === 'obs' ? '1' : '';
   });
 }
 function selEditarAsistio(id, v) {
@@ -9275,6 +9298,8 @@ function selEditarAsistio(id, v) {
   if (row) row.dataset.asistio = v;
   document.getElementById('er-asis-si-' + id).className = 'type-btn' + (v==='si'?' sel':'');
   document.getElementById('er-asis-no-' + id).className = 'type-btn' + (v==='no'?' sel':'');
+  var eo = document.getElementById('er-asis-obs-' + id); if (eo) eo.className = 'type-btn' + (v==='obs'?' sel':'');
+  var eb = document.getElementById('er-obs-box-' + id); if (eb) eb.style.display = v==='obs' ? 'flex' : 'none';
 }
 function guardarEdicionRegistro(id, tipo, elId) {
   var row = document.getElementById('reg-row-' + id);
@@ -9287,6 +9312,12 @@ function guardarEdicionRegistro(id, tipo, elId) {
     var finE = document.getElementById('er-fin-' + id);
     payload.fecha_limite = (finE && finE.value) || susFin({ fecha: payload.fecha, dias: payload.dias }) || null;
     payload.asistio = (row && row.dataset.asistio) || '';
+    var obsE = document.getElementById('er-obs-' + id);
+    if (payload.asistio === 'obs') {
+      var tObs = obsE ? obsE.value.trim() : '';
+      if (!tObs) { toast('Escribe las observaciones de las actividades', 'red'); return; }
+      payload.obs_actividades = tObs;
+    } else if (row && row.dataset.obsPrev) payload.obs_actividades = null;
   } else {
     payload.atencion = document.getElementById('er-atencion-' + id).value.trim();
     if (tipo === 'citacion') {
@@ -10360,8 +10391,12 @@ function selNRBool(prefix, val) {
   nrBools[prefix] = val;
   var si = document.getElementById('nr-' + prefix + '-si');
   var no = document.getElementById('nr-' + prefix + '-no');
+  var ob = document.getElementById('nr-' + prefix + '-obs');
   if(si) si.className = 'type-btn' + (val === 'si' ? ' sel' : '');
   if(no) no.className = 'type-btn' + (val === 'no' ? ' sel' : '');
+  if(ob) ob.className = 'type-btn' + (val === 'obs' ? ' sel' : '');
+  var box = document.getElementById('nr-' + prefix + '-obs-box');
+  if (box) box.style.display = val === 'obs' ? 'flex' : 'none';
 }
 
 function clearNRFerr(prefix, fields) {
@@ -10384,7 +10419,7 @@ function saveNRRegistro(tipo) {
   var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
   var pf = prefixMap[tipo];
   var tipoReal = (tipo === 'citacion' && curCitDestino === 'estudiante') ? 'citacion_estudiante' : tipo;
-  clearNRFerr(pf, ['fecha','motivo','atencion','dias','limite','fin']);
+  clearNRFerr(pf, ['fecha','motivo','atencion','dias','limite','fin','obs']);
   var fecha = document.getElementById('nr-' + pf + '-fecha').value;
   var motivo = document.getElementById('nr-' + pf + '-motivo').value.trim();
   var descEl = document.getElementById('nr-' + pf + '-desc');
@@ -10406,6 +10441,8 @@ function saveNRRegistro(tipo) {
   if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + pf + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
   var finEl = document.getElementById('nr-sus-fin');
   var finSus = (tipo === 'suspension' && finEl) ? finEl.value : '';
+  var obsSus = (tipo === 'suspension' && nrBools[pf] === 'obs') ? document.getElementById('nr-sus-obs-txt').value.trim() : '';
+  if (tipo === 'suspension' && nrBools[pf] === 'obs' && !obsSus) { document.getElementById('nr-sus-ferr-obs').textContent = 'Escribe las observaciones'; ok = false; }
   if (tipo === 'suspension' && finSus && fecha && finSus < fecha) { document.getElementById('nr-sus-ferr-fin').textContent = 'El ultimo dia no puede ser anterior al inicio'; ok = false; }
   var limiteEl = document.getElementById('nr-rep-limite');
   var limite = (tipo === 'reparacion' && limiteEl) ? limiteEl.value : '';
@@ -10423,7 +10460,7 @@ function saveNRRegistro(tipo) {
     asistio: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || '')
   };
   if (tipo === 'reparacion') payloadReg.fecha_limite = limite || null;
-  if (tipo === 'suspension') payloadReg.fecha_limite = finSus || susFin({ fecha: fecha, dias: dias }) || null;
+  if (tipo === 'suspension') { payloadReg.fecha_limite = finSus || susFin({ fecha: fecha, dias: dias }) || null; if (obsSus) payloadReg.obs_actividades = obsSus; }
   sb.from('registros').insert(payloadReg).select().single().then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
@@ -10435,6 +10472,7 @@ function saveNRRegistro(tipo) {
     if(diasEl) diasEl.value = '';
     if (limiteEl) limiteEl.value = '';
     if (finEl) finEl.value = '';
+    var obsTxt = document.getElementById('nr-sus-obs-txt'); if (obsTxt) obsTxt.value = '';
     susFinTocado = false;
     nrBools[pf] = '';
     selNRBool(pf, '');
