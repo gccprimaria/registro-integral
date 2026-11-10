@@ -1352,14 +1352,16 @@ body.docente-mode .admin-only{display:none !important;}
     <!-- Formulario suspension -->
     <div class="card form-section" id="nr-form-suspension" style="display:none">
       <div class="serif" style="font-size:1rem;color:var(--navy);font-weight:700">Suspension</div>
-      <div class="field"><label class="lbl">Fecha de inicio</label><input type="date" id="nr-sus-fecha"><div class="ferr" id="nr-sus-ferr-fecha"></div></div>
-      <div class="field"><label class="lbl">Numero de dias</label><input type="number" id="nr-sus-dias" placeholder="Ej: 2" min="1" max="30"><div class="ferr" id="nr-sus-ferr-dias"></div></div>
+      <div class="field"><label class="lbl">Fecha de inicio</label><input type="date" id="nr-sus-fecha" onchange="susAutoFin()"><div class="ferr" id="nr-sus-ferr-fecha"></div></div>
+      <div class="field"><label class="lbl">Numero de dias</label><input type="number" id="nr-sus-dias" placeholder="Ej: 2" min="1" max="30" oninput="susAutoFin()"><div class="ferr" id="nr-sus-ferr-dias"></div></div>
+      <div class="field"><label class="lbl">Ultimo dia de suspension <span style="color:#94A3B8;font-weight:400;text-transform:none">(se calcula sola con dias habiles; cambiala si hay festivos)</span></label><input type="date" id="nr-sus-fin" onchange="susFinTocado=true"><div class="ferr" id="nr-sus-ferr-fin"></div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">La suspension es en el colegio. El pendiente de confirmar las actividades aparece el dia habil siguiente.</div></div>
       <div class="field"><label class="lbl">Motivo de la suspension</label><textarea id="nr-sus-motivo" placeholder="Describe el motivo..." rows="3"></textarea><div class="ferr" id="nr-sus-ferr-motivo"></div></div>
       <div class="field"><label class="lbl">Actividades asignadas</label><textarea id="nr-sus-desc" placeholder="Que actividades debe realizar durante la suspension..." rows="3"></textarea></div>
-      <div class="field"><label class="lbl">Fue completada?</label>
+      <div class="field"><label class="lbl">Realizo las actividades? <span style="color:#94A3B8;font-weight:400;text-transform:none">(dejalo en blanco: te lo preguntara en Pendientes)</span></label>
         <div class="type-grid">
-          <button class="type-btn" id="nr-sus-si" onclick="selNRBool('sus','si')">Si termino</button>
-          <button class="type-btn" id="nr-sus-no" onclick="selNRBool('sus','no')">No termino</button>
+          <button class="type-btn" id="nr-sus-si" onclick="selNRBool('sus','si')">Si las realizo</button>
+          <button class="type-btn" id="nr-sus-no" onclick="selNRBool('sus','no')">No las realizo</button>
         </div>
       </div>
       <div class="field"><label class="lbl">Adjuntar acta o PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional, puedes elegir varios)</span></label><input type="file" id="pdf-sus" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo. Se guarda junto con este registro.</div></div>
@@ -1654,13 +1656,13 @@ body.docente-mode .admin-only{display:none !important;}
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
     <div>
       <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Pendientes</div>
-      <div style="font-size:0.85rem;color:var(--gray)">Actividades de reparación por entregar y citaciones sin confirmar. Resuélvelas con un clic.</div>
+      <div style="font-size:0.85rem;color:var(--gray)">Actividades de reparación por entregar, actividades de suspensión por confirmar y citaciones sin confirmar. Resuélvelas con un clic.</div>
       <div id="pend-hora" style="font-size:0.75rem;color:#94A3B8;margin-top:4px"></div>
     </div>
     <button class="btn btn-ghost" onclick="pendActualizar()" style="padding:9px 16px">↻ Actualizar</button>
   </div>
   <div class="pend-filtros">
-    <select id="pend-f-tipo" onchange="renderPendientes()"><option value="">Todo</option><option value="rep">Actividades de reparación</option><option value="cit">Citaciones</option></select>
+    <select id="pend-f-tipo" onchange="renderPendientes()"><option value="">Todo</option><option value="rep">Actividades de reparación</option><option value="cit">Citaciones</option><option value="sus">Actividades de suspensión</option></select>
     <select id="pend-f-jornada" onchange="renderPendientes()"><option value="">Todas las jornadas</option></select>
     <select id="pend-f-grado" onchange="renderPendientes()"><option value="">Todos los grados</option></select>
     <span></span>
@@ -8210,8 +8212,11 @@ function infConstruir(s, d, tipo, desde, hasta) {
         d.registros.forEach(function(a) { if (r.actividad_id != null && String(a.id) === String(r.actividad_id)) act = a; });
         return [infFecha(r.fecha), act ? ('Asignada el ' + infFecha(act.fecha) + ': ' + (act.motivo || '')) : 'Sin vincular', r.descripcion || ''];
       }), [28, 0, 60]);
-    seccion('Suspensiones', susp, ['Fecha', 'Motivo', 'Días'],
-      susp.map(function(r) { return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), r.dias]; }), [22, 0, 16]);
+    seccion('Suspensiones', susp, ['Fecha', 'Motivo', 'Días', 'Actividades'],
+      susp.map(function(r) {
+        var st = susEstado(r, infFecha), fin = susFin(r);
+        return [infFecha(r.fecha), r.motivo + (r.descripcion ? '\n' + r.descripcion : ''), (r.dias || '') + (fin ? '\n(hasta ' + infFecha(fin) + ')' : ''), st.txt];
+      }), [22, 0, 24, 40]);
     seccion('Compromisos disciplinarios', compDisc, ['Fecha', 'Compromiso', 'Responsable', 'Firmado'],
       compDisc.map(function(c) { return [infFecha(c.fecha), c.descripcion, c.docente, c.firma ? 'Sí' : 'No']; }), [22, 0, 40, 18]);
   }
@@ -8375,7 +8380,7 @@ function cargarPendientes() {
   if (pendCargando) return Promise.resolve();
   pendCargando = true;
   return sb.from('registros').select('*, estudiantes(nombre,grado,jornada)')
-    .in('tipo', ['reparacion', 'reparacion_entrega', 'citacion'])
+    .in('tipo', ['reparacion', 'reparacion_entrega', 'citacion', 'suspension'])
     .then(function(res) {
       if (res.error) throw res.error;
       pendRows = res.data || [];
@@ -8403,6 +8408,11 @@ function pendConstruir() {
       items.push({ k: 'rep', id: r.id, estId: r.estudiante_id, nombre: e.nombre || '', grado: e.grado || '', jornada: e.jornada || '',
         fecha: pendFechaOk(r.fecha_limite) ? String(r.fecha_limite).slice(0, 10) : '', asignada: r.fecha || '', titulo: r.motivo || '',
         pospuestas: r.veces_pospuesta || 0, orig: r.fecha_limite_original || '' });
+    } else if (r.tipo === 'suspension') {
+      var finS = susFin(r);
+      if (!finS) return;
+      items.push({ k: 'sus', id: r.id, estId: r.estudiante_id, nombre: e.nombre || '', grado: e.grado || '', jornada: e.jornada || '',
+        fecha: habSumar(finS, 1), fin: finS, dias: r.dias || '', titulo: r.motivo || '', asignada: r.fecha || '' });
     } else if (r.tipo === 'citacion') {
       items.push({ k: 'cit', id: r.id, estId: r.estudiante_id, nombre: e.nombre || '', grado: e.grado || '', jornada: e.jornada || '',
         fecha: pendFechaOk(r.fecha) ? String(r.fecha).slice(0, 10) : '', titulo: r.motivo || '' });
@@ -8466,7 +8476,8 @@ function pendFiltrados() {
   var g = (document.getElementById('pend-f-grado') || {}).value || '';
   return pendItems.filter(function(i) {
     if (t === 'rep' && i.k !== 'rep') return false;
-    if (t === 'cit' && i.k === 'rep') return false;
+    if (t === 'cit' && (i.k === 'rep' || i.k === 'sus')) return false;
+    if (t === 'sus' && i.k !== 'sus') return false;
     if (j && i.jornada !== j) return false;
     if (g && i.grado !== g) return false;
     return true;
@@ -8478,6 +8489,12 @@ function pendBuscar(k, id) {
 }
 
 function pendCuando(i) {
+  if (i.k === 'sus') {
+    var dd = pendDias(repHoy(), i.fecha), ff = fmtD(i.fin);
+    if (dd > 0) return 'Suspensión en curso: termina el ' + ff;
+    if (dd === 0) return 'Terminó la suspensión (' + ff + '): confirma las actividades hoy';
+    return 'Terminó la suspensión el ' + ff + ' (venció ' + (dd === -1 ? 'ayer' : 'hace ' + (-dd) + ' días') + ')';
+  }
   var rep = i.k === 'rep';
   if (!i.fecha) return rep ? 'Sin fecha límite de entrega' : 'Sin fecha de citación';
   var d = pendDias(repHoy(), i.fecha), f = fmtD(i.fecha);
@@ -8494,7 +8511,12 @@ function pendAcciones(i) {
   if (i.b === 'sin') {
     h += '<div class="pend-fecha"><input type="date" id="pend-fd-' + i.k + '-' + id + '"><button class="btn btn-ghost pend-btn" onclick="pendFijarFecha(\'' + i.k + '\',\'' + id + '\')">Fijar fecha</button></div>';
   }
-  if (i.k === 'rep') {
+  if (i.k === 'sus') {
+    if (i.b !== 'prox') {
+      h += '<button class="btn pend-btn pend-btn-ok" onclick="pendMarcarSus(\'' + id + '\',\'si\')">✔ Realizó las actividades</button>';
+      h += '<button class="btn btn-ghost pend-btn" onclick="pendMarcarSus(\'' + id + '\',\'no\')">No las realizó</button>';
+    }
+  } else if (i.k === 'rep') {
     h += '<button class="btn pend-btn pend-btn-ok" onclick="pendModalAbrir(\'entrega\',\'rep\',\'' + id + '\')">✔ La trajo</button>';
     if (i.b !== 'prox' && i.b !== 'sin') h += '<button class="btn btn-ghost pend-btn" onclick="pendModalAbrir(\'noentrega\',\'rep\',\'' + id + '\')">No la trajo</button>';
   } else {
@@ -8507,11 +8529,12 @@ function pendAcciones(i) {
   return h;
 }
 function pendFilaHTML(i) {
-  var tipoTag = i.k === 'rep' ? '<span class="tag tag-amber">Actividad de reparación</span>'
+  var tipoTag = i.k === 'sus' ? '<span class="tag tag-red">Actividades de suspensión</span>' : i.k === 'rep' ? '<span class="tag tag-amber">Actividad de reparación</span>'
     : (i.k === 'cit' ? '<span class="tag tag-blue">Citación a acudiente</span>' : '<span class="tag tag-blue">Citación · caso ' + (i.tipoCaso === 'academico' ? 'académico' : 'de convivencia') + '</span>');
   var det = String(i.titulo || '').replace(/\s+/g, ' ');
   if (det.length > 120) det = det.slice(0, 117) + '...';
   if (i.k === 'rep') det = 'Asignada el ' + fmtD(i.asignada || '') + (det ? ': ' + det : '');
+  if (i.k === 'sus') det = 'Suspensión de ' + (i.dias || '?') + (String(i.dias) === '1' ? ' día' : ' días') + ' desde el ' + fmtD(i.asignada || '') + (det ? ': ' + det : '');
   var cls = i.b === 'atras' || i.b === 'viejo' ? ' pend-rojo' : (i.b === 'hoy' ? ' pend-ambar' : '');
   var pos = (i.k === 'rep' && i.pospuestas > 0)
     ? '<div class="pend-det">Pospuesta ' + i.pospuestas + (i.pospuestas === 1 ? ' vez' : ' veces') + (i.orig ? ' · límite original: ' + fmtD(i.orig) : '') + '</div>' : '';
@@ -8605,6 +8628,9 @@ function pendMarcarCita(k, id, v) {
     });
   }
   pendEjecutar(p, v === 'si' ? 'Registrado: el acudiente asistió' : 'Registrado: el acudiente no asistió');
+}
+function pendMarcarSus(id, v) {
+  pendEjecutar(sb.from('registros').update({ asistio: v }).eq('id', id), v === 'si' ? 'Registrado: realizó las actividades de la suspensión' : 'Registrado: no realizó las actividades de la suspensión');
 }
 function pendFijarFecha(k, id) {
   var el = document.getElementById('pend-fd-' + k + '-' + id);
@@ -9090,6 +9116,36 @@ function renderCompList(el, list, color, tipo) {
   pintarArchivos();
 }
 
+// ---- Suspension en el colegio: ultimo dia, primer dia pendiente y estado ----
+function habAjustar(f) { // si cae en fin de semana, pasa al lunes
+  var p = String(f).slice(0, 10).split('-'), d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+  while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d = new Date(d.getTime() + 86400000);
+  return d.toISOString().slice(0, 10);
+}
+function habSumar(f, n) { // suma n dias habiles (lunes a viernes)
+  var d = habAjustar(f);
+  for (var i = 0; i < n; i++) {
+    var p = d.split('-'), x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + 1));
+    d = habAjustar(x.toISOString().slice(0, 10));
+  }
+  return d;
+}
+// ultimo dia de la suspension: el guardado, o inicio + (dias - 1) dias habiles
+function susFin(r) {
+  if (r.fecha_limite && /^\d{4}-\d{2}-\d{2}/.test(String(r.fecha_limite))) return String(r.fecha_limite).slice(0, 10);
+  if (!r.fecha || !/^\d{4}-\d{2}-\d{2}/.test(String(r.fecha))) return '';
+  var n = parseInt(r.dias, 10);
+  return habSumar(String(r.fecha).slice(0, 10), (n && n > 1) ? n - 1 : 0);
+}
+function susEstado(r, fmt) {
+  fmt = fmt || fmtD;
+  if (r.asistio === 'si') return { k: 'ok', txt: 'Actividades realizadas' };
+  if (r.asistio === 'no') return { k: 'bad', txt: 'No realizó las actividades' };
+  var fin = susFin(r);
+  if (fin && fin >= repHoy()) return { k: 'pend', txt: 'En curso: termina el ' + fmt(fin) };
+  return { k: 'pend', txt: 'Pendiente de confirmar si realizó las actividades' };
+}
+
 // ---- Estado de una actividad de reparacion (sale de las entregas y de la fecha limite) ----
 function repHoy() { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }); }
 // a: {fecha_limite, asistio}; ents: entregas ligadas; fmt: formateador de fechas
@@ -9139,7 +9195,12 @@ function renderRegistrosList(el, list, tipo, elId) {
   el.innerHTML = list.map(function(r) {
     var fechaLabel = fmtD(r.fecha || '');
     var extra = '';
-    if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + '</div>';
+    if (tipo === 'suspension' && r.dias) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Dias: ' + r.dias + (susFin({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite }) ? ' · ultimo dia: ' + fmtD(susFin({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite })) : '') + '</div>';
+    if (tipo === 'suspension') {
+      var stS = susEstado({ fecha: r.fecha, dias: r.dias, fecha_limite: r.fecha_limite, asistio: r.bool1 });
+      var stSC = stS.k === 'ok' ? '#166534' : (stS.k === 'bad' ? '#B91C1C' : '#B45309');
+      extra += '<div style="font-size:0.8rem;color:' + stSC + ';font-weight:600;margin-top:4px">' + (stS.k === 'ok' ? '✔ ' : '') + stS.txt + '</div>';
+    }
     if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
     if (tipo === 'reparacion') {
       if (r.fecha_limite) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Fecha límite de entrega: ' + fmtD(r.fecha_limite) + '</div>';
@@ -9148,7 +9209,7 @@ function renderRegistrosList(el, list, tipo, elId) {
       var stColor = st.k === 'ok' ? '#166534' : (st.k === 'bad' ? '#B91C1C' : '#B45309');
       extra += '<div style="font-size:0.8rem;color:' + stColor + ';font-weight:600;margin-top:4px">' + (st.k === 'ok' ? '✔ ' : '') + st.txt + '</div>';
     }
-    if (r.bool1 && tipo !== 'reparacion') extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
+    if (r.bool1 && tipo !== 'reparacion' && tipo !== 'suspension') extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Confirmado: ' + (r.bool1 === 'si' ? 'Si' : 'No') + '</div>';
     var editarBtn = '<button class="admin-only" onclick="editarRegistro(\'' + r.id + '\', \'' + tipo + '\', \'' + elId + '\')" style="margin-top:6px;margin-right:14px;background:none;border:none;color:var(--blue);cursor:pointer;font-size:0.78rem;font-family:DM Sans,sans-serif;font-weight:600;padding:0">Editar</button>';
     return '<div id="reg-row-' + r.id + '" style="padding:10px;background:white;border-left:3px solid ' + color + ';border-radius:8px;margin-bottom:8px">'
       + '<div style="font-size:0.78rem;color:var(--gray)">' + fechaLabel + '</div>'
@@ -9172,7 +9233,14 @@ function editarRegistro(id, tipo, elId) {
     var camposExtra = '';
     if (tipo === 'suspension') {
       camposExtra = '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Dias de suspension</label>' +
-        '<input type="number" id="er-dias-' + id + '" value="' + (r.dias||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>';
+        '<input type="number" id="er-dias-' + id + '" value="' + (r.dias||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>' +
+        '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Ultimo dia de suspension</label>' +
+        '<input type="date" id="er-fin-' + id + '" value="' + susFin(r) + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>' +
+        '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">¿Realizó las actividades?</label>' +
+          '<div class="type-grid" style="margin-top:2px">' +
+            '<button type="button" class="type-btn' + (r.asistio==='si'?' sel':'') + '" id="er-asis-si-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'si\')">Si</button>' +
+            '<button type="button" class="type-btn' + (r.asistio==='no'?' sel':'') + '" id="er-asis-no-' + id + '" onclick="selEditarAsistio(\'' + id + '\',\'no\')">No</button>' +
+          '</div></div>';
     } else {
       camposExtra = '<div class="field" style="margin-top:8px"><label class="lbl" style="font-size:0.7rem">Responsable</label>' +
         '<input type="text" id="er-atencion-' + id + '" value="' + (r.atencion||'') + '" style="width:100%;padding:7px;border:1px solid var(--gray-light);border-radius:8px;font-size:0.82rem;margin-top:2px"></div>';
@@ -9216,6 +9284,9 @@ function guardarEdicionRegistro(id, tipo, elId) {
   };
   if (tipo === 'suspension') {
     payload.dias = document.getElementById('er-dias-' + id).value || null;
+    var finE = document.getElementById('er-fin-' + id);
+    payload.fecha_limite = (finE && finE.value) || susFin({ fecha: payload.fecha, dias: payload.dias }) || null;
+    payload.asistio = (row && row.dataset.asistio) || '';
   } else {
     payload.atencion = document.getElementById('er-atencion-' + id).value.trim();
     if (tipo === 'citacion') {
@@ -10300,12 +10371,20 @@ function clearNRFerr(prefix, fields) {
   });
 }
 
+var susFinTocado = false;
+function susAutoFin() {
+  var f = document.getElementById('nr-sus-fecha'), d = document.getElementById('nr-sus-dias'), o = document.getElementById('nr-sus-fin');
+  if (!f || !d || !o) return;
+  if (!f.value || !d.value) { if (!susFinTocado) o.value = ''; return; }
+  if (!susFinTocado) o.value = susFin({ fecha: f.value, dias: d.value });
+}
+
 function saveNRRegistro(tipo) {
   if (!nrCurrentStudent) { toast('Selecciona un estudiante', 'red'); return; }
   var prefixMap = {citacion:'cit', reparacion:'rep', suspension:'sus'};
   var pf = prefixMap[tipo];
   var tipoReal = (tipo === 'citacion' && curCitDestino === 'estudiante') ? 'citacion_estudiante' : tipo;
-  clearNRFerr(pf, ['fecha','motivo','atencion','dias','limite']);
+  clearNRFerr(pf, ['fecha','motivo','atencion','dias','limite','fin']);
   var fecha = document.getElementById('nr-' + pf + '-fecha').value;
   var motivo = document.getElementById('nr-' + pf + '-motivo').value.trim();
   var descEl = document.getElementById('nr-' + pf + '-desc');
@@ -10325,6 +10404,9 @@ function saveNRRegistro(tipo) {
     document.getElementById('nr-' + pf + '-ferr-atencion').textContent = 'Escribe el responsable'; ok = false;
   }
   if (tipo === 'suspension' && !dias) { document.getElementById('nr-' + pf + '-ferr-dias').textContent = 'Ingresa los dias'; ok = false; }
+  var finEl = document.getElementById('nr-sus-fin');
+  var finSus = (tipo === 'suspension' && finEl) ? finEl.value : '';
+  if (tipo === 'suspension' && finSus && fecha && finSus < fecha) { document.getElementById('nr-sus-ferr-fin').textContent = 'El ultimo dia no puede ser anterior al inicio'; ok = false; }
   var limiteEl = document.getElementById('nr-rep-limite');
   var limite = (tipo === 'reparacion' && limiteEl) ? limiteEl.value : '';
   if (limite && fecha && limite < fecha) { document.getElementById('nr-rep-ferr-limite').textContent = 'La fecha limite no puede ser anterior a la fecha de la actividad'; ok = false; }
@@ -10341,6 +10423,7 @@ function saveNRRegistro(tipo) {
     asistio: curCitDestino === 'estudiante' && tipo === 'citacion' ? '' : (nrBools[pf] || '')
   };
   if (tipo === 'reparacion') payloadReg.fecha_limite = limite || null;
+  if (tipo === 'suspension') payloadReg.fecha_limite = finSus || susFin({ fecha: fecha, dias: dias }) || null;
   sb.from('registros').insert(payloadReg).select().single().then(function(res) {
     if (res.error) throw res.error;
     document.getElementById('nr-' + pf + '-fecha').value = '';
@@ -10351,6 +10434,8 @@ function saveNRRegistro(tipo) {
     if (atencionOtroElReset) { atencionOtroElReset.value = ''; atencionOtroElReset.style.display = 'none'; }
     if(diasEl) diasEl.value = '';
     if (limiteEl) limiteEl.value = '';
+    if (finEl) finEl.value = '';
+    susFinTocado = false;
     nrBools[pf] = '';
     selNRBool(pf, '');
     if (tipo === 'citacion') selCitDestino('acudiente');
