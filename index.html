@@ -245,6 +245,39 @@ body.admin-locked #admin-app{display:none !important;}
 .docente-result-card{background:#fff;border:1px solid var(--gray-light);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s;}
 .docente-result-card:hover{border-color:var(--amber);}
 body.docente-mode .admin-only{display:none !important;}
+.nav-count{margin-left:auto;background:#EF4444;color:#fff;border-radius:999px;font-size:0.68rem;font-weight:800;padding:2px 7px;min-width:20px;text-align:center;line-height:1.35;}
+#pend-modal-overlay.open{z-index:660;}
+.pend-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0 4px;}
+.pend-tile{border:none;border-radius:14px;padding:14px 18px;color:#fff;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(15,23,42,0.12);}
+.pend-tile-n{font-size:2rem;font-weight:800;line-height:1.1;}
+.pend-tile-l{font-size:0.8rem;font-weight:600;opacity:0.95;margin-top:2px;}
+.pend-filtros{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:10px;align-items:center;margin-top:12px;}
+.pend-sec{margin-top:20px;border-radius:12px;overflow:hidden;border:1px solid var(--gray-light);background:#fff;}
+.pend-sec-h{display:flex;align-items:center;gap:10px;padding:12px 18px;color:#fff;}
+.pend-sec-t{font-weight:700;font-size:1rem;}
+.pend-sec-n{display:inline-block;background:rgba(255,255,255,0.28);border-radius:999px;padding:1px 9px;font-size:0.8rem;margin-left:6px;}
+.pend-sec-s{font-size:0.78rem;opacity:0.92;margin-top:2px;}
+.pend-row{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:14px 18px;border-top:1px solid var(--gray-light);}
+.pend-main{min-width:0;flex:1;}
+.pend-nombre{font-weight:700;color:var(--navy);font-size:0.95rem;cursor:pointer;}
+.pend-nombre:hover{text-decoration:underline;}
+.pend-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;}
+.pend-det{font-size:0.82rem;color:#475569;margin-top:5px;line-height:1.45;}
+.pend-cuando{font-size:0.82rem;font-weight:700;margin-top:5px;color:#475569;}
+.pend-cuando.pend-rojo{color:#B91C1C;}
+.pend-cuando.pend-ambar{color:#B45309;}
+.pend-acc{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
+.pend-btn{padding:9px 14px;font-size:0.82rem;white-space:nowrap;}
+.pend-btn-ok{background:#16A34A;color:#fff;border:none;}
+.pend-btn-ok:hover{background:#15803D;}
+.pend-fecha{display:flex;gap:6px;align-items:center;}
+.pend-fecha input{padding:8px;border:1.5px solid var(--gray-light);border-radius:8px;font-family:inherit;font-size:0.82rem;}
+.pend-vacio{padding:18px;text-align:center;color:var(--gray);font-size:0.88rem;border-top:1px solid var(--gray-light);}
+.pend-mas{display:block;width:100%;padding:12px;background:#F8FAFC;border:none;border-top:1px solid var(--gray-light);color:var(--blue);font-weight:700;cursor:pointer;font-family:inherit;font-size:0.85rem;}
+.pend-aviso{position:fixed;top:16px;right:16px;z-index:120;background:#0F2A47;color:#fff;border-left:5px solid #F59E0B;border-radius:12px;padding:14px 16px;box-shadow:0 8px 24px rgba(15,23,42,0.3);display:none;max-width:340px;align-items:center;gap:12px;}
+.pend-aviso.show{display:flex;}
+.pend-aviso button{font-family:inherit;cursor:pointer;}
+@media(max-width:880px){.pend-tiles{grid-template-columns:repeat(2,1fr);}.pend-filtros{grid-template-columns:1fr 1fr;}.pend-row{flex-direction:column;align-items:stretch;}.pend-acc{justify-content:flex-start;}}
 </style>
 </head>
 <body>
@@ -269,6 +302,7 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">📊 Panel</button>
+    <button class="nav-tab admin-only" onclick="showPage('pendientes')">🔔 Pendientes<span class="nav-count" id="pend-badge" style="display:none">0</span></button>
     <div class="side-group-label">Casos</div>
     <button class="nav-tab" onclick="showPage('nuevo')">➕ Nuevo caso</button>
     <button class="nav-tab" onclick="showPage('casos')">📋 Casos</button>
@@ -1587,6 +1621,38 @@ body.docente-mode .admin-only{display:none !important;}
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Solicitudes cambio de jornada</div>
   <div style="font-size:0.85rem;color:var(--gray)">Todas las solicitudes registradas, de la más reciente a la más antigua.</div>
   <div id="sj-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
+</div>
+
+<div class="page" id="page-pendientes">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+    <div>
+      <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Pendientes</div>
+      <div style="font-size:0.85rem;color:var(--gray)">Actividades de reparación por entregar y citaciones sin confirmar. Resuélvelas con un clic.</div>
+      <div id="pend-hora" style="font-size:0.75rem;color:#94A3B8;margin-top:4px"></div>
+    </div>
+    <button class="btn btn-ghost" onclick="pendActualizar()" style="padding:9px 16px">↻ Actualizar</button>
+  </div>
+  <div class="pend-filtros">
+    <select id="pend-f-tipo" onchange="renderPendientes()"><option value="">Todo</option><option value="rep">Actividades de reparación</option><option value="cit">Citaciones</option></select>
+    <select id="pend-f-jornada" onchange="renderPendientes()"><option value="">Todas las jornadas</option></select>
+    <select id="pend-f-grado" onchange="renderPendientes()"><option value="">Todos los grados</option></select>
+    <span></span>
+  </div>
+  <div id="pend-contenido"><div class="empty"><p>Cargando pendientes...</p></div></div>
+</div>
+
+<div class="modal-overlay" id="pend-modal-overlay" onclick="pendModalCerrar(event)">
+  <div class="modal" style="max-width:480px">
+    <button class="back-btn" onclick="pendModalCerrarDirecto()" style="margin-bottom:12px">← Volver</button>
+    <div id="pend-modal-body"></div>
+  </div>
+</div>
+
+<div class="pend-aviso" id="pend-aviso">
+  <div style="font-size:1.4rem">🔔</div>
+  <div style="font-size:0.85rem;line-height:1.4"><div id="pend-aviso-txt"></div>
+    <button onclick="showPage('pendientes')" style="margin-top:6px;background:#F59E0B;color:#0F2A47;border:none;border-radius:8px;padding:6px 12px;font-weight:700;font-size:0.8rem">Ver pendientes</button></div>
+  <button onclick="pendOcultarAviso()" style="background:none;border:none;color:#94A3B8;font-size:1.2rem;align-self:flex-start">×</button>
 </div>
 
 <div class="page" id="page-archivos-pdf">
@@ -5610,7 +5676,7 @@ function loadCases() {
         asignatura: row.asignatura, acta: row.acta_url
       });
     });
-    renderAll(); toast("Sincronizado","ok");
+    renderAll(); toast("Sincronizado","ok"); cargarPendientes();
   }).catch(function(err){console.error(err);toast("Error de conexion","red");}).finally(function(){loading(false);});
 }
 
@@ -5636,7 +5702,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("visible");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   document.getElementById("page-"+name).classList.add("visible");
-  var tabs=["dashboard","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","asignaturas-perdidas","marcas-estudiantes","permisos-general","solicitudes-jornada","archivos-pdf","config"];
+  var tabs=["dashboard","pendientes","nuevo","casos","historial","reportes-docentes","anotacion-general","director","docentes","stats","estudiantes","nuevo-registro","asignaturas-perdidas","marcas-estudiantes","permisos-general","solicitudes-jornada","archivos-pdf","config"];
   var idx=tabs.indexOf(name);
   if(idx>=0) document.querySelectorAll(".nav-tab")[idx].classList.add("active");
   if(name==="config") document.getElementById("cfg-url").value=SCRIPT_URL;
@@ -5653,6 +5719,7 @@ function showPage(name) {
   if(name==="permisos-general") loadPermisosGeneral();
   if(name==="solicitudes-jornada") loadSolicitudesJornadaPage();
   if(name==="archivos-pdf") initArchivosPdf();
+  if(name==="pendientes"){ pendOcultarAviso(); pendPoblarFiltros(); renderPendientes(); cargarPendientes(); }
   window.scrollTo(0,0);
 }
 
@@ -8149,6 +8216,381 @@ function infConstruir(s, d, tipo, desde, hasta) {
 }
 
 
+// ===== PENDIENTES: alertas de actividades de reparacion y citaciones =====
+var PEND_DIAS_ATRASO = 30, PEND_DIAS_PROX = 3, PEND_LIMITE_FILAS = 15;
+var pendRows = null, pendItems = [], pendCargando = false, pendHora = '';
+var pendAbiertoViejo = false, pendMas = {}, pendModal = null;
+
+function pendFechaOk(f) { return /^\d{4}-\d{2}-\d{2}/.test(String(f || '')); }
+function pendDias(desde, hasta) {
+  var a = String(desde).slice(0, 10).split('-'), b = String(hasta).slice(0, 10).split('-');
+  return Math.round((Date.UTC(+b[0], +b[1] - 1, +b[2]) - Date.UTC(+a[0], +a[1] - 1, +a[2])) / 86400000);
+}
+function pendSumar(fecha, n) {
+  var p = String(fecha).slice(0, 10).split('-');
+  var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n));
+  return d.toISOString().slice(0, 10);
+}
+// Cubo de cada pendiente segun su fecha
+function pendBucket(fecha) {
+  if (!fecha) return 'sin';
+  var d = pendDias(repHoy(), fecha);
+  if (d === 0) return 'hoy';
+  if (d < 0) return (-d) <= PEND_DIAS_ATRASO ? 'atras' : 'viejo';
+  return d <= PEND_DIAS_PROX ? 'prox' : '';
+}
+function pendErrTxt(e) {
+  var m = (e && (e.message || e.details)) ? String(e.message || e.details) : '';
+  if (/veces_pospuesta|fecha_limite|actividad_id/.test(m)) return 'Falta ejecutar el SQL pendientes.sql en Supabase.';
+  return m ? m.slice(0, 120) : '';
+}
+
+function cargarPendientes() {
+  if (!sb) return Promise.resolve();
+  if (pendCargando) return Promise.resolve();
+  pendCargando = true;
+  return sb.from('registros').select('*, estudiantes(nombre,grado,jornada)')
+    .in('tipo', ['reparacion', 'reparacion_entrega', 'citacion'])
+    .then(function(res) {
+      if (res.error) throw res.error;
+      pendRows = res.data || [];
+      pendConstruir();
+    })
+    .catch(function(e) {
+      console.error(e);
+      var el = document.getElementById('pend-contenido');
+      if (el && !pendRows) el.innerHTML = '<div class="empty"><p>No se pudieron cargar los pendientes. ' + escInf(pendErrTxt(e)) + '</p></div>';
+    })
+    .finally(function() { pendCargando = false; });
+}
+
+function pendConstruir() {
+  if (!pendRows) return;
+  var entregas = pendRows.filter(function(r) { return r.tipo === 'reparacion_entrega'; });
+  var items = [];
+  pendRows.forEach(function(r) {
+    if (r.tipo === 'reparacion_entrega') return;
+    if (r.asistio === 'si' || r.asistio === 'no') return;
+    var e = r.estudiantes || {};
+    if (r.tipo === 'reparacion') {
+      var ya = entregas.some(function(x) { return x.actividad_id != null && String(x.actividad_id) === String(r.id); });
+      if (ya) return;
+      items.push({ k: 'rep', id: r.id, estId: r.estudiante_id, nombre: e.nombre || '', grado: e.grado || '', jornada: e.jornada || '',
+        fecha: pendFechaOk(r.fecha_limite) ? String(r.fecha_limite).slice(0, 10) : '', asignada: r.fecha || '', titulo: r.motivo || '',
+        pospuestas: r.veces_pospuesta || 0, orig: r.fecha_limite_original || '' });
+    } else if (r.tipo === 'citacion') {
+      items.push({ k: 'cit', id: r.id, estId: r.estudiante_id, nombre: e.nombre || '', grado: e.grado || '', jornada: e.jornada || '',
+        fecha: pendFechaOk(r.fecha) ? String(r.fecha).slice(0, 10) : '', titulo: r.motivo || '' });
+    }
+  });
+  (cases || []).forEach(function(c) {
+    if (c.citacion !== 'si' || c.asistencia) return;
+    items.push({ k: 'caso', id: c.id, estId: resolveEstudianteId(c.studentName, c.grade) || '', nombre: c.studentName, grado: c.grade || '', jornada: c.jornada || '',
+      fecha: pendFechaOk(c.fechaCitacion) ? String(c.fechaCitacion).slice(0, 10) : '', titulo: c.description || '', tipoCaso: c.type });
+  });
+  items.forEach(function(i) { i.b = pendBucket(i.fecha); });
+  pendItems = items.filter(function(i) { return i.b; });
+  var d = new Date();
+  pendHora = d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota' });
+  pendActualizarBadge();
+  pendPoblarFiltros();
+  var pg = document.getElementById('page-pendientes');
+  if (pg && pg.classList.contains('visible')) renderPendientes();
+  pendAvisoInicial();
+}
+
+function pendConteo(b) { return pendItems.filter(function(i) { return i.b === b; }).length; }
+function pendActualizarBadge() {
+  var n = pendConteo('hoy') + pendConteo('atras');
+  var el = document.getElementById('pend-badge');
+  if (!el) return;
+  el.textContent = n > 99 ? '99+' : String(n);
+  el.style.display = n ? 'inline-block' : 'none';
+}
+function pendAvisoInicial() {
+  var h = pendConteo('hoy'), a = pendConteo('atras');
+  var el = document.getElementById('pend-aviso');
+  if (!el || !(h + a)) return;
+  var pg = document.getElementById('page-pendientes');
+  if (pg && pg.classList.contains('visible')) return;
+  var ya = '';
+  try { ya = sessionStorage.getItem('ri_pend_aviso') || ''; } catch (e) {}
+  if (ya) return;
+  try { sessionStorage.setItem('ri_pend_aviso', '1'); } catch (e) {}
+  var partes = [];
+  if (h) partes.push(h + ' para hoy');
+  if (a) partes.push(a + ' atrasado' + (a !== 1 ? 's' : ''));
+  document.getElementById('pend-aviso-txt').textContent = 'Tienes pendientes: ' + partes.join(' y ') + '.';
+  el.classList.add('show');
+}
+function pendOcultarAviso() { var el = document.getElementById('pend-aviso'); if (el) el.classList.remove('show'); }
+
+function pendPoblarFiltros() {
+  var sj = document.getElementById('pend-f-jornada'), sg = document.getElementById('pend-f-grado');
+  if (!sj || !sg) return;
+  var js = {}, gs = {};
+  pendItems.forEach(function(i) { if (i.jornada) js[i.jornada] = 1; if (i.grado) gs[i.grado] = 1; });
+  var vj = sj.value, vg = sg.value;
+  sj.innerHTML = '<option value="">Todas las jornadas</option>' + Object.keys(js).sort().map(function(x) { return '<option value="' + escInf(x) + '">' + escInf(x) + '</option>'; }).join('');
+  sg.innerHTML = '<option value="">Todos los grados</option>' + Object.keys(gs).sort().map(function(x) { return '<option value="' + escInf(x) + '">' + escInf(x) + '</option>'; }).join('');
+  sj.value = vj; sg.value = vg;
+}
+function pendFiltrados() {
+  var t = (document.getElementById('pend-f-tipo') || {}).value || '';
+  var j = (document.getElementById('pend-f-jornada') || {}).value || '';
+  var g = (document.getElementById('pend-f-grado') || {}).value || '';
+  return pendItems.filter(function(i) {
+    if (t === 'rep' && i.k !== 'rep') return false;
+    if (t === 'cit' && i.k === 'rep') return false;
+    if (j && i.jornada !== j) return false;
+    if (g && i.grado !== g) return false;
+    return true;
+  });
+}
+function pendBuscar(k, id) {
+  for (var x = 0; x < pendItems.length; x++) if (pendItems[x].k === k && String(pendItems[x].id) === String(id)) return pendItems[x];
+  return null;
+}
+
+function pendCuando(i) {
+  var rep = i.k === 'rep';
+  if (!i.fecha) return rep ? 'Sin fecha límite de entrega' : 'Sin fecha de citación';
+  var d = pendDias(repHoy(), i.fecha), f = fmtD(i.fecha);
+  if (d === 0) return rep ? 'Vence hoy' : 'Citación de hoy';
+  if (d < 0) {
+    var t = (-d) === 1 ? 'ayer' : 'hace ' + (-d) + ' días';
+    return (rep ? 'Venció ' : 'Citación de ') + t + ' (' + f + ')';
+  }
+  var t2 = d === 1 ? 'mañana' : 'en ' + d + ' días';
+  return (rep ? 'Vence ' : 'Citación ') + t2 + ' (' + f + ')';
+}
+function pendAcciones(i) {
+  var id = escInf(String(i.id)), h = '';
+  if (i.b === 'sin') {
+    h += '<div class="pend-fecha"><input type="date" id="pend-fd-' + i.k + '-' + id + '"><button class="btn btn-ghost pend-btn" onclick="pendFijarFecha(\'' + i.k + '\',\'' + id + '\')">Fijar fecha</button></div>';
+  }
+  if (i.k === 'rep') {
+    h += '<button class="btn pend-btn pend-btn-ok" onclick="pendModalAbrir(\'entrega\',\'rep\',\'' + id + '\')">✔ La trajo</button>';
+    if (i.b !== 'prox' && i.b !== 'sin') h += '<button class="btn btn-ghost pend-btn" onclick="pendModalAbrir(\'noentrega\',\'rep\',\'' + id + '\')">No la trajo</button>';
+  } else {
+    if (i.b !== 'prox') {
+      h += '<button class="btn pend-btn pend-btn-ok" onclick="pendMarcarCita(\'' + i.k + '\',\'' + id + '\',\'si\')">✔ Asistió</button>';
+      h += '<button class="btn btn-ghost pend-btn" onclick="pendMarcarCita(\'' + i.k + '\',\'' + id + '\',\'no\')">No asistió</button>';
+    }
+    if (i.b !== 'sin') h += '<button class="btn btn-ghost pend-btn" onclick="pendModalAbrir(\'fecha\',\'' + i.k + '\',\'' + id + '\')">Nueva fecha</button>';
+  }
+  return h;
+}
+function pendFilaHTML(i) {
+  var tipoTag = i.k === 'rep' ? '<span class="tag tag-amber">Actividad de reparación</span>'
+    : (i.k === 'cit' ? '<span class="tag tag-blue">Citación a acudiente</span>' : '<span class="tag tag-blue">Citación · caso ' + (i.tipoCaso === 'academico' ? 'académico' : 'de convivencia') + '</span>');
+  var det = String(i.titulo || '').replace(/\s+/g, ' ');
+  if (det.length > 120) det = det.slice(0, 117) + '...';
+  if (i.k === 'rep') det = 'Asignada el ' + fmtD(i.asignada || '') + (det ? ': ' + det : '');
+  var cls = i.b === 'atras' || i.b === 'viejo' ? ' pend-rojo' : (i.b === 'hoy' ? ' pend-ambar' : '');
+  var pos = (i.k === 'rep' && i.pospuestas > 0)
+    ? '<div class="pend-det">Pospuesta ' + i.pospuestas + (i.pospuestas === 1 ? ' vez' : ' veces') + (i.orig ? ' · límite original: ' + fmtD(i.orig) : '') + '</div>' : '';
+  return '<div class="pend-row">' +
+    '<div class="pend-main">' +
+      '<div class="pend-nombre" onclick="pendAbrirFicha(\'' + i.k + '\',\'' + escInf(String(i.id)) + '\')">' + escInf(i.nombre || '(sin nombre)') + '</div>' +
+      '<div class="pend-meta">' + tipoTag + (i.grado ? '<span class="tag tag-gray">' + escInf(i.grado) + (i.jornada ? ' · ' + escInf(i.jornada) : '') + '</span>' : '') + '</div>' +
+      (det ? '<div class="pend-det">' + escInf(det) + '</div>' : '') + pos +
+      '<div class="pend-cuando' + cls + '">' + pendCuando(i) + '</div>' +
+    '</div>' +
+    '<div class="pend-acc">' + pendAcciones(i) + '</div>' +
+  '</div>';
+}
+
+var PEND_SECS = [
+  ['hoy', 'Hoy', 'Lo que se entrega o se atiende hoy', 'var(--amber,#F59E0B)', true],
+  ['atras', 'Atrasados', 'Vencieron en los últimos ' + PEND_DIAS_ATRASO + ' días y siguen sin resolver', '#DC2626', true],
+  ['prox', 'Próximos ' + PEND_DIAS_PROX + ' días', 'Lo que viene', '#2563EB', false],
+  ['sin', 'Sin fecha', 'Ponles fecha para que entren a las alertas', '#64748B', false],
+  ['viejo', 'Anteriores (más de ' + PEND_DIAS_ATRASO + ' días)', 'Probablemente ya se atendieron y nunca se marcaron. Márcalas para limpiar la lista', '#94A3B8', false]
+];
+function pendOrdenar(b, lista) {
+  return lista.slice().sort(function(x, y) {
+    if (b === 'hoy' || b === 'sin') return String(x.nombre).localeCompare(String(y.nombre));
+    if (b === 'viejo') return String(y.fecha).localeCompare(String(x.fecha));
+    return String(x.fecha).localeCompare(String(y.fecha));
+  });
+}
+function renderPendientes() {
+  var cont = document.getElementById('pend-contenido');
+  if (!cont) return;
+  if (!pendRows) { cont.innerHTML = '<div class="empty"><p>Cargando pendientes...</p></div>'; return; }
+  var items = pendFiltrados();
+  var por = { hoy: [], atras: [], prox: [], sin: [], viejo: [] };
+  items.forEach(function(i) { if (por[i.b]) por[i.b].push(i); });
+  var tiles = [['hoy', 'Hoy', '#F59E0B'], ['atras', 'Atrasados', '#DC2626'], ['prox', 'Próximos ' + PEND_DIAS_PROX + ' días', '#2563EB'], ['sin', 'Sin fecha', '#64748B']];
+  var h = '<div class="pend-tiles">' + tiles.map(function(t) {
+    return '<button class="pend-tile" style="background:' + t[2] + '" onclick="pendIr(\'' + t[0] + '\')"><div class="pend-tile-n">' + por[t[0]].length + '</div><div class="pend-tile-l">' + t[1] + '</div></button>';
+  }).join('') + '</div>';
+  PEND_SECS.forEach(function(s) {
+    var b = s[0], lista = pendOrdenar(b, por[b]);
+    if (!lista.length && !s[4]) return;
+    var abierta = b !== 'viejo' || pendAbiertoViejo;
+    h += '<div class="pend-sec" id="pend-sec-' + b + '">';
+    h += '<div class="pend-sec-h" style="background:' + s[3] + (b === 'viejo' ? ';cursor:pointer' : '') + '"' + (b === 'viejo' ? ' onclick="pendAbiertoViejo=!pendAbiertoViejo;renderPendientes()"' : '') + '>' +
+      '<div><div class="pend-sec-t">' + s[1] + ' <span class="pend-sec-n">' + lista.length + '</span></div><div class="pend-sec-s">' + s[2] + '</div></div>' +
+      (b === 'viejo' ? '<div style="margin-left:auto;font-size:0.8rem">' + (abierta ? 'Ocultar ▲' : 'Mostrar ▼') + '</div>' : '') + '</div>';
+    if (abierta) {
+      if (!lista.length) h += '<div class="pend-vacio">Nada pendiente en esta sección ✔</div>';
+      else {
+        var ver = pendMas[b] ? lista : lista.slice(0, PEND_LIMITE_FILAS);
+        h += ver.map(pendFilaHTML).join('');
+        if (lista.length > ver.length) h += '<button class="pend-mas" onclick="pendMas[\'' + b + '\']=true;renderPendientes()">Ver los ' + (lista.length - ver.length) + ' restantes</button>';
+      }
+    }
+    h += '</div>';
+  });
+  cont.innerHTML = h;
+  var hr = document.getElementById('pend-hora');
+  if (hr) hr.textContent = pendHora ? 'Actualizado a las ' + pendHora : '';
+}
+function pendIr(b) { var el = document.getElementById('pend-sec-' + b); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function pendActualizar() { pendMas = {}; cargarPendientes(); }
+
+function pendAbrirFicha(k, id) {
+  var it = pendBuscar(k, id);
+  if (!it) return;
+  var n = normName(it.nombre), s = null;
+  (studentsData || []).forEach(function(x) { if (!s && normName(x.nombre) === n) s = x; });
+  if (s) openEstModal(s); else toast('No se encontró la ficha de ese estudiante', 'red');
+}
+
+// ---- Acciones con un clic ----
+function pendEjecutar(promesa, msg) {
+  loading(true);
+  Promise.resolve(promesa).then(function(res) {
+    if (res && res.error) throw res.error;
+    toast(msg, 'ok');
+    return cargarPendientes();
+  }).catch(function(e) { console.error(e); toast('No se pudo guardar. ' + pendErrTxt(e), 'red'); })
+    .finally(function() { loading(false); });
+}
+function pendMarcarCita(k, id, v) {
+  var p;
+  if (k === 'cit') p = sb.from('registros').update({ asistio: v }).eq('id', id);
+  else {
+    var val = v === 'si' ? 'asistio' : 'no_asistio';
+    p = sb.from('casos').update({ asistencia: val }).eq('id', id).then(function(res) {
+      if (!res.error) (cases || []).forEach(function(c) { if (String(c.id) === String(id)) c.asistencia = val; });
+      return res;
+    });
+  }
+  pendEjecutar(p, v === 'si' ? 'Registrado: el acudiente asistió' : 'Registrado: el acudiente no asistió');
+}
+function pendFijarFecha(k, id) {
+  var el = document.getElementById('pend-fd-' + k + '-' + id);
+  var f = el ? el.value : '';
+  if (!f) { toast('Elige una fecha', 'red'); return; }
+  var p = k === 'rep' ? sb.from('registros').update({ fecha_limite: f }).eq('id', id)
+    : sb.from('casos').update({ fecha_citacion: f }).eq('id', id).then(function(res) {
+        if (!res.error) (cases || []).forEach(function(c) { if (String(c.id) === String(id)) c.fechaCitacion = f; });
+        return res;
+      });
+  pendEjecutar(p, 'Fecha guardada');
+}
+
+// ---- Ventana para las acciones que piden datos ----
+function pendModalAbrir(modo, k, id) {
+  var it = pendBuscar(k, id);
+  if (!it) return;
+  pendModal = { modo: modo, k: k, id: id, sub: 'fecha' };
+  var hoy = repHoy(), h = '';
+  var cab = '<div style="font-size:0.85rem;color:var(--gray);margin-bottom:14px"><b style="color:var(--navy)">' + escInf(it.nombre) + '</b>' + (it.grado ? ' · ' + escInf(it.grado) : '') + '</div>';
+  if (modo === 'entrega') {
+    h = '<div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">Registrar entrega de la actividad</div>' + cab +
+      '<div class="form-section">' +
+      '<div style="font-size:0.82rem;color:#475569;line-height:1.5">' + escInf('Asignada el ' + fmtD(it.asignada || '') + (it.titulo ? ': ' + String(it.titulo).slice(0, 140) : '')) + '</div>' +
+      '<div class="field"><label class="lbl">Dia que la trajo</label><input type="date" id="pend-m-fecha" value="' + hoy + '"></div>' +
+      '<div class="field"><label class="lbl">Observaciones <span style="color:#94A3B8;font-weight:400;text-transform:none">(si es el caso)</span></label><textarea id="pend-m-obs" rows="3" placeholder="Ej: la entregó completa, faltó una parte..."></textarea></div>' +
+      '<div class="field"><label class="lbl">Adjuntar PDF <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional)</span></label><input type="file" id="pdf-pend" accept="application/pdf,.pdf" multiple><div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Solo PDF, máximo 10 MB por archivo.</div></div>' +
+      '<div class="ferr" id="pend-m-err" style="min-height:18px"></div>' +
+      '<button class="btn btn-primary" id="pend-m-btn" onclick="pendModalGuardar()" style="width:100%;padding:14px">Guardar entrega</button></div>';
+  } else if (modo === 'noentrega') {
+    h = '<div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">No trajo la actividad</div>' + cab +
+      '<div class="form-section">' +
+      '<div class="type-grid"><button type="button" class="type-btn sel" id="pend-sub-fecha" onclick="pendSub(\'fecha\')">Dar nueva fecha límite</button><button type="button" class="type-btn" id="pend-sub-cerrar" onclick="pendSub(\'cerrar\')">Cerrar sin entrega</button></div>' +
+      '<div id="pend-bloque-fecha"><div class="field"><label class="lbl">Nueva fecha límite</label><input type="date" id="pend-m-fecha" value="' + pendSumar(hoy, 2) + '"></div>' +
+      '<div style="font-size:0.78rem;color:var(--gray)">La actividad sigue en tus pendientes con la nueva fecha. Queda guardado cuántas veces se pospuso' + (it.pospuestas ? ' (ya van ' + it.pospuestas + ')' : '') + '.</div></div>' +
+      '<div id="pend-bloque-cerrar" style="display:none;font-size:0.82rem;color:#475569;line-height:1.5">La actividad se marca como no entregada y sale de Pendientes. Se sigue viendo en la ficha del estudiante.</div>' +
+      '<div class="ferr" id="pend-m-err" style="min-height:18px"></div>' +
+      '<button class="btn btn-primary" id="pend-m-btn" onclick="pendModalGuardar()" style="width:100%;padding:14px">Guardar</button></div>';
+  } else {
+    h = '<div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">Nueva fecha de la citación</div>' + cab +
+      '<div class="form-section">' +
+      '<div class="field"><label class="lbl">Nueva fecha de la cita</label><input type="date" id="pend-m-fecha" value="' + (it.fecha && it.fecha >= hoy ? it.fecha : hoy) + '"></div>' +
+      '<div class="ferr" id="pend-m-err" style="min-height:18px"></div>' +
+      '<button class="btn btn-primary" id="pend-m-btn" onclick="pendModalGuardar()" style="width:100%;padding:14px">Guardar fecha</button></div>';
+  }
+  document.getElementById('pend-modal-body').innerHTML = h;
+  document.getElementById('pend-modal-overlay').classList.add('open');
+}
+function pendSub(s) {
+  if (!pendModal) return;
+  pendModal.sub = s;
+  document.getElementById('pend-sub-fecha').className = 'type-btn' + (s === 'fecha' ? ' sel' : '');
+  document.getElementById('pend-sub-cerrar').className = 'type-btn' + (s === 'cerrar' ? ' sel' : '');
+  document.getElementById('pend-bloque-fecha').style.display = s === 'fecha' ? 'block' : 'none';
+  document.getElementById('pend-bloque-cerrar').style.display = s === 'cerrar' ? 'block' : 'none';
+}
+function pendModalCerrar(e) { if (e && e.target !== document.getElementById('pend-modal-overlay')) return; pendModalCerrarDirecto(); }
+function pendModalCerrarDirecto() { document.getElementById('pend-modal-overlay').classList.remove('open'); pendModal = null; }
+
+function pendModalGuardar() {
+  if (!pendModal) return;
+  var m = pendModal, it = pendBuscar(m.k, m.id);
+  if (!it) { pendModalCerrarDirecto(); return; }
+  var err = document.getElementById('pend-m-err'), btn = document.getElementById('pend-m-btn');
+  err.textContent = '';
+  var fEl = document.getElementById('pend-m-fecha'), fecha = fEl ? fEl.value : '';
+  var hoy = repHoy();
+
+  if (m.modo === 'entrega') {
+    if (!fecha) { err.textContent = 'Elige el día que la trajo'; return; }
+    var pdfs = archTomar('pdf-pend'); if (pdfs.error) { err.textContent = pdfs.error; return; }
+    var estId = it.estId;
+    if (!estId) { err.textContent = 'No se encontró el estudiante en la base de datos'; return; }
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    sb.from('registros').insert({
+      estudiante_id: estId, tipo: 'reparacion_entrega', fecha: fecha,
+      motivo: 'Entrega de actividad de reparacion', descripcion: document.getElementById('pend-m-obs').value.trim(),
+      atencion: '', dias: null, asistio: '', actividad_id: String(m.id)
+    }).select().single().then(function(res) {
+      if (res.error) throw res.error;
+      pendModalCerrarDirecto();
+      return archPostGuardar('pdf-pend', pdfs.files, estId, 'reparacion_entrega', res.data && res.data.id, 'Entrega registrada');
+    }).then(function() { return cargarPendientes(); })
+      .catch(function(e) { console.error(e); err.textContent = 'No se pudo guardar. ' + pendErrTxt(e); btn.disabled = false; btn.textContent = 'Guardar entrega'; });
+    return;
+  }
+
+  if (m.modo === 'noentrega' && m.sub === 'cerrar') {
+    pendModalCerrarDirecto();
+    pendEjecutar(sb.from('registros').update({ asistio: 'no' }).eq('id', m.id), 'Actividad cerrada sin entrega');
+    return;
+  }
+
+  // nueva fecha (limite de actividad o cita)
+  if (!fecha) { err.textContent = 'Elige la nueva fecha'; return; }
+  if (fecha < hoy) { err.textContent = 'La nueva fecha debe ser hoy o posterior'; return; }
+  pendModalCerrarDirecto();
+  if (m.k === 'rep') {
+    pendEjecutar(sb.from('registros').update({
+      fecha_limite: fecha, fecha_limite_original: it.orig || it.fecha || null, veces_pospuesta: (it.pospuestas || 0) + 1
+    }).eq('id', m.id), 'Nueva fecha límite guardada');
+  } else if (m.k === 'cit') {
+    pendEjecutar(sb.from('registros').update({ fecha: fecha }).eq('id', m.id), 'Nueva fecha de la citación guardada');
+  } else {
+    pendEjecutar(sb.from('casos').update({ fecha_citacion: fecha }).eq('id', m.id).then(function(res) {
+      if (!res.error) (cases || []).forEach(function(c) { if (String(c.id) === String(m.id)) c.fechaCitacion = fecha; });
+      return res;
+    }), 'Nueva fecha de la citación guardada');
+  }
+}
+
 var curCompTipo = '';
 var curCompFirma = '';
 
@@ -8263,8 +8705,8 @@ function repEstado(a, ents, fmt) {
     var extra = lim ? (String(e.fecha) > lim ? ' (con retraso)' : ' (a tiempo)') : '';
     return { k: 'ok', txt: 'Entregada el ' + fmt(e.fecha || '') + extra };
   }
-  if (a.asistio === 'si') return { k: 'ok', txt: 'Cumplió (registro anterior)' };
-  if (a.asistio === 'no') return { k: 'bad', txt: 'No cumplió (registro anterior)' };
+  if (a.asistio === 'si') return { k: 'ok', txt: 'Cumplió' };
+  if (a.asistio === 'no') return { k: 'bad', txt: 'No entregada (cerrada sin entrega)' };
   if (lim && lim < repHoy()) return { k: 'bad', txt: 'Vencida: el plazo era el ' + fmt(lim) };
   return { k: 'pend', txt: 'Pendiente de entrega' };
 }
@@ -8284,7 +8726,7 @@ function loadRegistros(tipo, nombre, elId) {
     var res = rr[0], entregas = rr[1];
     if (res.error) throw res.error;
     var data = (res.data || []).map(function(r) {
-      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio, fecha_limite: r.fecha_limite,
+      return { id: r.id, fecha: r.fecha, motivo: r.motivo, desc: r.descripcion, atencion: r.atencion, dias: r.dias, bool1: r.asistio, fecha_limite: r.fecha_limite, pospuestas: r.veces_pospuesta || 0, orig: r.fecha_limite_original || '',
                entregas: entregas.filter(function(e) { return e.actividad_id != null && String(e.actividad_id) === String(r.id); }) };
     });
     renderRegistrosList(el, data, tipo, elId);
@@ -8305,6 +8747,7 @@ function renderRegistrosList(el, list, tipo, elId) {
     if ((tipo === 'citacion' || tipo === 'citacion_estudiante' || tipo === 'reparacion') && r.atencion) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Responsable: ' + r.atencion + '</div>';
     if (tipo === 'reparacion') {
       if (r.fecha_limite) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Fecha límite de entrega: ' + fmtD(r.fecha_limite) + '</div>';
+      if (r.pospuestas > 0) extra += '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">Pospuesta ' + r.pospuestas + (r.pospuestas === 1 ? ' vez' : ' veces') + (r.orig ? ' · límite original: ' + fmtD(r.orig) : '') + '</div>';
       var st = repEstado(r, r.entregas);
       var stColor = st.k === 'ok' ? '#166534' : (st.k === 'bad' ? '#B91C1C' : '#B45309');
       extra += '<div style="font-size:0.8rem;color:' + stColor + ';font-weight:600;margin-top:4px">' + (st.k === 'ok' ? '✔ ' : '') + st.txt + '</div>';
