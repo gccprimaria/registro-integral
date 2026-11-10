@@ -411,6 +411,12 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="ferr" id="e-student"></div>
     </div>
     <div class="field">
+      <label class="lbl">Fecha del caso</label>
+      <input type="date" id="f-fecha-caso" onchange="fFechaCasoTocada=true">
+      <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Por defecto es hoy. Cámbiala si el caso ocurrió otro día.</div>
+      <div class="ferr" id="e-fecha-caso"></div>
+    </div>
+    <div class="field">
       <label class="lbl">Docente que reporta</label>
       <select id="f-teacher" onchange="onTeacherChange()">
         <option value="">Seleccionar docente...</option>
@@ -5719,6 +5725,7 @@ function showPage(name) {
   if(name==="permisos-general") loadPermisosGeneral();
   if(name==="solicitudes-jornada") loadSolicitudesJornadaPage();
   if(name==="archivos-pdf") initArchivosPdf();
+  if(name==="nuevo") iniciarFechaCaso();
   if(name==="pendientes"){ pendOcultarAviso(); pendPoblarFiltros(); renderPendientes(); cargarPendientes(); }
   window.scrollTo(0,0);
 }
@@ -5827,7 +5834,18 @@ function onTeacherChange(){
   document.getElementById("e-teacher").textContent="";
 }
 
+var fFechaCasoTocada = false;
+function iniciarFechaCaso(forzar) {
+  var el = document.getElementById("f-fecha-caso");
+  if (!el) return;
+  var hoy = repHoy();
+  el.max = hoy;
+  if (forzar) fFechaCasoTocada = false;
+  if (!fFechaCasoTocada || !el.value) el.value = hoy;
+}
+
 function clearForm(){
+  iniciarFechaCaso(true);
   document.getElementById("f-jornada").value=""; updateGrades();
   document.getElementById("f-teacher").value=""; document.getElementById("f-teacher-other").value=""; document.getElementById("f-teacher-other").style.display="none";
   document.getElementById("campo-asignatura").style.display="none"; document.getElementById("campo-asignatura-otro").style.display="none";
@@ -5849,6 +5867,10 @@ function validate(){
   var checks=[["jornada",document.getElementById("f-jornada").value,"Selecciona la jornada"],["grade",document.getElementById("f-grade").value,"Selecciona el grado"],["student",document.getElementById("f-student").value,"Selecciona el estudiante"],["teacher",document.getElementById("f-teacher").value,"Selecciona el docente"],["desc",document.getElementById("f-desc").value.trim(),"Describe el caso"]];
   checks.forEach(function(c){var has=!!c[1];document.getElementById("e-"+c[0]).textContent=has?"":c[2];if(!has)ok=false;});
   if(curType==="convivencia" && !curTipo){document.getElementById("e-tipo").textContent="Selecciona la tipologia";ok=false;}
+  var _fc=document.getElementById("f-fecha-caso").value;
+  document.getElementById("e-fecha-caso").textContent="";
+  if(!_fc){document.getElementById("e-fecha-caso").textContent="Elige la fecha del caso";ok=false;}
+  else if(_fc>repHoy()){document.getElementById("e-fecha-caso").textContent="La fecha no puede ser posterior a hoy";ok=false;}
   return ok;
 }
 
@@ -5860,7 +5882,7 @@ function submitCase(){
   var estudianteId=resolveEstudianteId(studentName, grade);
   if(!estudianteId){toast("No se encontro ese estudiante en la base de datos","red");return;}
   var pdfs=archTomar("pdf-caso"); if(pdfs.error){toast(pdfs.error,"red");return;}
-  var c=normalizeCase({id:null,type:curType,studentName:studentName,grade:grade,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:new Date().toISOString()});
+  var c=normalizeCase({id:null,type:curType,studentName:studentName,grade:grade,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:(function(){var f=document.getElementById("f-fecha-caso").value; return (!f||f===repHoy())?new Date().toISOString():new Date(f+"T12:00:00-05:00").toISOString();})()});
   var btn=document.getElementById("btn-submit"); btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Guardando...';
   loading(true);
   sb.from('casos').insert({
