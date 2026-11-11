@@ -298,6 +298,10 @@ body.docente-mode .admin-only{display:none !important;}
 .pend-aviso.show{display:flex;}
 .pend-aviso button{font-family:inherit;cursor:pointer;}
 @media(max-width:880px){.pend-tiles{grid-template-columns:repeat(2,1fr);}.pend-filtros{grid-template-columns:1fr 1fr;}.pend-row{flex-direction:column;align-items:stretch;}.pend-acc{justify-content:flex-start;}}
+.caso-ests{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.caso-chip{display:inline-flex;align-items:center;gap:6px;background:#EEF2FF;border:1px solid #C7D2FE;color:var(--navy);border-radius:999px;padding:5px 6px 5px 12px;font-size:0.82rem;font-weight:600}
+.caso-chip small{font-weight:500;color:var(--gray)}
+.caso-chip button{border:0;background:#C7D2FE;color:var(--navy);width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;line-height:1;padding:0}
 </style>
 </head>
 <body>
@@ -425,11 +429,14 @@ body.docente-mode .admin-only{display:none !important;}
       <div class="ferr" id="e-grade"></div>
     </div>
     <div class="field">
-      <label class="lbl">Estudiante</label>
+      <label class="lbl">Estudiante(s)</label>
       <select id="f-student" disabled>
         <option value="">Primero selecciona grado...</option>
       </select>
       <div class="ferr" id="e-student"></div>
+      <div id="caso-ests" class="caso-ests"></div>
+      <button type="button" class="btn btn-ghost caso-add" id="btn-add-est" onclick="casoAgregarEst()" style="margin-top:8px;display:none">➕ Agregar otro estudiante a este caso</button>
+      <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">Si varios estudiantes participaron en la misma situación, agrégalos aquí: se crea un caso por cada uno con la misma anotación. Pueden ser de distinto grado o jornada.</div>
     </div>
     <div class="field">
       <label class="lbl">Fecha del caso</label>
@@ -5906,6 +5913,7 @@ function updateStudents(){
   var se=document.getElementById("f-student"); se.innerHTML='<option value="">Seleccionar estudiante...</option>'; se.disabled=true;
   if(!g||!j) return;
   ((STUDENTS[j]||{})[g]||[]).slice().sort().forEach(function(s){var o=document.createElement("option");o.value=s;o.textContent=s;se.appendChild(o);});
+  se.onchange=casoRenderEsts;
   se.disabled=false; document.getElementById("e-grade").textContent="";
 }
 function onTeacherChange(){
@@ -5927,7 +5935,41 @@ function iniciarFechaCaso(forzar) {
   if (!fFechaCasoTocada || !el.value) el.value = hoy;
 }
 
+var casoEsts = [];
+function casoRenderEsts(){
+  var box=document.getElementById("caso-ests"); if(!box) return;
+  box.innerHTML="";
+  casoEsts.forEach(function(e,i){
+    var chip=document.createElement("span"); chip.className="caso-chip";
+    var t=document.createElement("span"); t.innerHTML=escInf(e.nombre)+" <small>"+escInf(e.grado)+(e.jornada?" · "+escInf(e.jornada):"")+"</small>";
+    var b=document.createElement("button"); b.type="button"; b.title="Quitar"; b.textContent="×";
+    b.onclick=function(){ casoEsts.splice(i,1); casoRenderEsts(); };
+    chip.appendChild(t); chip.appendChild(b); box.appendChild(chip);
+  });
+  var add=document.getElementById("btn-add-est");
+  if(add) add.style.display=(casoEsts.length||document.getElementById("f-student").value)?"":"none";
+}
+function casoAgregarEst(){
+  var j=document.getElementById("f-jornada").value, g=document.getElementById("f-grade").value, n=document.getElementById("f-student").value;
+  var err=document.getElementById("e-student");
+  if(!j||!g||!n){ err.textContent="Selecciona jornada, grado y estudiante para agregarlo"; return; }
+  if(casoEsts.some(function(e){return e.nombre===n && e.grado===g;})){ err.textContent="Ese estudiante ya está en la lista"; return; }
+  casoEsts.push({nombre:n,grado:g,jornada:j});
+  err.textContent="";
+  document.getElementById("f-student").value="";
+  casoRenderEsts();
+  toast("Estudiante agregado. Elige el siguiente","ok");
+}
+// Lista final: los agregados + el que quedó seleccionado (si no está repetido)
+function casoListaFinal(){
+  var lista=casoEsts.slice();
+  var j=document.getElementById("f-jornada").value, g=document.getElementById("f-grade").value, n=document.getElementById("f-student").value;
+  if(n && j && g && !lista.some(function(e){return e.nombre===n && e.grado===g;})) lista.push({nombre:n,grado:g,jornada:j});
+  return lista;
+}
+
 function clearForm(){
+  casoEsts=[]; casoRenderEsts();
   iniciarFechaCaso(true);
   document.getElementById("f-jornada").value=""; updateGrades();
   document.getElementById("f-teacher").value=""; document.getElementById("f-teacher-other").value=""; document.getElementById("f-teacher-other").style.display="none";
@@ -5947,7 +5989,8 @@ function clearForm(){
 
 function validate(){
   var ok=true;
-  var checks=[["jornada",document.getElementById("f-jornada").value,"Selecciona la jornada"],["grade",document.getElementById("f-grade").value,"Selecciona el grado"],["student",document.getElementById("f-student").value,"Selecciona el estudiante"],["teacher",document.getElementById("f-teacher").value,"Selecciona el docente"],["desc",document.getElementById("f-desc").value.trim(),"Describe el caso"]];
+  var _hay=casoEsts.length>0;
+  var checks=[["jornada",_hay||document.getElementById("f-jornada").value,"Selecciona la jornada"],["grade",_hay||document.getElementById("f-grade").value,"Selecciona el grado"],["student",_hay||document.getElementById("f-student").value,"Selecciona el estudiante"],["teacher",document.getElementById("f-teacher").value,"Selecciona el docente"],["desc",document.getElementById("f-desc").value.trim(),"Describe el caso"]];
   checks.forEach(function(c){var has=!!c[1];document.getElementById("e-"+c[0]).textContent=has?"":c[2];if(!has)ok=false;});
   if(curType==="convivencia" && !curTipo){document.getElementById("e-tipo").textContent="Selecciona la tipologia";ok=false;}
   var _fc=document.getElementById("f-fecha-caso").value;
@@ -5961,30 +6004,47 @@ function submitCase(){
   if(!validate()) return;
   var tRaw=document.getElementById("f-teacher").value; var teacher=tRaw==="Otro docente"?(document.getElementById("f-teacher-other").value.trim()||"Otro docente"):tRaw;
   var info=TEACHERS_DATA[tRaw]; var asignatura=tRaw==="Otro docente"?document.getElementById("f-asignatura-otro").value.trim():(info?info.asignatura:"");
-  var studentName=document.getElementById("f-student").value; var grade=document.getElementById("f-grade").value;
-  var estudianteId=resolveEstudianteId(studentName, grade);
-  if(!estudianteId){toast("No se encontro ese estudiante en la base de datos","red");return;}
+  var lista=casoListaFinal();
+  if(!lista.length){document.getElementById("e-student").textContent="Selecciona el estudiante";return;}
+  var ids=[];
+  for(var k=0;k<lista.length;k++){
+    var id=resolveEstudianteId(lista[k].nombre, lista[k].grado);
+    if(!id){toast("No se encontro a "+lista[k].nombre+" en la base de datos","red");return;}
+    ids.push(id);
+  }
   var pdfs=archTomar("pdf-caso"); if(pdfs.error){toast(pdfs.error,"red");return;}
-  var c=normalizeCase({id:null,type:curType,studentName:studentName,grade:grade,jornada:document.getElementById("f-jornada").value,teacher:teacher,asignatura:asignatura,description:document.getElementById("f-desc").value.trim(),actions:document.getElementById("f-actions").value.trim(),status:"abierto",tipologia:curTipo,citacion:curCitacion,fechaCitacion:curCitacion==="si"?document.getElementById("f-fecha-cit").value:"",asistencia:curCitacion==="si"?curAsistencia:"",date:(function(){var f=document.getElementById("f-fecha-caso").value; return (!f||f===repHoy())?new Date().toISOString():new Date(f+"T12:00:00-05:00").toISOString();})()});
+  var fechaIso=(function(){var f=document.getElementById("f-fecha-caso").value; return (!f||f===repHoy())?new Date().toISOString():new Date(f+"T12:00:00-05:00").toISOString();})();
+  var desc=document.getElementById("f-desc").value.trim(), acts=document.getElementById("f-actions").value.trim();
+  var cit=curCitacion, fcit=curCitacion==="si"?document.getElementById("f-fecha-cit").value:"", asis=curCitacion==="si"?curAsistencia:"";
+  var filas=lista.map(function(e,k){return {
+    estudiante_id:ids[k], tipo:curType, grado:e.grado, jornada:e.jornada, docente:teacher,
+    descripcion:desc, acciones:acts, status:"abierto", tipologia:curTipo,
+    citacion:cit, fecha_citacion:fcit||null, asistencia:asis, asignatura:asignatura, fecha:fechaIso
+  };});
   var btn=document.getElementById("btn-submit"); btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Guardando...';
   loading(true);
-  sb.from('casos').insert({
-    estudiante_id:estudianteId, tipo:c.type, grado:c.grade, jornada:c.jornada, docente:c.teacher,
-    descripcion:c.description, acciones:c.actions, status:c.status, tipologia:c.tipologia,
-    citacion:c.citacion, fecha_citacion:c.fechaCitacion||null, asistencia:c.asistencia,
-    asignatura:c.asignatura, fecha:c.date
-  }).select('*, estudiantes(nombre)').single().then(function(res){
+  sb.from('casos').insert(filas).select('*, estudiantes(nombre)').then(function(res){
     if(res.error) throw res.error;
-    var row=res.data;
-    var nuevo=normalizeCase({
-      id:row.id, type:row.tipo, studentName:row.estudiantes?row.estudiantes.nombre:studentName,
-      grade:row.grado, teacher:row.docente, description:row.descripcion, actions:row.acciones,
-      status:row.status, date:row.fecha||row.created_at, tipologia:row.tipologia, jornada:row.jornada,
-      citacion:row.citacion, fechaCitacion:row.fecha_citacion, asistencia:row.asistencia, asignatura:row.asignatura
+    var rows=res.data||[];
+    rows.forEach(function(row){
+      var e=lista[ids.indexOf(row.estudiante_id)]||lista[0];
+      cases.push(normalizeCase({
+        id:row.id, type:row.tipo, studentName:row.estudiantes?row.estudiantes.nombre:e.nombre,
+        grade:row.grado, teacher:row.docente, description:row.descripcion, actions:row.acciones,
+        status:row.status, date:row.fecha||row.created_at, tipologia:row.tipologia, jornada:row.jornada,
+        citacion:row.citacion, fechaCitacion:row.fecha_citacion, asistencia:row.asistencia, asignatura:row.asignatura
+      }));
     });
-    cases.push(nuevo);
     cases.sort(function(a,b){ return new Date(b.date||0) - new Date(a.date||0); });
-    renderAll();clearForm();showPage("casos");return archPostGuardar("pdf-caso",pdfs.files,estudianteId,"caso",row.id,"Caso registrado");
+    renderAll();clearForm();showPage("casos");
+    var msg=rows.length>1?(rows.length+" casos registrados (uno por estudiante)"):"Caso registrado";
+    if(!pdfs.files.length){ toast(msg,"ok"); return; }
+    // El mismo PDF se adjunta a la ficha de cada estudiante
+    var p=Promise.resolve(), pc=document.getElementById("pdf-caso"); if(pc) pc.value="";
+    rows.forEach(function(row,n){
+      p=p.then(function(){ return archPostGuardar("pdf-caso",pdfs.files,row.estudiante_id,"caso",row.id,rows.length>1?("Caso "+(n+1)+" de "+rows.length+" registrado"):msg); });
+    });
+    return p;
   }).catch(function(err){console.error(err);toast("Error al guardar","red");}).finally(function(){btn.disabled=false;btn.textContent="Registrar caso";loading(false);});
 }
 
@@ -6332,7 +6392,7 @@ function convertirReporteACaso(idx){
   updateStudents();
   var estNorm = normName(r['Estudiante']||'');
   var opts = document.getElementById('f-student').options;
-  for(var i=0;i<opts.length;i++){ if(normName(opts[i].value)===estNorm){ document.getElementById('f-student').value=opts[i].value; break; } }
+  for(var i=0;i<opts.length;i++){ if(normName(opts[i].value)===estNorm){ document.getElementById('f-student').value=opts[i].value; break; } } casoRenderEsts();
   var docente = String(r['Docente']||'').trim();
   var selT = document.getElementById('f-teacher');
   selT.value = docente;
