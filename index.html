@@ -139,7 +139,7 @@ textarea{resize:vertical;min-height:90px;}
 #edit-overlay.open{z-index:600;}
 #arch-modal-overlay.open{z-index:650;}
 #pwd-confirm-overlay.open{z-index:700;}
-#inf-modal-overlay.open{z-index:660;}
+#inf-modal-overlay.open,#sjinf-overlay.open{z-index:660;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;padding:34px 22px 40px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);position:relative;}
 .modal::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:4px;background:var(--gray-light);}
@@ -1236,6 +1236,29 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
 </div>
 
+<div class="modal-overlay" id="sjinf-overlay" onclick="sjInfCerrar(event)">
+  <div class="modal" style="max-width:480px">
+    <button class="back-btn" onclick="sjInfCerrarDirecto()" style="margin-bottom:12px">← Volver</button>
+    <div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">Informe PDF de solicitudes de jornada</div>
+    <div id="sjinf-cuenta" style="font-size:0.85rem;color:var(--gray);margin-bottom:16px"></div>
+    <div class="form-section">
+      <div class="field"><label class="lbl">Estado</label>
+        <select id="sjinf-estado" onchange="sjInfCuenta()"><option value="">Todas</option><option value="pendiente">Solo pendientes</option><option value="aprobada">Solo aprobadas</option><option value="rechazada">Solo rechazadas</option></select></div>
+      <div class="field"><label class="lbl">Cambio de jornada</label>
+        <select id="sjinf-cambio" onchange="sjInfCuenta()"><option value="">Todos</option><option value="M>T">De la mañana a la tarde</option><option value="T>M">De la tarde a la mañana</option></select></div>
+      <div class="field"><label class="lbl">Grado</label>
+        <select id="sjinf-grado" onchange="sjInfCuenta()"><option value="">Todos los grados</option></select></div>
+      <div class="fg2">
+        <div class="field"><label class="lbl">Desde <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional)</span></label><input type="date" id="sjinf-desde" onchange="sjInfCuenta()"></div>
+        <div class="field"><label class="lbl">Hasta <span style="color:#94A3B8;font-weight:400;text-transform:none">(opcional)</span></label><input type="date" id="sjinf-hasta" onchange="sjInfCuenta()"></div>
+      </div>
+      <div style="font-size:0.78rem;color:var(--gray)">Sin filtros, el informe incluye todas las solicitudes, de la más antigua a la más reciente.</div>
+      <div class="ferr" id="sjinf-err" style="min-height:18px"></div>
+      <button class="btn btn-primary" id="sjinf-btn" onclick="sjInfGenerar()" style="width:100%;padding:14px">📄 Generar informe PDF</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="pwd-confirm-overlay">
   <div class="modal" style="max-width:420px">
     <div class="serif" id="pwd-confirm-msg" style="font-size:1rem;color:var(--navy);font-weight:700;margin-bottom:16px;white-space:pre-line"></div>
@@ -1649,8 +1672,13 @@ body.docente-mode .admin-only{display:none !important;}
 
 <!-- SOLICITUDES CAMBIO DE JORNADA -->
 <div class="page" id="page-solicitudes-jornada">
-  <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Solicitudes cambio de jornada</div>
-  <div style="font-size:0.85rem;color:var(--gray)">Todas las solicitudes registradas, de la más reciente a la más antigua.</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+    <div>
+      <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Solicitudes cambio de jornada</div>
+      <div style="font-size:0.85rem;color:var(--gray)">Todas las solicitudes registradas, de la más reciente a la más antigua.</div>
+    </div>
+    <button class="btn btn-primary" onclick="sjInfAbrir()" style="white-space:nowrap">📄 Exportar informe PDF</button>
+  </div>
   <div id="sj-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"><div style="font-size:0.85rem;color:var(--gray)">Cargando...</div></div>
 </div>
 
@@ -11099,6 +11127,180 @@ function loadSolicitudesJornadaEstudiante(nombre) {
   sb.from('solicitudes_jornada').select('*').eq('estudiante_id', estId).order('fecha', { ascending: false }).then(function(res) {
     renderSolicitudesJornadaList(el, res.data || [], false);
   }).catch(function() { renderSolicitudesJornadaList(el, [], false); });
+}
+
+// ===== INFORME PDF DE SOLICITUDES DE CAMBIO DE JORNADA =====
+var sjInfRows = [];
+function sjJornadaLabel(j) { return /^man/i.test(j || '') ? 'Mañana' : (/^tar/i.test(j || '') ? 'Tarde' : (j || '?')); }
+function sjSentido(r) {
+  var a = sjJornadaLabel(r.jornada_actual), b = sjJornadaLabel(r.jornada_solicitada);
+  if (a === 'Mañana' && b === 'Tarde') return 'M>T';
+  if (a === 'Tarde' && b === 'Mañana') return 'T>M';
+  return '';
+}
+function sjInfAbrir() {
+  var btn = document.getElementById('sjinf-btn');
+  btn.disabled = false; btn.textContent = '📄 Generar informe PDF';
+  document.getElementById('sjinf-err').textContent = '';
+  ['sjinf-estado', 'sjinf-cambio', 'sjinf-grado', 'sjinf-desde', 'sjinf-hasta'].forEach(function(i) { document.getElementById(i).value = ''; });
+  document.getElementById('sjinf-cuenta').textContent = 'Cargando solicitudes...';
+  document.getElementById('sjinf-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  sb.from('solicitudes_jornada').select('*, estudiantes(nombre,grado)').order('fecha', { ascending: true }).then(function(res) {
+    if (res.error) throw res.error;
+    sjInfRows = res.data || [];
+    var gs = {};
+    sjInfRows.forEach(function(r) { var g = r.estudiantes && r.estudiantes.grado; if (g) gs[g] = 1; });
+    document.getElementById('sjinf-grado').innerHTML = '<option value="">Todos los grados</option>' + Object.keys(gs).sort().map(function(g) { return '<option>' + escInf(g) + '</option>'; }).join('');
+    sjInfCuenta();
+  }).catch(function(e) { console.error(e); sjInfRows = []; document.getElementById('sjinf-cuenta').textContent = 'No se pudieron cargar las solicitudes.'; });
+}
+function sjInfCerrar(e) { if (e.target === document.getElementById('sjinf-overlay')) sjInfCerrarDirecto(); }
+function sjInfCerrarDirecto() { document.getElementById('sjinf-overlay').classList.remove('open'); document.body.style.overflow = ''; }
+function sjInfFiltrar() {
+  var est = document.getElementById('sjinf-estado').value, cam = document.getElementById('sjinf-cambio').value, gr = document.getElementById('sjinf-grado').value;
+  var d = document.getElementById('sjinf-desde').value, h = document.getElementById('sjinf-hasta').value;
+  return sjInfRows.filter(function(r) {
+    if (est && (r.estado || 'pendiente') !== est) return false;
+    if (cam && sjSentido(r) !== cam) return false;
+    if (gr && !(r.estudiantes && r.estudiantes.grado === gr)) return false;
+    var iso = infISO(r.fecha);
+    if (d && iso && iso < d) return false;
+    if (h && iso && iso > h) return false;
+    return true;
+  }).sort(infAscFecha);
+}
+function sjInfCuenta() {
+  var n = sjInfFiltrar().length;
+  document.getElementById('sjinf-cuenta').textContent = n + (n === 1 ? ' solicitud coincide' : ' solicitudes coinciden') + ' con los filtros (de ' + sjInfRows.length + ' en total).';
+}
+function sjInfGenerar() {
+  var err = document.getElementById('sjinf-err'); err.textContent = '';
+  var d = document.getElementById('sjinf-desde').value, h = document.getElementById('sjinf-hasta').value;
+  if (d && h && d > h) { err.textContent = 'La fecha "desde" no puede ser posterior a "hasta".'; return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) { err.textContent = 'No se pudo cargar el generador de PDF. Revisa tu conexión y recarga la página.'; return; }
+  var lista = sjInfFiltrar();
+  if (!lista.length) { err.textContent = 'No hay solicitudes con esos filtros.'; return; }
+  var btn = document.getElementById('sjinf-btn');
+  btn.disabled = true; btn.textContent = 'Generando...';
+  try {
+    var nombre = sjInfConstruir(lista, {
+      estado: document.getElementById('sjinf-estado').value, cambio: document.getElementById('sjinf-cambio').value,
+      grado: document.getElementById('sjinf-grado').value, desde: d, hasta: h
+    });
+    toast('Informe generado: ' + nombre, 'ok');
+    sjInfCerrarDirecto();
+  } catch (e) { console.error(e); err.textContent = 'No se pudo generar el informe. Intenta de nuevo.'; }
+  btn.disabled = false; btn.textContent = '📄 Generar informe PDF';
+}
+function sjInfConstruir(lista, f) {
+  var doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  var W = 210, H = 297, M = 15, TOP = 24, BOT = 20, T = infTxt, y = 0;
+  function color(fn, c) { fn.call(doc, c[0], c[1], c[2]); }
+  function estadoDe(r) { return r.estado || 'pendiente'; }
+  var nEst = function(e) { return lista.filter(function(r) { return estadoDe(r) === e; }).length; };
+  var nMT = lista.filter(function(r) { return sjSentido(r) === 'M>T'; }).length, nTM = lista.filter(function(r) { return sjSentido(r) === 'T>M'; }).length;
+
+  // Encabezado
+  color(doc.setFillColor, INF_C.navy); doc.rect(0, 0, W, 38, 'F');
+  color(doc.setFillColor, INF_C.amber); doc.rect(0, 38, W, 1.8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text('Gimnasio ComfaCasanare', M, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('Sede Primaria  ·  Registro Integral', M, 23);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.text('SOLICITUDES DE CAMBIO DE JORNADA', W - M, 16, { align: 'right' });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  doc.text('Generado el ' + infFechaLarga(), W - M, 23, { align: 'right' });
+  if (f.desde || f.hasta) doc.text('Periodo: ' + (f.desde ? infFecha(f.desde) : 'inicio') + ' a ' + (f.hasta ? infFecha(f.hasta) : 'hoy'), W - M, 29.5, { align: 'right' });
+  y = 49;
+
+  // Resumen
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); color(doc.setTextColor, INF_C.navy);
+  doc.text('Resumen', M, y + 3); y += 6.5;
+  var tiles = [['Solicitudes', lista.length], ['Pendientes', nEst('pendiente')], ['Aprobadas', nEst('aprobada')], ['Rechazadas', nEst('rechazada')]];
+  var gap = 3.5, tw = (W - 2 * M - gap * 3) / 4, th = 17;
+  tiles.forEach(function(t, i) {
+    var x = M + i * (tw + gap);
+    color(doc.setFillColor, [255, 255, 255]); color(doc.setDrawColor, INF_C.line);
+    doc.roundedRect(x, y, tw, th, 2, 2, 'FD');
+    color(doc.setFillColor, t[1] > 0 ? INF_C.blue : INF_C.line); doc.rect(x, y + 3, 1.2, th - 6, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); color(doc.setTextColor, t[1] > 0 ? INF_C.navy : INF_C.gray);
+    doc.text(String(t[1]), x + 5, y + 8.6);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); color(doc.setTextColor, INF_C.gray);
+    doc.text(T(t[0]), x + 5, y + 13.4, { maxWidth: tw - 7 });
+  });
+  y += th + 5;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); color(doc.setTextColor, INF_C.text);
+  doc.text(T('De la mañana a la tarde: ' + nMT + '   ·   De la tarde a la mañana: ' + nTM), M, y + 3);
+  y += 6;
+  var filtros = [];
+  if (f.estado) filtros.push('Estado: ' + f.estado);
+  if (f.cambio) filtros.push('Cambio: ' + (f.cambio === 'M>T' ? 'mañana a tarde' : 'tarde a mañana'));
+  if (f.grado) filtros.push('Grado: ' + f.grado);
+  if (filtros.length) {
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.gray);
+    doc.text(T('Filtros aplicados: ' + filtros.join('  ·  ')), M, y + 3);
+    y += 6;
+  }
+  y += 5;
+
+  // Tabla
+  color(doc.setFillColor, INF_C.amber); doc.rect(M, y, 1.8, 6.5, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(12); color(doc.setTextColor, INF_C.navy);
+  doc.text('Detalle de las solicitudes', M + 4.5, y + 5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.gray);
+  doc.text(lista.length + (lista.length === 1 ? ' registro' : ' registros'), W - M, y + 5, { align: 'right' });
+  y += 9.5;
+  var COL_EST = { pendiente: [180, 83, 9], aprobada: [22, 101, 52], rechazada: [185, 28, 28] };
+  doc.autoTable({
+    startY: y, head: [['Fecha', 'Estudiante', 'Grado', 'Cambio', 'Motivo', 'Estado'].map(T)],
+    body: lista.map(function(r) {
+      var e = r.estudiantes || {}, es = estadoDe(r);
+      return [infFecha(r.fecha), e.nombre || '(sin nombre)', e.grado || '', sjJornadaLabel(r.jornada_actual) + ' -> ' + sjJornadaLabel(r.jornada_solicitada), r.motivo || '', es.charAt(0).toUpperCase() + es.slice(1)].map(T);
+    }),
+    margin: { left: M, right: M, top: TOP, bottom: BOT }, theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2.2, textColor: INF_C.text, lineColor: INF_C.line, lineWidth: 0.2, valign: 'top', overflow: 'linebreak' },
+    headStyles: { fillColor: INF_C.navy, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 44 }, 2: { cellWidth: 13 }, 3: { cellWidth: 27 }, 5: { cellWidth: 21 } },
+    rowPageBreak: 'avoid',
+    didParseCell: function(d) {
+      if (d.section === 'body' && d.column.index === 5) {
+        var c = COL_EST[estadoDe(lista[d.row.index])] || INF_C.gray;
+        d.cell.styles.textColor = c; d.cell.styles.fontStyle = 'bold';
+      }
+    }
+  });
+  y = doc.lastAutoTable.finalY + 9;
+
+  // Firma
+  if (y + 42 > H - BOT) { doc.addPage(); y = TOP; }
+  y += 12;
+  color(doc.setDrawColor, INF_C.navy); doc.setLineWidth(0.4); doc.line(M, y + 12, M + 72, y + 12); doc.setLineWidth(0.2);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); color(doc.setTextColor, INF_C.navy);
+  doc.text('Carlos Eduardo Johnson Camacho', M, y + 17.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); color(doc.setTextColor, INF_C.gray);
+  doc.text('Gestor de Sede Primaria', M, y + 22);
+  doc.text('Gimnasio ComfaCasanare', M, y + 26.5);
+
+  // Encabezado de paginas siguientes y pie
+  var n = doc.getNumberOfPages();
+  for (var i = 1; i <= n; i++) {
+    doc.setPage(i);
+    if (i > 1) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.navy);
+      doc.text('Solicitudes de cambio de jornada', M, 12);
+      doc.setFont('helvetica', 'normal'); color(doc.setTextColor, INF_C.gray);
+      doc.text('Sede Primaria', W - M, 12, { align: 'right' });
+      color(doc.setDrawColor, INF_C.amber); doc.setLineWidth(0.5); doc.line(M, 15, W - M, 15); doc.setLineWidth(0.2);
+    }
+    color(doc.setDrawColor, INF_C.line); doc.line(M, H - 14, W - M, H - 14);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); color(doc.setTextColor, INF_C.gray);
+    doc.text('Gimnasio ComfaCasanare · Sede Primaria  -  Documento confidencial con datos personales de menores de edad.', M, H - 9);
+    doc.text('Página ' + i + ' de ' + n, W - M, H - 9, { align: 'right' });
+  }
+  var nombre = 'Informe_Solicitudes_Jornada_' + new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }) + '.pdf';
+  doc.save(nombre);
+  return nombre;
 }
 
 function exportStudentPDF() {
