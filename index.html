@@ -139,7 +139,7 @@ textarea{resize:vertical;min-height:90px;}
 #edit-overlay.open{z-index:600;}
 #arch-modal-overlay.open{z-index:650;}
 #pwd-confirm-overlay.open{z-index:700;}
-#inf-modal-overlay.open,#sjinf-overlay.open{z-index:660;}
+#inf-modal-overlay.open,#sjinf-overlay.open,#aginf-overlay.open{z-index:660;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;padding:34px 22px 40px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);position:relative;}
 .modal::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:4px;background:var(--gray-light);}
@@ -1266,6 +1266,30 @@ body.docente-mode .admin-only{display:none !important;}
   </div>
 </div>
 
+<div class="modal-overlay" id="aginf-overlay" onclick="agInfCerrar(event)">
+  <div class="modal" style="max-width:480px">
+    <button class="back-btn" onclick="agInfCerrarDirecto()" style="margin-bottom:12px">← Volver</button>
+    <div class="serif" style="font-size:1.15rem;color:var(--navy);font-weight:700;margin-bottom:4px">Informe de acciones de mejora por grupo</div>
+    <div id="aginf-cuenta" style="font-size:0.85rem;color:var(--gray);margin-bottom:16px"></div>
+    <div class="form-section">
+      <div class="field"><label class="lbl">Grupo</label>
+        <select id="aginf-grado" onchange="agInfCuenta()"><option value="">Todos los grados</option></select></div>
+      <div class="field"><label class="lbl">Tipo de acción</label>
+        <select id="aginf-tipo" onchange="agInfCuenta()"><option value="">Todos los tipos</option></select></div>
+      <div class="fg2">
+        <div class="field"><label class="lbl">Desde</label><input type="date" id="aginf-desde" onchange="agInfCuenta()"></div>
+        <div class="field"><label class="lbl">Hasta</label><input type="date" id="aginf-hasta" onchange="agInfCuenta()"></div>
+      </div>
+      <div class="field"><label class="lbl">Contenido</label>
+        <select id="aginf-modo"><option value="completo">Completo: resumen y detalle de cada grado</option><option value="resumen">Solo resumen (totales y cuadro por mes)</option></select></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text);margin-bottom:6px"><input type="checkbox" id="aginf-pagina" checked style="width:18px;height:18px;padding:0;margin:0;flex-shrink:0;accent-color:#3B82F6;appearance:auto;-webkit-appearance:checkbox;border-radius:3px"> Cada grado en una página nueva</label>
+      <div style="font-size:0.78rem;color:var(--gray)">Por defecto incluye todo el año hasta hoy. El periodo no puede superar 12 meses.</div>
+      <div class="ferr" id="aginf-err" style="min-height:18px"></div>
+      <button class="btn btn-primary" id="aginf-btn" onclick="agInfGenerar()" style="width:100%;padding:14px">📄 Generar informe PDF</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="pwd-confirm-overlay">
   <div class="modal" style="max-width:420px">
     <div class="serif" id="pwd-confirm-msg" style="font-size:1rem;color:var(--navy);font-weight:700;margin-bottom:16px;white-space:pre-line"></div>
@@ -1724,6 +1748,7 @@ body.docente-mode .admin-only{display:none !important;}
 <div class="page" id="page-acciones-grupo">
   <div class="serif" style="font-size:1.45rem;color:var(--navy);font-weight:700">Acciones del grupo</div>
   <div style="font-size:0.85rem;color:var(--gray)">Acciones de mejora que realizas con un grado para fortalecer la convivencia y la disciplina. Aparecen al final del informe PDF de cada estudiante de ese grado (todo el año, por meses).</div>
+  <div style="margin-top:12px"><button class="btn btn-primary" onclick="agInfAbrir()" style="white-space:nowrap">📄 Generar informe por grupo (PDF)</button></div>
 
   <div class="card form-section" id="ag-form-card" style="margin-top:16px">
     <div class="serif" id="ag-form-titulo" style="font-size:1.05rem;color:var(--navy);font-weight:700">Registrar acción de mejora</div>
@@ -11359,6 +11384,275 @@ function sjInfConstruir(lista, f) {
     doc.text('Página ' + i + ' de ' + n, W - M, H - 9, { align: 'right' });
   }
   var nombre = 'Informe_Solicitudes_Jornada_' + new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }) + '.pdf';
+  doc.save(nombre);
+  return nombre;
+}
+
+// ===== INFORME PDF DE ACCIONES DE MEJORA POR GRUPO =====
+var agInfRows = [];
+var AG_MES_ABR = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+function agInfGrupos() { return (agGrupos && agGrupos.length) ? agGrupos : agGradosPorJornada(); }
+function agInfAbrir() {
+  var btn = document.getElementById('aginf-btn');
+  btn.disabled = false; btn.textContent = '📄 Generar informe PDF';
+  document.getElementById('aginf-err').textContent = '';
+  var hoy = repHoy();
+  document.getElementById('aginf-desde').value = hoy.slice(0, 4) + '-01-01';
+  document.getElementById('aginf-hasta').value = hoy;
+  document.getElementById('aginf-hasta').max = hoy;
+  document.getElementById('aginf-modo').value = 'completo';
+  document.getElementById('aginf-pagina').checked = true;
+  var gs = agInfGrupos();
+  document.getElementById('aginf-grado').innerHTML = '<option value="">Todos los grados</option>' +
+    gs.map(function(p) { return '<option value="J:' + escInf(p[0]) + '">Toda la jornada: ' + escInf(p[0]) + '</option>'; }).join('') +
+    gs.map(function(p) { return '<optgroup label="' + escInf(p[0]) + '">' + p[1].map(function(g) { return '<option value="' + escInf(g) + '">' + escInf(g) + '</option>'; }).join('') + '</optgroup>'; }).join('');
+  document.getElementById('aginf-tipo').innerHTML = '<option value="">Todos los tipos</option>' + AG_TIPOS.map(function(t) { return '<option>' + escInf(t) + '</option>'; }).join('');
+  document.getElementById('aginf-cuenta').textContent = 'Cargando acciones...';
+  document.getElementById('aginf-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  sb.from('acciones_grupo').select('*').order('fecha', { ascending: true }).then(function(res) {
+    if (res.error) throw res.error;
+    agInfRows = res.data || [];
+    agInfCuenta();
+  }).catch(function(e) { console.error(e); agInfRows = []; document.getElementById('aginf-cuenta').textContent = 'No se pudieron cargar las acciones. ' + agErr(e); });
+}
+function agInfCerrar(e) { if (e.target === document.getElementById('aginf-overlay')) agInfCerrarDirecto(); }
+function agInfCerrarDirecto() { document.getElementById('aginf-overlay').classList.remove('open'); document.body.style.overflow = ''; }
+// Grados que cubre la seleccion, en el orden de las jornadas
+function agInfGradosSel(v) {
+  var out = [];
+  agInfGrupos().forEach(function(p) {
+    if (!v || v === 'J:' + p[0]) { p[1].forEach(function(g) { out.push(g); }); }
+    else if (p[1].indexOf(v) >= 0) out.push(v);
+  });
+  return out;
+}
+function agInfFiltrar() {
+  var v = document.getElementById('aginf-grado').value, tp = document.getElementById('aginf-tipo').value;
+  var d = document.getElementById('aginf-desde').value, h = document.getElementById('aginf-hasta').value;
+  var grados = agInfGradosSel(v);
+  var set = {}; grados.forEach(function(g) { set[String(g).toUpperCase()] = 1; });
+  var rows = agInfRows.filter(function(r) {
+    var f = String(r.fecha).slice(0, 10);
+    if (d && f < d) return false;
+    if (h && f > h) return false;
+    if (tp && r.tipo !== tp) return false;
+    return (r.grados || []).some(function(g) { return set[String(g).toUpperCase()]; });
+  }).sort(function(a, b) { return String(a.fecha).localeCompare(String(b.fecha)); });
+  return { rows: rows, grados: grados, v: v, tipo: tp, desde: d, hasta: h };
+}
+function agInfMeses(desde, hasta) {
+  var out = [], y = +desde.slice(0, 4), m = +desde.slice(5, 7), yf = +hasta.slice(0, 4), mf = +hasta.slice(5, 7);
+  while (y < yf || (y === yf && m <= mf)) { out.push(y + '-' + (m < 10 ? '0' : '') + m); m++; if (m > 12) { m = 1; y++; } }
+  return out;
+}
+function agInfCuenta() {
+  var f = agInfFiltrar();
+  var n = f.rows.length;
+  document.getElementById('aginf-cuenta').textContent = n + (n === 1 ? ' acción coincide' : ' acciones coinciden') + ' con los filtros (de ' + agInfRows.length + ' registradas en total).';
+}
+function agInfGenerar() {
+  var err = document.getElementById('aginf-err'); err.textContent = '';
+  var f = agInfFiltrar();
+  if (!f.desde || !f.hasta) { err.textContent = 'Elige las fechas "desde" y "hasta".'; return; }
+  if (f.desde > f.hasta) { err.textContent = 'La fecha "desde" no puede ser posterior a "hasta".'; return; }
+  if (agInfMeses(f.desde, f.hasta).length > 12) { err.textContent = 'El periodo no puede superar 12 meses.'; return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) { err.textContent = 'No se pudo cargar el generador de PDF. Revisa tu conexión y recarga la página.'; return; }
+  if (!f.rows.length) { err.textContent = 'No hay acciones con esos filtros.'; return; }
+  f.modo = document.getElementById('aginf-modo').value;
+  f.pagina = document.getElementById('aginf-pagina').checked;
+  var btn = document.getElementById('aginf-btn');
+  btn.disabled = true; btn.textContent = 'Generando...';
+  try {
+    var nombre = agInfConstruir(f);
+    toast('Informe generado: ' + nombre, 'ok');
+    agInfCerrarDirecto();
+  } catch (e) { console.error(e); err.textContent = 'No se pudo generar el informe. Intenta de nuevo.'; }
+  btn.disabled = false; btn.textContent = '📄 Generar informe PDF';
+}
+function agInfConstruir(f) {
+  var doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  var W = 210, H = 297, M = 15, TOP = 24, BOT = 20, T = infTxt, y = 0;
+  function color(fn, c) { fn.call(doc, c[0], c[1], c[2]); }
+  function espacio(h) { if (y + h > H - BOT) { doc.addPage(); y = TOP; } }
+  var rows = f.rows, grados = f.grados, meses = agInfMeses(f.desde, f.hasta);
+  var selSet = {}; grados.forEach(function(g) { selSet[String(g).toUpperCase()] = 1; });
+  function delGrado(g) { return rows.filter(function(r) { return (r.grados || []).some(function(x) { return String(x).toUpperCase() === String(g).toUpperCase(); }); }); }
+  var alcance = !f.v ? 'Todos los grados' : (f.v.indexOf('J:') === 0 ? 'Jornada ' + f.v.slice(2).toLowerCase() : 'Grado ' + f.v);
+
+  // Encabezado
+  color(doc.setFillColor, INF_C.navy); doc.rect(0, 0, W, 38, 'F');
+  color(doc.setFillColor, INF_C.amber); doc.rect(0, 38, W, 1.8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text('Gimnasio ComfaCasanare', M, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('Sede Primaria  ·  Registro Integral', M, 23);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.text('ACCIONES DE MEJORA POR GRUPO', W - M, 16, { align: 'right' });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  doc.text('Generado el ' + infFechaLarga(), W - M, 23, { align: 'right' });
+  doc.text('Periodo: ' + infFecha(f.desde) + ' a ' + infFecha(f.hasta), W - M, 29.5, { align: 'right' });
+  doc.text(T(alcance), W - M, 35, { align: 'right' });
+  y = 49;
+
+  // Resumen
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); color(doc.setTextColor, INF_C.navy);
+  doc.text('Resumen', M, y + 3); y += 6.5;
+  var nCh = rows.filter(function(r) { return r.tipo === AG_TIPOS[0]; }).length;
+  var conAcc = grados.filter(function(g) { return delGrado(g).length; }).length;
+  var mesesCon = {}; rows.forEach(function(r) { mesesCon[String(r.fecha).slice(0, 7)] = 1; });
+  var tiles = [['Acciones registradas', rows.length], ['Grados con acciones', conAcc + ' de ' + grados.length], ['Charlas o talleres', nCh], ['Meses con acciones', Object.keys(mesesCon).length + ' de ' + meses.length]];
+  var gap = 3.5, tw = (W - 2 * M - gap * 3) / 4, th = 17;
+  tiles.forEach(function(t, i) {
+    var x = M + i * (tw + gap), pos = parseInt(t[1], 10) > 0;
+    color(doc.setFillColor, [255, 255, 255]); color(doc.setDrawColor, INF_C.line);
+    doc.roundedRect(x, y, tw, th, 2, 2, 'FD');
+    color(doc.setFillColor, pos ? INF_C.blue : INF_C.line); doc.rect(x, y + 3, 1.2, th - 6, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); color(doc.setTextColor, pos ? INF_C.navy : INF_C.gray);
+    doc.text(T(String(t[1])), x + 5, y + 8.6);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); color(doc.setTextColor, INF_C.gray);
+    doc.text(T(t[0]), x + 5, y + 13.4, { maxWidth: tw - 7 });
+  });
+  y += th + 4;
+  if (f.tipo) {
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.gray);
+    doc.text(T('Filtro aplicado: ' + f.tipo), M, y + 3); y += 6;
+  }
+  y += 4;
+
+  function titulo(txt, extra) {
+    espacio(24);
+    color(doc.setFillColor, INF_C.amber); doc.rect(M, y, 1.8, 6.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12); color(doc.setTextColor, INF_C.navy);
+    doc.text(T(txt), M + 4.5, y + 5);
+    if (extra) { doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.gray); doc.text(T(extra), W - M, y + 5, { align: 'right' }); }
+    y += 9.5;
+  }
+  var estiloTabla = {
+    margin: { left: M, right: M, top: TOP, bottom: BOT }, theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2.2, textColor: INF_C.text, lineColor: INF_C.line, lineWidth: 0.2, valign: 'top', overflow: 'linebreak' },
+    headStyles: { fillColor: INF_C.navy, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [248, 250, 252] }, rowPageBreak: 'avoid'
+  };
+
+  // Por tipo de accion
+  var porTipo = {}, ordenTipo = [];
+  rows.forEach(function(r) { var t = agTipoLabel(r); if (!porTipo[t]) { porTipo[t] = 0; ordenTipo.push(t); } porTipo[t]++; });
+  ordenTipo.sort(function(a, b) { return porTipo[b] - porTipo[a]; });
+  titulo('Acciones por tipo', ordenTipo.length + (ordenTipo.length === 1 ? ' tipo' : ' tipos'));
+  doc.autoTable(Object.assign({}, estiloTabla, {
+    startY: y, head: [['Tipo de acción', 'Cantidad', '%'].map(T)],
+    body: ordenTipo.map(function(t) { return [T(t), String(porTipo[t]), Math.round(porTipo[t] * 100 / rows.length) + '%']; }),
+    columnStyles: { 1: { cellWidth: 24, halign: 'center' }, 2: { cellWidth: 20, halign: 'center' } }
+  }));
+  y = doc.lastAutoTable.finalY + 9;
+
+  // Cuadro grado x mes
+  if (y + (grados.length + 2) * 6.4 + 22 > H - BOT) { doc.addPage(); y = TOP; }
+  titulo('Acciones por grado y mes', 'Una acción puede abarcar varios grados');
+  var fw = 16, tw2 = 16, mw = (W - 2 * M - fw - tw2) / meses.length;
+  var cs = { 0: { cellWidth: fw, fontStyle: 'bold' } };
+  meses.forEach(function(m, i) { cs[i + 1] = { cellWidth: mw, halign: 'center' }; });
+  cs[meses.length + 1] = { cellWidth: tw2, halign: 'center', fontStyle: 'bold' };
+  var totMes = meses.map(function() { return 0; }), totAll = 0;
+  var cuerpo = grados.map(function(g) {
+    var rs = delGrado(g), t = 0;
+    var celdas = meses.map(function(m, i) { var n = rs.filter(function(r) { return String(r.fecha).slice(0, 7) === m; }).length; t += n; totMes[i] += n; return n ? String(n) : '-'; });
+    totAll += t;
+    return [T(g)].concat(celdas, [String(t)]);
+  });
+  cuerpo.push(['Total'].concat(totMes.map(String), [String(totAll)]));
+  doc.autoTable(Object.assign({}, estiloTabla, {
+    startY: y,
+    head: [['Grado'].concat(meses.map(function(m) { return AG_MES_ABR[+m.slice(5, 7) - 1] + (meses.length > 12 || m.slice(0, 4) !== f.desde.slice(0, 4) ? " '" + m.slice(2, 4) : ''); }), ['Total']).map(T)],
+    body: cuerpo, columnStyles: cs,
+    styles: Object.assign({}, estiloTabla.styles, { fontSize: 8, cellPadding: 1.8, halign: 'center' }),
+    headStyles: Object.assign({}, estiloTabla.headStyles, { fontSize: 8, halign: 'center' }),
+    didParseCell: function(d) {
+      if (d.section !== 'body') return;
+      var ultima = d.row.index === cuerpo.length - 1;
+      if (ultima) { d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = INF_C.light; return; }
+      if (d.column.index > 0 && d.column.index <= meses.length) {
+        if (d.cell.raw === '-') d.cell.styles.textColor = [170, 180, 195];
+        else { d.cell.styles.fillColor = [219, 234, 254]; d.cell.styles.textColor = INF_C.navy; d.cell.styles.fontStyle = 'bold'; }
+      }
+    }
+  }));
+  y = doc.lastAutoTable.finalY + 9;
+
+  // Detalle por grado
+  if (f.modo === 'completo') {
+    var primero = true;
+    grados.forEach(function(g) {
+      var accs = delGrado(g);
+      if (f.pagina && grados.length > 1) { doc.addPage(); y = TOP; } else { espacio(40); y += 2; }
+      primero = false;
+      var tit = 'Acciones de mejora implementadas en el grado ' + g + ' para el fortalecimiento de la convivencia y la disciplina';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+      var lineas = doc.splitTextToSize(T(tit), W - 2 * M - 8);
+      espacio(30 + lineas.length * 5);
+      color(doc.setFillColor, INF_C.amber); doc.rect(M, y, 1.8, lineas.length * 5.2 + 1.5, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12); color(doc.setTextColor, INF_C.navy);
+      doc.text(lineas, M + 4.5, y + 4.6);
+      y += lineas.length * 5.2 + 3;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.gray);
+      doc.text(T('Acciones generales realizadas con el grupo entre ' + infFecha(f.desde) + ' y ' + infFecha(f.hasta) + ' (' + accs.length + (accs.length === 1 ? ' acción' : ' acciones') + ').'), M, y + 3);
+      y += 8;
+      if (!accs.length) {
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); color(doc.setTextColor, INF_C.gray);
+        doc.text(T('No hay acciones registradas para este grado en el periodo.'), M, y + 3);
+        y += 10; return;
+      }
+      var porMes = {}, ordenMes = [];
+      accs.forEach(function(a) { var k = String(a.fecha).slice(5, 7); if (!porMes[k]) { porMes[k] = []; ordenMes.push(k); } porMes[k].push(a); });
+      ordenMes.forEach(function(k) {
+        espacio(34);
+        color(doc.setFillColor, INF_C.light); color(doc.setDrawColor, INF_C.line);
+        doc.roundedRect(M, y, W - 2 * M, 6.5, 1.2, 1.2, 'FD');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); color(doc.setTextColor, INF_C.navy);
+        doc.text(T(AG_MESES[+k - 1].toUpperCase()), M + 3, y + 4.5);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); color(doc.setTextColor, INF_C.gray);
+        doc.text(porMes[k].length + (porMes[k].length === 1 ? ' acción' : ' acciones'), W - M - 3, y + 4.5, { align: 'right' });
+        y += 8;
+        doc.autoTable(Object.assign({}, estiloTabla, {
+          startY: y, head: [['Fecha', 'Acción', 'Realizó', 'Descripción'].map(T)],
+          body: porMes[k].map(function(a) {
+            var otros = (a.grados || []).filter(function(x) { return String(x).toUpperCase() !== String(g).toUpperCase(); });
+            return [infFecha(a.fecha), agTipoLabel(a), agRespLabel(a), (a.descripcion || '') + (otros.length ? ' (Acción compartida con: ' + otros.join(', ') + ')' : '')].map(T);
+          }),
+          columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 40 }, 2: { cellWidth: 34 } }
+        }));
+        y = doc.lastAutoTable.finalY + 7;
+      });
+    });
+  }
+
+  // Firma
+  espacio(42);
+  y += 12;
+  color(doc.setDrawColor, INF_C.navy); doc.setLineWidth(0.4); doc.line(M, y + 12, M + 72, y + 12); doc.setLineWidth(0.2);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); color(doc.setTextColor, INF_C.navy);
+  doc.text('Carlos Eduardo Johnson Camacho', M, y + 17.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); color(doc.setTextColor, INF_C.gray);
+  doc.text('Gestor de Sede Primaria', M, y + 22);
+  doc.text('Gimnasio ComfaCasanare', M, y + 26.5);
+
+  // Encabezado de paginas siguientes y pie
+  var n = doc.getNumberOfPages();
+  for (var i = 1; i <= n; i++) {
+    doc.setPage(i);
+    if (i > 1) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); color(doc.setTextColor, INF_C.navy);
+      doc.text('Acciones de mejora por grupo', M, 12);
+      doc.setFont('helvetica', 'normal'); color(doc.setTextColor, INF_C.gray);
+      doc.text(T('Sede Primaria  ·  ' + alcance), W - M, 12, { align: 'right' });
+      color(doc.setDrawColor, INF_C.amber); doc.setLineWidth(0.5); doc.line(M, 15, W - M, 15); doc.setLineWidth(0.2);
+    }
+    color(doc.setDrawColor, INF_C.line); doc.line(M, H - 14, W - M, H - 14);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); color(doc.setTextColor, INF_C.gray);
+    doc.text('Gimnasio ComfaCasanare · Sede Primaria  -  Documento institucional.', M, H - 9);
+    doc.text('Página ' + i + ' de ' + n, W - M, H - 9, { align: 'right' });
+  }
+  var sufijo = !f.v ? 'Todos_los_grados' : (f.v.indexOf('J:') === 0 ? 'Jornada_' + f.v.slice(2).replace(/[^A-Za-z]/g, '') : 'Grado_' + f.v);
+  var nombre = 'Informe_Acciones_de_Mejora_' + sufijo + '_' + new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }) + '.pdf';
   doc.save(nombre);
   return nombre;
 }
